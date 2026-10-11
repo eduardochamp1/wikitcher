@@ -1,0 +1,6 @@
+#!/bin/sh
+# Antes de cada commit: confere se witcher-wiki-dados.js está em dia com a wiki e se não há
+# links quebrados, ids repetidos ou datas inconsistentes. Ativado com:
+#   git config core.hooksPath .githooks
+node tools/importar-wiki.js --conferir || exit 1
+node tools/verificar.js || exit 1

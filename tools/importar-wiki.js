@@ -203,10 +203,18 @@ for (const n of notas) {
 }
 
 const linhas = a => a.map(x => JSON.stringify(x)).join(',\n');
-fs.writeFileSync(OUT, '// GERADO por tools/importar-wiki.js a partir de witcher-wiki/ — não edite à mão.\n' +
+const saida = '// GERADO por tools/importar-wiki.js a partir de witcher-wiki/ — não edite à mão.\n' +
   'window.WITCHER_WIKI = {\nverbetes: [\n' + linhas(verbetes) + '\n],\nglossario: [\n' + linhas(gloss) + '\n],\ncontrastes: [\n' + linhas(contrastes) + '\n],\n' +
   // Nome (ou apelido) normalizado de cada nota -> id do verbete; usado por tools/verificar.js e tools/diferencas.js.
-  'notas: ' + JSON.stringify(Object.fromEntries(alvo)) + '\n};\n');
+  'notas: ' + JSON.stringify(Object.fromEntries(alvo)) + '\n};\n';
+// --conferir: não grava; só diz se o arquivo gerado está em dia com a wiki (usado no pre-commit).
+if (process.argv.includes('--conferir')) {
+  const atual = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
+  if (atual === saida) { console.log('witcher-wiki-dados.js está em dia com a wiki.'); process.exit(0); }
+  console.log('witcher-wiki-dados.js está desatualizado: rode "node tools/importar-wiki.js" e inclua o arquivo no commit.');
+  process.exit(1);
+}
+fs.writeFileSync(OUT, saida);
 
 const porCat = {}; verbetes.forEach(v => porCat[v.c] = (porCat[v.c] || 0) + 1);
 console.log('Notas lidas: ' + notas.length);
