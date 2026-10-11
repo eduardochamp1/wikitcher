@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Testes · Crônicas de The Witcher</title>
+<style>
+  body{margin:0;padding:20px;font-family:system-ui,sans-serif;background:#F4EEE1;color:#1E1710}
+  h1{font-size:20px;margin:0 0 12px}
+  li{margin:4px 0}
+  .ok{color:#2F4A1F}.falha{color:#8C2A1B;font-weight:600}
+  iframe{width:1200px;height:900px;border:1px solid #CDBE9C;margin-top:16px;background:#fff}
+</style>
+</head>
+<body>
+<h1 id="titulo">Rodando os testes…</h1>
+<ol id="lista"></ol>
+<pre id="resultado" hidden></pre>
+<div id="palco"></div>
+<script>
+// Testes de ponta a ponta: cada um abre o app num iframe novo (com o navegador "limpo"),
+// age como um leitor e confere o resultado. tools/testar.js roda esta página sem janela.
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const APP = 'Wiki%20The%20Witcher.dc.html';
+let frame, doc;
+
+async function abrir(hash, prep) {
+  if (frame) frame.remove();
+  frame = document.createElement('iframe');
+  document.getElementById('palco').appendChild(frame);
+  frame.contentWindow.localStorage.clear();
+  if (prep) prep(frame.contentWindow.localStorage);
+  frame.src = APP + (hash || '');
+  await esperar(() => frame.contentDocument && frame.contentDocument.querySelector('nav button'), 20000, 'o app não carregou');
+  doc = frame.contentDocument;
+  await sleep(300);
+}
+async function esperar(cond, ms = 6000, msg = 'tempo esgotado') {
+  const fim = Date.now() + ms;
+  while (Date.now() < fim) { try { const v = cond(); if (v) return v; } catch (e) {} await sleep(50); }
+  throw new Error(msg);
+}
+const texto = () => doc.body.innerText;
+const botao = (t, dentro) => [...(dentro || doc).querySelectorAll('button')].find(b => b.textContent.trim() === t);
+const clicar = async (t, dentro) => { const b = await esperar(() => botao(t, dentro), 4000, 'botão "' + t + '" não encontrado'); b.click(); await sleep(250); };
+const digitar = async (input, v) => {
+  const set = Object.getOwnPropertyDescriptor(frame.contentWindow.HTMLInputElement.prototype, 'value').set;
+  input.focus(); set.call(input, v); input.dispatchEvent(new frame.contentWindow.Event('input', { bubbles: true })); await sleep(300);
+};
+const confere = (cond, msg) => { if (!cond) throw new Error(msg); };
+
+const TESTES = [
+  ['A linha do tempo carrega com todos os eventos', async () => {
+    await abrir('#/tempo');
+    await esperar(() => texto().includes('Da Conjunção das Esferas'), 6000, 'título não apareceu');
+    confere(doc.querySelectorAll('[id^="ev-"]').length >= 90, 'menos de 90 eventos na tela');
+    confere(!doc.querySelector('.sc-logic-error'), 'erro de lógica do componente');
+  }],
+  ['Endereço de verbete abre o verbete', async () => {
+    await abrir('#/comp/geralt');
+    await esperar(() => doc.querySelector('#verbete') && doc.querySelector('#verbete').innerText.includes('Geralt de Rívia'), 6000, 'verbete não abriu');
+  }],
+  ['Endereço de evento abre a linha do tempo no evento', async () => {
+    await abrir('#/tempo/@thanedd');
+    await esperar(() => /Recolher/.test((doc.getElementById('ev-thanedd') || {}).innerText || ''), 6000, 'evento não abriu');
+  }],
+  ['A busca aceita erros de digitação', async () => {
+    await abrir('#/tempo');
+    await digitar(doc.querySelector('header input'), 'kaer mohren');
+    await esperar(() => [...doc.querySelectorAll('header button')].some(b => b.innerText.includes('Kaer Morhen')), 3000, 'nenhum resultado para "kaer mohren"');
+  }],
+  ['O modo sem spoilers esconde o que vem depois', async () => {
+    await abrir('#/tempo', ls => ls.setItem('witcher-leitura', JSON.stringify({ on: true, lidos: ['o-ultimo-desejo', 'a-espada-do-destino', 'o-sangue-dos-elfos'] })));
+    await esperar(() => /\d+ eventos escondidos/.test(texto()), 4000, 'aviso de eventos escondidos não apareceu');
+    confere(!texto().includes('O Pogrom de Rívia'), 'o Pogrom de Rívia continua visível');
+  }],
+  ['O guia de leitura guarda o progresso', async () => {
+    await abrir('#/leitura');
+    const li = await esperar(() => [...doc.querySelectorAll('main ol li')].find(l => l.innerText.includes('O Último Desejo')));
+    li.querySelector('[role=checkbox]').click(); await sleep(200);
+    confere(JSON.parse(frame.contentWindow.localStorage.getItem('witcher-leitura')).lidos.includes('o-ultimo-desejo'), 'progresso não foi salvo');
+  }],
+  ['O mapa desenha uma jornada', async () => {
+    await abrir('#/mapa');
+    await clicar('A jornada da Hansa');
+    await esperar(() => doc.querySelector('main polyline'), 3000, 'sem traçado da jornada');
+  }],
+  ['A linha do tempo em escala mostra os pontos', async () => {
+    await abrir('#/tempo');
+    await clicar('Tudo', doc.querySelector('main'));
+    const n = doc.querySelectorAll('main button[aria-label]').length;
+    confere(n >= 90, 'só ' + n + ' pontos na escala');
+  }],
+  ['Livros × Jogos agrupa os avisos', async () => {
+    await abrir('#/contraste');
+    await esperar(() => /Divergências\s*\d+/.test(texto()), 4000, 'abas não apareceram');
+  }],
+  ['A Linhagem troca de árvore', async () => {
+    await abrir('#/linhagem');
+    await clicar('Nilfgaard');
+    await esperar(() => texto().includes('A casa var Emreis'), 3000, 'árvore de Nilfgaard não apareceu');
+  }],
+  ['Conexões encontra o caminho entre dois verbetes', async () => {
+    await abrir('#/rel');
+    await clicar('Conexões');
+    const [a, b] = doc.querySelectorAll('main input');
+    const escolher = async (inp, q, nome) => { await digitar(inp, q); const bt = await esperar(() => [...doc.querySelectorAll('main button')].find(x => x.innerText.startsWith(nome)), 3000, 'sugestão ' + nome); bt.click(); await sleep(250); };
+    await escolher(a, 'jaskier', 'Jaskier'); await escolher(b, 'eredin', 'Eredin');
+    await esperar(() => /passos? de distância|ligados diretamente/.test(texto()), 3000, 'caminho não apareceu');
+  }],
+  ['O quiz gera perguntas com quatro opções', async () => {
+    await abrir('#/quiz');
+    await clicar('Começar');
+    const opts = doc.querySelectorAll('main div[style*="grid"] button');
+    confere(opts.length >= 2, 'opções insuficientes');
+    opts[0].click(); await sleep(200);
+    await esperar(() => /Acertou!|Era: /.test(texto()), 2000, 'sem resposta do quiz');
+  }],
+  ['Atalhos de teclado e favoritos', async () => {
+    await abrir('#/comp/vesemir');
+    const W = frame.contentWindow;
+    W.dispatchEvent(new W.KeyboardEvent('keydown', { key: 'f' })); await sleep(200);
+    confere(JSON.parse(W.localStorage.getItem('witcher-prefs')).favs.includes('vesemir'), 'favorito não foi salvo');
+    W.dispatchEvent(new W.KeyboardEvent('keydown', { key: '?' })); await sleep(200);
+    confere(doc.querySelector('[role=dialog]'), 'janela de atalhos não abriu');
+  }],
+  ['Nenhuma aba quebra no celular', async () => {
+    frame && frame.remove();
+    await abrir('#/tempo');
+    frame.style.width = '375px'; await sleep(300);
+    for (const aba of ['Mapa', 'Leitura', 'Livros × Jogos', 'Quiz', 'Relações', 'Compêndio']) {
+      await clicar(aba);
+      const sobra = doc.documentElement.scrollWidth - doc.documentElement.clientWidth;
+      confere(sobra <= 1, 'a aba ' + aba + ' rola de lado (' + sobra + 'px)');
+    }
+  }]
+];
+
+(async () => {
+  // Os testes limpam o armazenamento do site; o do leitor (progresso, favoritos) é guardado e devolvido no fim.
+  const guardado = {};
+  try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); guardado[k] = localStorage.getItem(k); } } catch (e) {}
+  const lista = document.getElementById('lista'), res = [];
+  for (const [nome, fn] of TESTES) {
+    const li = document.createElement('li'); li.textContent = nome + '…'; lista.appendChild(li);
+    const t0 = Date.now();
+    try { await fn(); res.push({ nome, ok: true, ms: Date.now() - t0 }); li.className = 'ok'; li.textContent = '✓ ' + nome; }
+    catch (e) { res.push({ nome, ok: false, erro: e.message }); li.className = 'falha'; li.textContent = '✗ ' + nome + ' — ' + e.message; }
+  }
+  const falhas = res.filter(r => !r.ok).length;
+  document.getElementById('titulo').textContent = falhas ? falhas + ' de ' + res.length + ' testes falharam' : 'Todos os ' + res.length + ' testes passaram';
+  document.title = falhas ? 'FALHA' : 'OK';
+  if (frame) frame.remove();
+  try { localStorage.clear(); for (const [k, v] of Object.entries(guardado)) localStorage.setItem(k, v); } catch (e) {}
+  const pre = document.getElementById('resultado'); pre.textContent = JSON.stringify(res); pre.dataset.pronto = '1';
+})();
+</script>
+</body>
+</html>
