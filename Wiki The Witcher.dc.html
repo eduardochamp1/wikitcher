@@ -337,6 +337,9 @@ input::placeholder{color:#7A6B55}
             <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:{{ rotaCor }}">Jornada</span>
             <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:32px;line-height:1.05;margin:0">{{ rotaNome }}</h2>
             <p style="margin:0;font-size:17px;line-height:1.45;color:#4F4231;font-style:italic">{{ rotaSub }} · posições aproximadas.</p>
+            <sc-if value="{{ rotaVazia }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0;padding:10px 14px;background:#F1E4E6;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#7A2442">{{ rotaVaziaTxt }}</p>
+            </sc-if>
             <sc-for list="{{ rotaStops }}" as="rs" hint-placeholder-count="0">
               <button onClick="{{ rs.go }}" style="display:grid;grid-template-columns:26px minmax(0,1fr);gap:2px 10px;text-align:left;background:none;border:none;border-top:1px solid #E1D5BB;padding:9px 0;cursor:pointer" style-hover="background:#F2EBDC">
                 <span style="grid-row:span 2;width:22px;height:22px;border-radius:50%;background:{{ rs.cor }};color:#FBF8F1;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ rs.num }}</span>
@@ -1393,6 +1396,8 @@ class Component extends DCLogic {
       printEntry: () => window.print(),
       results, showResults: s.searchOpen && qn.length >= 2, noResults: results.length === 0,
       places, place, hasPlace, noPlace: !hasPlace && !rotaSel && ano == null,
+      rotaVazia: !!rotaSel && rotaStops.length < rotaSel.pontos.length,
+      rotaVaziaTxt: rotaSel ? (rotaSel.pontos.length - rotaStops.length) + ' de ' + rotaSel.pontos.length + ' pontos escondidos pelo modo sem spoilers.' : '',
       rotaOpts, hasRota: rotaStops.length > 1, rotaPanel: !!rotaSel && !hasPlace, rotaStops, rotaPts, rotaCor: rotaSel ? rotaSel.cor : '#000', rotaNome: rotaSel ? rotaSel.n : '', rotaSub: rotaSel ? rotaSel.sub : '',
       anoOn: ano != null, anoOff: ano == null, anoVal: ano == null ? 1263 : ano,
       anoBtn: ano == null ? 'Ver o mapa ao longo do tempo' : 'Fechar a linha do tempo', anoBtnBg: ano == null ? '#1E1710' : 'transparent', anoBtnFg: ano == null ? '#F4EEE1' : '#1E1710',
@@ -1406,7 +1411,7 @@ class Component extends DCLogic {
       quizPlacar: qz ? qz.acertos + ' acertos em ' + qz.total + (qz.total === 1 ? ' pergunta' : ' perguntas') : '',
       arvoreOpts, arvoreTitulo: arv.titulo, arvoreSub: arv.sub,
       tree, relEdges, relNodes, relSel, relLegend: Object.values(R.types), relAspect: mobile ? '3 / 4' : '16 / 11', relModes,
-      relModeDesc: auto ? R.nodes.length + ' personagens ligados por citações nos verbetes e por eventos em comum.' : 'Os laços mais importantes da saga, escolhidos à mão.',
+      relModeDesc: auto ? R.nodes.length + ' personagens ligados por citações nos verbetes e por eventos em comum.' : 'Os laços mais importantes da saga, escolhidos à mão.' + (spOn ? ' Atenção: estes laços não são filtrados pelo modo sem spoilers.' : ''),
       fontes,
       hasEntry: !!ce, entry, canBack: s.stack.length > 1,
       back: () => this.setState(st => ({ stack: st.stack.slice(0, -1) })),
