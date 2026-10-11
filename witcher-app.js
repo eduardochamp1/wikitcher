@@ -27,7 +27,7 @@
   class WitcherApp {
     static estadoInicial() {
       return { ready: false, view: 'tempo', cats: [], src: 'all', q: '', qf: 'all', searchOpen: false, stack: [], compCat: 'all', compSrc: 'all', place: null, node: 'ciri', w: 0, flash: null, open: {}, expandAll: null, curEv: null, tip: null,
-        evLink: null, copied: false, leitura: lerLeitura(), conA: null, conB: null, conQa: '', conQb: '', reveal: {}, person: null, rota: null, ano: null, arvore: 'sangue', relMode: 'curado', contraste: 'all', quiz: null };
+        evLink: null, copied: false, leitura: lerLeitura(), conA: null, conB: null, conQa: '', conQb: '', escala: null, escSel: null, reveal: {}, person: null, rota: null, ano: null, arvore: 'sangue', relMode: 'curado', contraste: 'all', quiz: null };
     }
 
     // Endereço: #/<aba>, #/<aba>/<verbete> ou #/tempo/@<evento>.
@@ -500,6 +500,39 @@
         { y: '1263 – 1268', t: 'A saga dos livros', hi: true },
         { y: '1270 – 1276', t: 'Os jogos', hi: true }
       ].map((r, i, arr) => ({ ...r, dot: r.hi ? '#8C2A1B' : '#1E1710', col: r.hi ? '#8C2A1B' : '#1E1710', line: i === arr.length - 1 ? 'transparent' : '#CDBE9C' }));
+      // Linha do tempo em escala real: cada evento na posição do seu ano, com zoom por período.
+      const ESC = { tudo: [-3000, 5100, 'Do início ao fim do mundo'], humana: [-300, 1300, 'Da Conjunção ao fim do séc. XIII'], saga: [1240, 1278, '1240–1278'], guerras: [1262.8, 1268.8, 'As Guerras do Norte'] };
+      const escOpts = [[null, 'Desligada'], ['tudo', 'Tudo'], ['humana', 'Era humana'], ['saga', 'O tempo de Geralt'], ['guerras', '1263–1268']].map(([id, label]) => {
+        const on = s.escala === id;
+        return { label, bd: on ? '#1E1710' : '#DCCFB3', bg: on ? '#1E1710' : '#FBF8F1', fg: on ? '#F4EEE1' : '#1E1710', select: () => this.setState({ escala: id, escSel: null }) };
+      });
+      let escBandas = [], escTicks = [], escPontos = [], escAltura = '0px', escNota = '';
+      const escR = s.escala && ESC[s.escala];
+      if (escR) {
+        const [lo, hi] = escR, pct = (v) => (100 * (v - lo) / (hi - lo));
+        const inicioEra = D.eras.map(er => Math.min(...evAll.filter(e => e.era === er.id).map(e => e.s)));
+        escBandas = D.eras.map((er, i) => {
+          const a = Math.max(lo, inicioEra[i]), b = Math.min(hi, i + 1 < D.eras.length ? inicioEra[i + 1] : hi);
+          return b > a ? { n: 'Era ' + er.numeral + ' · ' + er.name, num: er.numeral, left: pct(a) + '%', w: (pct(b) - pct(a)) + '%', bg: i % 2 ? '#F2EBDC' : '#FBF8F1' } : null;
+        }).filter(Boolean);
+        const passo = [0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000].find(p => (hi - lo) / p <= 9);
+        for (let v = Math.ceil(lo / passo) * passo; v <= hi; v += passo) escTicks.push({ left: pct(v) + '%', t: v < 0 ? -v + ' a.R.' : (passo < 1 && v % 1 ? '' : String(Math.round(v))) });
+        escTicks = escTicks.filter(t => t.t);
+        const dentro = evF.filter(e => e.s >= lo && e.s <= hi).sort((a, b) => a.s - b.s);
+        const fimLinha = [];
+        escPontos = dentro.map(e => {
+          const x = pct(e.s); let ln = fimLinha.findIndex(f => x - f >= 1.8);
+          if (ln < 0) ln = fimLinha.length < 7 ? fimLinha.length : fimLinha.indexOf(Math.min(...fimLinha));
+          fimLinha[ln] = x;
+          const sel = s.escSel === e.id;
+          return { left: x + '%', top: (26 + ln * 18) + 'px', title: e.d + ' · ' + e.t, cor: catMap[e.c[0]].color, size: sel ? '16px' : '12px', ring: sel ? '0 0 0 2px #8C2A1B' : 'none', select: () => this.setState({ escSel: e.id }) };
+        });
+        escAltura = (26 + Math.max(1, fimLinha.length) * 18 + 6) + 'px';
+        escNota = dentro.length + ' eventos · ' + escR[2] + '. Toque num ponto para ver o evento.' + (evAll.length - evF.length ? ' Os filtros e o modo sem spoilers valem aqui também.' : '');
+      }
+      const escE = s.escSel && evAll.find(e => e.id === s.escSel);
+      const escSel = escE ? { d: escE.d, t: escE.t, go: () => this.goEvent(escE) } : {};
+
       const srcOpts = [['all', 'Tudo'], ['livros', 'Só livros'], ['jogos', 'Só jogos']].map(([id, label]) => ({ label, bg: s.src === id ? '#1E1710' : 'transparent', fg: s.src === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ src: id }) }));
       const evCats = new Set(evAll.flatMap(e => e.c));
       const catChips = D.cats.filter(c => evCats.has(c.id)).map(c => {
@@ -774,6 +807,7 @@
         isTempo: s.view === 'tempo', isComp: s.view === 'comp', isMapa: s.view === 'mapa', isLinhagem: s.view === 'linhagem', isRel: s.view === 'rel', isFontes: s.view === 'fontes',
         isContraste: s.view === 'contraste', isLeitura: s.view === 'leitura', isQuiz: s.view === 'quiz',
         erasView, cur, mini, ruler, srcOpts, catChips, evCount: evF.length,
+        escOpts, escOn: !!escR, escBandas, escTicks, escPontos, escAltura, escNota, escSel, escTemSel: !!escE,
         hasCatFilter: s.cats.length > 0 || s.src !== 'all', clearCats: () => this.setState({ cats: [], src: 'all' }),
         toggleAllLabel: defOpen ? 'Recolher tudo' : 'Expandir tudo',
         toggleAll: () => this.setState({ expandAll: !defOpen, open: {} }),
