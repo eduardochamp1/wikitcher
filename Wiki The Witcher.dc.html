@@ -519,7 +519,7 @@ class Component extends DCLogic {
     if (this.gl) return this.gl;
     const items = window.WITCHER_GLOSSARIO.concat(window.WITCHER_WIKI.glossario).map(g => {
       const e = g.e && em[g.e];
-      return e ? { e: g.e, title: e.t, d: e.s, cat: catMap[e.c].label, color: catMap[e.c].color, k: g.k }
+      return e ? { e: g.e, title: g.t || e.t, d: g.d || e.s, cat: catMap[e.c].label, color: catMap[e.c].color, k: g.k }
                : { e: null, title: g.t, d: g.d, cat: 'Glossário', color: '#C9B892', k: g.k };
     }).filter(x => x.d);
     const tm = {};

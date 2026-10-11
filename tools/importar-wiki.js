@@ -173,6 +173,58 @@ for (const n of novos) {
   if (!jaNoGloss.has(n.nome)) gloss.push({ e: id, k: [n.nome] });
 }
 
+// Todas as chaves de glossário já usadas, para não repetir termo (comparação sem maiúsculas).
+const chaves = new Set([...app.WITCHER_GLOSSARIO, ...gloss].flatMap(g => g.k).map(k => k.toLowerCase()));
+const novaChave = ks => { const r = [...new Set(ks)].filter(k => !chaves.has(k.toLowerCase())); r.forEach(k => chaves.add(k.toLowerCase())); return r; };
+const nota = nome => notas.find(n => n.nome === nome);
+const linhasTabela = n => n.corpo.split('\n').filter(l => /^\|/.test(l.trim()) && !/^\|[\s:|-]*-[\s:|-]*$/.test(l.trim())).slice(1).map(celulas);
+const frase = s => { s = s.trim(); return s.charAt(0).toUpperCase() + s.slice(1) + (/[.!?…]$/.test(s) ? '' : '.'); };
+
+// 3) Bestiário: criatura sem verbete vira verbete curto; as que já existem ganham o nome como termo do glossário.
+const BESTA = { 'Gúlio': 'necrofagos', 'Afogador': 'afogador', 'Bruxa (vampira)': 'vampiros', 'Damas do Bosque': 'damas-da-floresta', 'Djinn': 'djinn' };
+const bestas = [];
+if (nota('Bestiário')) for (const c of linhasTabela(nota('Bestiário'))) {
+  const onde = c[1] || '', varios = /^v[aá]rios$/i.test(onde.trim());
+  const jogo = /🎮/.test(onde), livro = /\*|"/.test(onde);
+  const fo = varios || (jogo && livro) ? FONTE.ambos : jogo ? FONTE.jogos : FONTE.livros;
+  const nomes = c[0].split(',');
+  for (const bruto of nomes) {
+    const nome = bruto.trim().charAt(0).toUpperCase() + bruto.trim().slice(1);
+    const id = BESTA[nome] || porTitulo.get(norm(nome)) || (ids.has(slug(nome)) ? slug(nome) : null);
+    if (id) { if (!ids.has(id)) throw new Error('BESTA aponta para id inexistente: ' + id); if (!/\(/.test(nome)) { const k = novaChave([nome, nome.toLowerCase()]); if (k.length) gloss.push({ e: id, k }); } continue; }
+    // Linha com várias criaturas tem nota coletiva ("Monstros clássicos…"); cada verbete leva o texto no singular.
+    const links = [], v = { id: slug(nome), c: 'besta', t: nome, ep: 'Criatura', s: frase((nomes.length === 1 && limpar(c[2] || '', links)) || 'Monstro clássico dos contratos de bruxo') };
+    if (!varios) v.f = [['Onde aparece', limpar(onde, links)]];
+    const l = [...new Set([...links.map(x => alvo.get(norm(x))), /conjun|relicto/i.test(c[2]) ? 'conjuncao' : 'bruxos'].filter(Boolean))];
+    v.b = []; v.l = l; v.fo = fo;
+    if (ids.has(v.id) || verbetes.some(x => x.id === v.id)) throw new Error('id repetido: ' + v.id);
+    verbetes.push(v); bestas.push(nome);
+    const k = novaChave([nome, nome.toLowerCase()]); if (k.length) gloss.push({ e: v.id, k });
+  }
+}
+
+// 4) Glossários: termos novos viram dicas no texto; quando a linha aponta para uma página, o clique abre o verbete.
+const PULAR = new Set(['Bruxo', 'Feiticeira', 'mago']); // palavras comuns demais para sublinhar
+const TERMO_E = { "Vatt'ghern": 'bruxos', 'Deithwen Addan yn Carn aep Morvudd': 'emhyr', 'Enid an Gleanna': 'francesca' }; // linhas sem [[link]]
+const termos = [];
+for (const [nome, antiga] of [['Glossário de Termos', false], ['Glossário da Língua Antiga', true]]) {
+  if (!nota(nome)) continue;
+  for (const c of linhasTabela(nota(nome))) {
+    const links = [];
+    const def = limpar(c[1].replace(/\s*\(\[\[[^\]]+\]\]\)/, m => (limpar(m, links), '')));
+    if (c[2]) limpar(c[2], links);
+    const e = links.map(x => alvo.get(norm(x))).find(Boolean) || TERMO_E[c[0].trim()];
+    if (e && !ids.has(e) && !verbetes.some(v => v.id === e)) throw new Error('TERMO_E aponta para id inexistente: ' + e);
+    const ts = c[0].split(/\s*[\/,]\s*/).map(t => t.replace(/…/g, '').trim()).filter(t => t && !PULAR.has(t));
+    const k = novaChave(ts.flatMap(t => antiga || t !== t.toLowerCase() ? [t, ...(antiga ? [] : [t.toLowerCase()])] : [t]));
+    if (!k.length) continue;
+    const [sig, resto] = def.split(/\s+—\s+/);
+    const g = { t: ts.join(' / '), d: antiga ? 'Língua Antiga: “' + sig + '”' + (resto ? ' — ' + resto : '') + '.' : frase(def), k };
+    if (e) g.e = e;
+    gloss.push(g); termos.push(g.t);
+  }
+}
+
 const linhas = a => a.map(x => JSON.stringify(x)).join(',\n');
 fs.writeFileSync(OUT, '// GERADO por tools/importar-wiki.js a partir de witcher-wiki/ — não edite à mão.\n' +
   'window.WITCHER_WIKI = {\nverbetes: [\n' + linhas(verbetes) + '\n],\nglossario: [\n' + linhas(gloss) + '\n]\n};\n');
@@ -182,7 +234,11 @@ console.log('Notas lidas: ' + notas.length);
 console.log('Verbetes novos: ' + verbetes.length + ' ' + JSON.stringify(porCat));
 console.log('Já existiam no app (não importadas): ' + iguais.length);
 iguais.forEach(([n, id]) => console.log('   ' + n.nome + ' -> ' + id));
-console.log('Fora da importação: ' + fora.length + ' (' + fora.map(n => n.nome).join(', ') + ')');
+console.log('Bestiário, criaturas novas: ' + bestas.join(', '));
+console.log('Glossário, termos novos: ' + termos.join(', '));
+const USADAS = new Set(['Bestiário', 'Glossário de Termos', 'Glossário da Língua Antiga', 'Índice de Obras', ...Object.keys(LINK)]);
+const ignoradas = fora.filter(n => !USADAS.has(n.nome));
+console.log('Fora da importação: ' + ignoradas.length + ' (' + ignoradas.map(n => n.nome).join(', ') + ')');
 console.log('Links sem destino no app: ' + [...semLink].join(', '));
 console.log('Sem resumo: ' + verbetes.filter(v => !v.s).map(v => v.t).join(', '));
 console.log('Gravado: ' + path.relative(ROOT, OUT) + ' (' + fs.statSync(OUT).size + ' bytes)');

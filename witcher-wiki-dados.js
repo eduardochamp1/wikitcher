@@ -60,7 +60,10 @@ verbetes: [
 {"id":"o-sangue-dos-elfos","c":"obra","t":"O Sangue dos Elfos","ep":"Romance · 1994","s":"Primeiro romance da saga.","b":["Primeiro romance da saga. Depois da Primeira Guerra Nórdica, Geralt esconde Ciri em Kaer Morhen, onde os bruxos a treinam e Triss Merigold percebe que ela é uma Fonte. Os reis do Norte tramam uma nova guerra; Rience caça quem sabe de Ciri. Ciri segue para o templo de Melitele e se torna aluna de Yennefer de Vengerberg. Tissaia descobre que Vilgefortz estuda a profecia e o Sangue Antigo.","Conceitos introduzidos: Sangue Antigo, Profecia de Ithlinne, Magia e o Caos, Scoia'tael."],"f":[["Título original","Krew elfów"],["Publicação","1994"],["Ano no mundo","1263–1264"]],"l":["primeira-guerra-nordica","kaer-morhen","triss","rience","yennefer","sangue-antigo","profecia-ithlinne","caos","scoiatael"],"fo":["livros","usuario"]},
 {"id":"o-ultimo-desejo","c":"obra","t":"O Último Desejo","ep":"Livro de contos · 1993","s":"Coletânea de contos que apresenta Geralt. A moldura (\"A Voz da Razão\") mostra o bruxo se recuperando no templo de Melitele, sob os cuidados de Nenneke; entre os capítulos, os contos funcionam como lembranças.","b":[{"h":"Contos e o que estabelecem"},{"li":"O Bruxo · Geralt quebra a maldição da filha de Foltest, uma estrige, em Vizima · Foltest, Vizima"},{"li":"Um Grão de Verdade · Uma releitura sombria de \"A Bela e a Fera\""},{"li":"O Mal Menor · Em Blaviken, Geralt tenta não escolher entre dois males e acaba matando Renfri; nasce a alcunha de Carniceiro · Geralt de Rívia"},{"li":"Uma Questão de Preço · O banquete de Pavetta, Duny e a Lei da Surpresa · Calanthe, Pavetta, Emhyr var Emreis"},{"li":"O Fim do Mundo · Geralt e Jaskier entre camponeses e elfos rebeldes no vale das flores · Dol Blathanna, Aen Seidhe"},{"li":"O Último Desejo · Jaskier, um djinn, e o primeiro encontro de Geralt com Yennefer · Yennefer de Vengerberg"},"Os títulos dos contos podem variar ligeiramente entre edições."],"f":[["Título original","Ostatnie życzenie"],["Publicação","1993"]],"l":["nenneke","foltest","vizima","geralt","lei-da-surpresa","calanthe","pavetta","emhyr","dol-blathanna","aen-seidhe","yennefer"],"fo":["livros","usuario"]},
 {"id":"season-of-storms","c":"obra","t":"Season of Storms","ep":"Romance · 2013","s":"Romance avulso que se passa entre os contos de O Último Desejo — Geralt tem as espadas roubadas e se envolve com magos e intrigas no reino de Kerack.","b":["Romance avulso que se passa entre os contos de O Último Desejo — Geralt tem as espadas roubadas e se envolve com magos e intrigas no reino de Kerack. O epílogo dialoga com o final de A Senhora do Lago. Sem edição brasileira confirmada no momento da redação desta página — verificar."],"f":[["Título original","Sezon burz"],["Publicação","2013"]],"l":["o-ultimo-desejo","a-senhora-do-lago"],"fo":["livros","usuario"]},
-{"id":"tempo-do-desprezo","c":"obra","t":"Tempo do Desprezo","ep":"Romance · 1995","s":"Geralt investiga Rience com Codringher e Fenn, que descobrem a Linhagem de Ciri.","b":["Geralt investiga Rience com Codringher e Fenn, que descobrem a Linhagem de Ciri. Ciri vai a Thanedd. O Golpe de Thanedd explode: o Capítulo cai, Geralt é derrotado por Vilgefortz, Ciri foge pela Tor Lara e atravessa o deserto de Korath; ao fim, junta-se aos Ratos. Começa a Segunda Guerra Nórdica."],"f":[["Título original","Czas pogardy"],["Publicação","1995"],["Ano no mundo","1265"]],"l":["codringher-e-fenn","sangue-antigo","golpe-de-thanedd","ratos","segunda-guerra-nordica"],"fo":["livros","usuario"]}
+{"id":"tempo-do-desprezo","c":"obra","t":"Tempo do Desprezo","ep":"Romance · 1995","s":"Geralt investiga Rience com Codringher e Fenn, que descobrem a Linhagem de Ciri.","b":["Geralt investiga Rience com Codringher e Fenn, que descobrem a Linhagem de Ciri. Ciri vai a Thanedd. O Golpe de Thanedd explode: o Capítulo cai, Geralt é derrotado por Vilgefortz, Ciri foge pela Tor Lara e atravessa o deserto de Korath; ao fim, junta-se aos Ratos. Começa a Segunda Guerra Nórdica."],"f":[["Título original","Czas pogardy"],["Publicação","1995"],["Ano no mundo","1265"]],"l":["codringher-e-fenn","sangue-antigo","golpe-de-thanedd","ratos","segunda-guerra-nordica"],"fo":["livros","usuario"]},
+{"id":"polifemo","c":"besta","t":"Polifemo","ep":"Criatura","s":"Artrópode relicto pós-Conjunção.","f":[["Onde aparece","Batismo de Fogo"]],"b":[],"l":["conjuncao"],"fo":["livros","usuario"]},
+{"id":"basilisco","c":"besta","t":"Basilisco","ep":"Criatura","s":"Monstro clássico dos contratos de bruxo.","b":[],"l":["bruxos"],"fo":["livros","jogos","usuario"]},
+{"id":"wyvern","c":"besta","t":"Wyvern","ep":"Criatura","s":"Monstro clássico dos contratos de bruxo.","b":[],"l":["bruxos"],"fo":["livros","jogos","usuario"]}
 ],
 glossario: [
 {"e":"destino","k":["Destino"]},
@@ -118,6 +121,25 @@ glossario: [
 {"e":"o-sangue-dos-elfos","k":["O Sangue dos Elfos"]},
 {"e":"o-ultimo-desejo","k":["O Último Desejo"]},
 {"e":"season-of-storms","k":["Season of Storms"]},
-{"e":"tempo-do-desprezo","k":["Tempo do Desprezo"]}
+{"e":"tempo-do-desprezo","k":["Tempo do Desprezo"]},
+{"e":"polifemo","k":["Polifemo","polifemo"]},
+{"e":"necrofagos","k":["Gúlio","gúlio"]},
+{"e":"afogador","k":["Afogador","afogador"]},
+{"e":"lobisomem","k":["Lobisomem","lobisomem"]},
+{"e":"grifo","k":["Grifo","grifo"]},
+{"e":"basilisco","k":["Basilisco","basilisco"]},
+{"e":"wyvern","k":["Wyvern","wyvern"]},
+{"e":"leshen","k":["Leshen","leshen"]},
+{"e":"damas-da-floresta","k":["Damas do Bosque","damas do bosque"]},
+{"t":"Dimerita","d":"Metal que bloqueia magia.","k":["Dimerita","dimerita"],"e":"caos"},
+{"t":"Relicto","d":"Monstro remanescente da Conjunção.","k":["Relicto","relicto"],"e":"conjuncao"},
+{"t":"Inumanos / não humanos","d":"Elfos, anões, gnomos, halflings.","k":["Inumanos","inumanos","não humanos"]},
+{"t":"Criança Surpresa","d":"A criança reivindicada pela Lei da Surpresa.","k":["Criança Surpresa","criança surpresa"],"e":"ciri"},
+{"t":"Nórdicos","d":"Habitantes dos Reinos do Norte.","k":["Nórdicos","nórdicos"],"e":"reinos-do-norte"},
+{"t":"Vatt'ghern","d":"Língua Antiga: “Bruxo”.","k":["Vatt'ghern"],"e":"bruxos"},
+{"t":"Luned","d":"Língua Antiga: “Moça, jovem”.","k":["Luned"]},
+{"t":"Va faill","d":"Língua Antiga: “Adeus”.","k":["Va faill"]},
+{"t":"Deithwen Addan yn Carn aep Morvudd","d":"Língua Antiga: “A Chama Branca que Dança nas Tumbas dos Inimigos” — título de Emhyr.","k":["Deithwen Addan yn Carn aep Morvudd"],"e":"emhyr"},
+{"t":"Enid an Gleanna","d":"Língua Antiga: “Margarida dos Vales” — Francesca Findabair.","k":["Enid an Gleanna"],"e":"francesca"}
 ]
 };
