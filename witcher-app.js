@@ -40,7 +40,7 @@
   class WitcherApp {
     static estadoInicial() {
       return { prefs: lerPrefs(), ajuda: false, ready: false, view: 'tempo', cats: [], src: 'all', q: '', qf: 'all', searchOpen: false, stack: [], compCat: 'all', compSrc: 'all', place: null, node: 'ciri', w: 0, flash: null, open: {}, expandAll: null, curEv: null, tip: null,
-        evLink: null, copied: false, leitura: lerLeitura(), conA: null, conB: null, conQa: '', conQb: '', escala: null, escSel: null, compTema: 'all', reveal: {}, person: null, rota: null, ano: null, arvore: 'sangue', relMode: 'curado', contraste: 'all', quiz: null };
+        evLink: null, copied: false, leitura: lerLeitura(), conA: null, conB: null, conQa: '', conQb: '', escala: null, escSel: null, compTema: 'all', mapaVista: 'continente', mapaZ: 1, reveal: {}, person: null, rota: null, ano: null, arvore: 'sangue', relMode: 'curado', contraste: 'all', quiz: null };
     }
 
     // Endereço: #/<aba>, #/<aba>/<verbete> ou #/tempo/@<evento>.
@@ -704,10 +704,19 @@
       const anoEvs = ano != null ? evOk.filter(noAno) : [];
       const domDe = (pid) => { if (ano == null) return null; const d = X.dominios.find(x => x.p === pid); const f = d && d.faixas.find(f => ano + 1 > f.de && ano < f.ate); return f ? { ...f, cor: X.dominioTipos[f.k].cor } : null; };
       const plEvento = new Set(anoEvs.flatMap(e => D.places.filter(pl => pl.e && (e.l || []).includes(pl.e)).map(pl => pl.id)));
-      const places = D.places.map(pl => {
-        const sel = s.place === pl.id, k = pl.k, dm = domDe(pl.id);
+      // Vista (continente ou ilhas de Skellige) e zoom: lugares menores mostram só o ponto até aproximar.
+      const skel = s.mapaVista === 'skellige', z = s.mapaZ || 1, nivelVis = z >= 2 ? 3 : z >= 1.5 ? 2 : 1;
+      const SK = X.skellige;
+      const lugaresVista = skel
+        ? SK.ilhas.map(i => ({ id: 'sk:' + i.id, n: i.n, k: 'reino', x: i.x, y: i.y, e: i.e, d: 'Ilha de Skellige.' })).concat(SK.lugares.map(l => ({ ...l, id: 'sk:' + l.id, k: 'cidade' })))
+        : D.places;
+      const naRota = new Set(skel ? [] : ((X.rotas.find(r => r.id === s.rota) || {}).pontos || []).map(pt => pt.p).filter(Boolean));
+      const arrastou = () => this.arrastou && Date.now() - this.arrastou < 300;
+      const places = lugaresVista.map(pl => {
+        const sel = s.place === pl.id, k = pl.k, dm = skel ? null : domDe(pl.id);
+        const showLabel = (X.nivel[pl.id] || 1) <= nivelVis || sel || naRota.has(pl.id) || plEvento.has(pl.id) || !!dm;
         return {
-          dom: dm ? '3px solid ' + dm.cor : 'none', evDot: plEvento.has(pl.id), op: s.rota && !sel ? '.55' : '1',
+          dom: dm ? '3px solid ' + dm.cor : 'none', evDot: plEvento.has(pl.id), op: s.rota && !sel && !skel ? '.55' : '1', showLabel,
           n: pl.n, left: pl.x + '%', top: pl.y + '%',
           ff: k === 'reino' || k === 'regiao' ? "'IBM Plex Sans',sans-serif" : "'EB Garamond',serif",
           fw: k === 'reino' ? '600' : k === 'regiao' ? '500' : '400',
@@ -715,23 +724,53 @@
           ls: k === 'regiao' ? '.28em' : '0',
           color: sel ? '#FBF8F1' : k === 'regiao' ? '#8A7656' : k === 'natural' ? '#26476B' : '#1E1710',
           bg: sel ? '#8C2A1B' : 'transparent',
-          fst: k === 'natural' ? 'italic' : 'normal', dot: k === 'cidade',
+          fst: k === 'natural' ? 'italic' : 'normal', dot: k === 'cidade' || !showLabel,
           cursor: k === 'regiao' ? 'default' : 'pointer',
-          select: () => { if (k !== 'regiao') this.setState({ place: pl.id }); }
+          select: () => { if (k !== 'regiao' && !arrastou()) this.setState({ place: pl.id }); }
         };
       });
       let place = {}, hasPlace = false;
-      const plSel = D.places.find(x => x.id === s.place);
+      const plSel = lugaresVista.find(x => x.id === s.place);
       if (plSel) {
         hasPlace = true;
         const key = plSel.e;
         const evs = key ? evOk.filter(e => (e.l || []).includes(key)) : [];
-        place = { n: plSel.n, d: plSel.d, kind: kindLabel[plSel.k], hasEntry: !!(key && em[key]), open: () => this.open(key),
+        place = { n: plSel.n, d: plSel.d, kind: skel ? 'Skellige' : kindLabel[plSel.k], hasEntry: !!(key && em[key]), open: () => this.open(key),
+          temIlhas: plSel.id === 'skellige', verIlhas: () => this.setState({ mapaVista: 'skellige', place: null, mapaZ: 1 }),
           hasEvents: evs.length > 0, events: evs.map(e => ({ date: e.d, title: e.t, go: () => this.goEvent(e) })) };
       }
+      const skIlhas = skel ? SK.ilhas.map(i => ({ forma: i.forma, fill: s.place === 'sk:' + i.id ? '#F1E2BE' : '#FBF8F1' })) : [];
+      const vistaOpts = [['continente', 'O Continente'], ['skellige', 'Ilhas de Skellige']].map(([id, label]) => {
+        const on = (s.mapaVista || 'continente') === id;
+        return { label, bg: on ? '#1E1710' : 'transparent', fg: on ? '#F4EEE1' : '#1E1710', select: () => this.setState({ mapaVista: id, place: null, mapaZ: 1, rota: id === 'skellige' ? null : s.rota, ano: id === 'skellige' ? null : s.ano }) };
+      });
+      const ZOOMS = [1, 1.5, 2, 3];
+      const zoomPara = (nz) => {
+        const el = this.mapaEl;
+        const cx = el ? (el.scrollLeft + el.clientWidth / 2) / el.scrollWidth : 0.5, cy = el ? (el.scrollTop + el.clientHeight / 2) / el.scrollHeight : 0.5;
+        this.setState({ mapaZ: nz }, () => { if (el) { el.scrollLeft = cx * el.scrollWidth - el.clientWidth / 2; el.scrollTop = cy * el.scrollHeight - el.clientHeight / 2; } });
+      };
+      const mapaCtl = {
+        mapaRef: (el) => { this.mapaEl = el; },
+        mapaZ: (z * 100) + '%', mapaOverflow: z > 1 ? 'auto' : 'hidden', mapaCursor: z > 1 ? 'grab' : 'default', mapaTouch: z > 1 ? 'none' : 'auto',
+        zoomLabel: z === 1 ? '1×' : z + '×',
+        zoomMais: () => zoomPara(ZOOMS[Math.min(ZOOMS.length - 1, ZOOMS.indexOf(z) + 1)]),
+        zoomMenos: () => zoomPara(ZOOMS[Math.max(0, ZOOMS.indexOf(z) - 1)]),
+        zoomReset: () => zoomPara(1),
+        // Arrastar para mover quando o mapa está aproximado; um arrasto não conta como clique num lugar.
+        mapaDown: (e) => { if (z > 1 && this.mapaEl) this.drag = { x: e.clientX, y: e.clientY, sl: this.mapaEl.scrollLeft, st: this.mapaEl.scrollTop, moveu: false }; },
+        mapaMove: (e) => {
+          const d = this.drag; if (!d || !this.mapaEl) return;
+          const dx = e.clientX - d.x, dy = e.clientY - d.y;
+          if (Math.abs(dx) + Math.abs(dy) > 4) d.moveu = true;
+          this.mapaEl.scrollLeft = d.sl - dx; this.mapaEl.scrollTop = d.st - dy;
+        },
+        mapaUp: () => { if (this.drag && this.drag.moveu) this.arrastou = Date.now(); this.drag = null; },
+        mapaDica: skel ? 'Ilhas em posição esquemática. Toque numa ilha para abrir o verbete.' : (z > 1 ? 'Arraste para mover o mapa. Nomes menores aparecem conforme você aproxima.' : 'Use + para aproximar: cidades menores aparecem como pontos e ganham nome no zoom.')
+      };
 
       // Jornadas: pontos com evento escondido pelo modo sem spoilers ficam de fora.
-      const rotaSel = X.rotas.find(r => r.id === s.rota);
+      const rotaSel = skel ? null : X.rotas.find(r => r.id === s.rota);
       const evById = Object.fromEntries(evAll.map(e => [e.id, e]));
       const rotaOpts = [{ id: null, n: 'Nenhuma', cor: 'transparent' }, ...X.rotas].map(r => {
         const on = (s.rota || null) === r.id;
@@ -948,6 +987,7 @@
         places, place, hasPlace, noPlace: !hasPlace && !rotaSel && ano == null,
         rotaVazia: !!rotaSel && rotaStops.length < rotaSel.pontos.length,
         rotaVaziaTxt: rotaSel ? (rotaSel.pontos.length - rotaStops.length) + ' de ' + rotaSel.pontos.length + ' pontos escondidos pelo modo sem spoilers.' : '',
+        ...mapaCtl, vistaOpts, mapaContinente: !skel, mapaSkellige: skel, desenho: X.desenho, skIlhas,
         rotaOpts, hasRota: rotaStops.length > 1, rotaPanel: !!rotaSel && !hasPlace, rotaStops, rotaPts, rotaCor: rotaSel ? rotaSel.cor : '#000', rotaNome: rotaSel ? rotaSel.n : '', rotaSub: rotaSel ? rotaSel.sub : '',
         anoOn: ano != null, anoOff: ano == null, anoVal: ano == null ? 1263 : ano,
         anoBtn: ano == null ? 'Ver o mapa ao longo do tempo' : 'Fechar a linha do tempo', anoBtnBg: ano == null ? '#1E1710' : 'transparent', anoBtnFg: ano == null ? '#F4EEE1' : '#1E1710',

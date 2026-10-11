@@ -27,26 +27,26 @@ rotas: [
   {id:"hansa", n:"A jornada da Hansa", cor:"#8C2A1B", sub:"Geralt e seus companheiros, de Brokilon a Rívia (1267–1268)", pontos:[
     {p:"brokilon", d:"Julho–agosto de 1267", t:"Geralt se recupera entre as dríades e parte com Jaskier e Milva.", ev:"brokilon-hansa"},
     {p:"brugge", d:"Agosto de 1267", t:"Pela zona de guerra de Brugge e Sodden, o grupo cresce: Zoltan, Regis, Cahir e Angoulême.", ev:"brokilon-hansa"},
-    {x:52, y:62, n:"Ponte do Yaruga", d:"31 de agosto de 1267", t:"Lutam ao lado da rainha Meve; Geralt é sagrado cavaleiro.", ev:"ponte-yaruga"},
+    {p:"ponte-yaruga", d:"31 de agosto de 1267", t:"Lutam ao lado da rainha Meve; Geralt é sagrado cavaleiro.", ev:"ponte-yaruga"},
     {p:"toussaint", d:"Inverno de 1267–1268", t:"A neve nas montanhas prende a Hansa em Toussaint.", ev:"toussaint-hansa"},
-    {x:62, y:78, n:"Castelo de Stygga", d:"Março de 1268", t:"O ataque ao esconderijo de Vilgefortz.", ev:"stygga"},
-    {x:71, y:55, n:"Rívia", d:"Junho de 1268", t:"O pogrom.", ev:"pogrom"}
+    {p:"stygga", d:"Março de 1268", t:"O ataque ao esconderijo de Vilgefortz.", ev:"stygga"},
+    {p:"rivia", d:"Junho de 1268", t:"O pogrom.", ev:"pogrom"}
   ]},
   {id:"ciri", n:"A fuga de Ciri", cor:"#26476B", sub:"De Thanedd à Torre da Andorinha e de volta (1267–1268)", pontos:[
     {p:"thanedd", d:"1º de julho de 1267", t:"Foge pela Torre da Gaivota durante o golpe.", ev:"thanedd"},
     {p:"korath", d:"Julho de 1267", t:"Reaparece no deserto de Korath e quase morre de sede.", ev:"thanedd"},
-    {x:64, y:67, n:"Geso e Ebbing", d:"Julho–setembro de 1267", t:"Vive com os Ratos sob o nome de Falka.", ev:"ratos"},
-    {x:59, y:71, n:"Pântanos de Pereplut", d:"27 de setembro de 1267", t:"Ferida, é acolhida pelo eremita Vysogota.", ev:"vysogota"},
-    {x:57, y:64, n:"Tarn Mira", d:"Novembro de 1267", t:"Entra na Torre da Andorinha e deixa o mundo.", ev:"tor-zireael"},
-    {x:62, y:78, n:"Castelo de Stygga", d:"Março de 1268", t:"Volta para enfrentar Bonhart e Vilgefortz.", ev:"stygga"},
-    {x:71, y:55, n:"Rívia", d:"Junho de 1268", t:"Leva Geralt e Yennefer para longe.", ev:"pogrom"}
+    {p:"ebbing", d:"Julho–setembro de 1267", t:"Vive com os Ratos sob o nome de Falka.", ev:"ratos"},
+    {p:"pereplut", d:"27 de setembro de 1267", t:"Ferida, é acolhida pelo eremita Vysogota.", ev:"vysogota"},
+    {p:"tarn-mira", d:"Novembro de 1267", t:"Entra na Torre da Andorinha e deixa o mundo.", ev:"tor-zireael"},
+    {p:"stygga", d:"Março de 1268", t:"Volta para enfrentar Bonhart e Vilgefortz.", ev:"stygga"},
+    {p:"rivia", d:"Junho de 1268", t:"Leva Geralt e Yennefer para longe.", ev:"pogrom"}
   ]},
   {id:"jogos", n:"Geralt nos jogos", cor:"#3A4150", sub:"De Kaer Morhen a Toussaint (1270–1276)", jogo:true, pontos:[
     {p:"kaer-morhen", d:"1270", t:"Volta sem memória; a Salamandra ataca a fortaleza.", ev:"tw1"},
     {p:"vizima", d:"1270", t:"A perseguição à Salamandra e a Ordem da Rosa Flamejante.", ev:"tw1"},
-    {x:55, y:33, n:"Flotsam", d:"1271", t:"Acusado de matar Foltest, Geralt persegue o regicida.", ev:"tw2"},
-    {x:66, y:40, n:"Vergen", d:"1271", t:"Ao lado de Roche ou de Iorveth, no cerco de Henselt.", ev:"tw2"},
-    {x:74, y:42, n:"Loc Muinne", d:"1271", t:"A cúpula dos reis e o confronto com Letho.", ev:"tw2"},
+    {p:"flotsam", d:"1271", t:"Acusado de matar Foltest, Geralt persegue o regicida.", ev:"tw2"},
+    {p:"vergen", d:"1271", t:"Ao lado de Roche ou de Iorveth, no cerco de Henselt.", ev:"tw2"},
+    {p:"loc-muinne", d:"1271", t:"A cúpula dos reis e o confronto com Letho.", ev:"tw2"},
     {p:"velen", d:"1272", t:"A busca por Ciri começa nos pântanos devastados.", ev:"tw3"},
     {p:"novigrad", d:"1272", t:"Caça às bruxas, Dijkstra e o resgate de Jaskier.", ev:"tw3"},
     {p:"skellige", d:"1272", t:"Pistas de Ciri nas ilhas.", ev:"tw3"},
@@ -72,6 +72,38 @@ dominioTipos: {
   guerra: {label:"Zona de guerra", cor:"#8A5E10"},
   kaedwen: {label:"Kaedwen", cor:"#26476B"},
   elfos: {label:"Elfos", cor:"#3F5E2A"}
+},
+
+// Desenho esquemático do mapa (coordenadas de 0 a 100, as mesmas dos lugares): mar, ilhas, rios e montanhas.
+desenho: {
+  mar: "0,0 58,0 54,3 46,9 36,12 29,16 25,22 26,27 22,31 16,34 11,38 12,44 14,50 16,56 19,62 17,70 20,78 24,88 22,100 0,100",
+  ilhas: ["19,18 23,17 24,21 20,23", "5,44 8,42 10,45 7,47", "9,49 12,48 12,52 9,53", "4,51 6,50 7,53 5,54"],
+  rios: [
+    {n:"Pontar", pts:"27,29 33,30 40,30 46,31 53,33 60,33 67,31 76,29"},
+    {n:"Yaruga", pts:"22,64 28,62 35,62 44,63 52,62 60,60 68,57 76,57 84,59"}
+  ],
+  montes: ["80,22 92,22 92,36 84,40 80,32", "48,66 64,66 66,71 50,71", "49,44 55,44 56,50 49,50", "70,10 82,10 82,18 72,18"]
+},
+// Nível de cada nome: 1 sempre aparece; 2 a partir de zoom 1,5; 3 a partir de zoom 2. Sem nível = 1.
+nivel: {
+  "vengerberg": 2, "tretogor": 2, "rinde": 2, "gors-velen": 2, "lan-exeter": 2, "ban-ard": 2, "blaviken": 2, "flotsam": 2, "vergen": 2,
+  "loc-muinne": 2, "shaerrawedd": 2, "maribor": 2, "ellander": 2, "cidaris": 2, "brenna": 2, "rivia": 2, "beauclair": 2, "stygga": 2,
+  "ebbing": 2, "metinna": 2, "nazair": 2, "hengfors": 2, "oxenfurt": 2,
+  "marnadal": 3, "ponte-yaruga": 3, "tarn-mira": 3, "pereplut": 3
+},
+// Visão própria das ilhas de Skellige (esquemática).
+skellige: {
+  ilhas: [
+    {id:"ard-skellig", n:"Ard Skellig", e:"ard-skellig", x:47, y:48, forma:"30,36 44,28 60,30 68,40 66,56 56,66 40,66 30,58 26,46"},
+    {id:"undvik", n:"Undvik", e:"undvik", x:20, y:18, forma:"10,12 24,8 32,14 28,26 14,26"},
+    {id:"an-skellig", n:"An Skellig", e:"an-skellig", x:52, y:13, forma:"42,8 58,6 64,14 54,20 44,18"},
+    {id:"hindarsfjall", n:"Hindarsfjall", e:"hindarsfjall", x:82, y:26, forma:"76,20 86,18 90,26 84,32 76,30"},
+    {id:"spikeroog", n:"Spikeroog", e:"spikeroog", x:17, y:72, forma:"8,66 22,62 28,72 20,80 10,78"},
+    {id:"faroe", n:"Faroe", e:"faroe", x:79, y:78, forma:"70,72 84,68 92,76 84,86 72,84"}
+  ],
+  lugares: [
+    {id:"kaer-trolde", n:"Kaer Trolde", e:"kaer-trolde", x:63, y:44, d:"Fortaleza do clã an Craite."}
+  ]
 },
 
 // Árvores da aba Linhagem. "sangue" usa a árvore de witcher-tempo.js.

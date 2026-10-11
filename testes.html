@@ -85,6 +85,16 @@ const TESTES = [
     await clicar('A jornada da Hansa');
     await esperar(() => doc.querySelector('main polyline'), 3000, 'sem traçado da jornada');
   }],
+  ['O mapa aproxima e mostra as ilhas de Skellige', async () => {
+    await abrir('#/mapa');
+    const nomes = () => [...doc.querySelectorAll('main div[style*="aspect-ratio"] > div > button')].filter(b => b.innerText.trim()).length;
+    const antes = nomes();
+    await clicar('+'); await clicar('+');
+    confere(nomes() > antes, 'o zoom não revelou mais nomes (' + antes + ' → ' + nomes() + ')');
+    await clicar('Ilhas de Skellige');
+    await esperar(() => [...doc.querySelectorAll('main button')].some(b => b.title === 'Undvik'), 3000, 'ilha de Undvik não apareceu');
+    confere(doc.querySelectorAll('main svg polygon').length >= 6, 'ilhas não foram desenhadas');
+  }],
   ['A linha do tempo em escala mostra os pontos', async () => {
     await abrir('#/tempo');
     await clicar('Tudo', doc.querySelector('main'));

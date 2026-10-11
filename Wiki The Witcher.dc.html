@@ -362,6 +362,14 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
       <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 10px;color:#1E1710">O Continente</h1>
       <p style="max-width:640px;font-size:18px;line-height:1.5;color:#4F4231;margin:0 0 20px">Esquema aproximado das posições de reinos, cidades e regiões. Toque em um nome para ver o que aconteceu ali, siga uma jornada ou percorra os anos.</p>
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-bottom:12px">
+        <div style="display:flex;border:1px solid #CDBE9C;border-radius:6px;overflow:hidden">
+          <sc-for list="{{ vistaOpts }}" as="vo" hint-placeholder-count="2">
+            <button onClick="{{ vo.select }}" style="background:{{ vo.bg }};color:{{ vo.fg }};border:none;padding:6px 14px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">{{ vo.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <sc-if value="{{ mapaContinente }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-bottom:12px">
         <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#1E1710">Jornadas</span>
         <div style="display:flex;flex-wrap:wrap;gap:6px">
           <sc-for list="{{ rotaOpts }}" as="ro" hint-placeholder-count="4">
@@ -379,18 +387,46 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
           <span style="font-size:16px;color:#4F4231">Veja quem domina cada reino e o que acontece em cada lugar, de 1245 a 1276.</span>
         </sc-if>
       </div>
+      </sc-if>
       <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start">
-        <div style="flex:1 1 520px;min-width:0;max-width:760px;position:relative;aspect-ratio:5/6;background:#FBF8F1;border:1px solid #CDBE9C;border-radius:10px;overflow:hidden">
-          <div style="position:absolute;left:0;right:0;top:66%;border-top:1px dashed #BFAE8A"></div>
-          <div style="position:absolute;right:16px;top:14px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#4F4231;text-align:center;line-height:1.1">N<br>↑</div>
+        <div style="flex:1 1 520px;min-width:0;max-width:760px;position:relative">
+        <div style="position:absolute;right:10px;top:10px;z-index:3;display:flex;flex-direction:column;gap:4px">
+          <button onClick="{{ zoomMais }}" aria-label="Aproximar" title="Aproximar" style="width:32px;height:32px;cursor:pointer;background:#FBF8F1;border:1px solid #CDBE9C;border-radius:6px;font-size:18px;line-height:1;color:#1E1710">+</button>
+          <button onClick="{{ zoomMenos }}" aria-label="Afastar" title="Afastar" style="width:32px;height:32px;cursor:pointer;background:#FBF8F1;border:1px solid #CDBE9C;border-radius:6px;font-size:18px;line-height:1;color:#1E1710">−</button>
+          <button onClick="{{ zoomReset }}" aria-label="Mapa inteiro" title="Mapa inteiro" style="width:32px;height:32px;cursor:pointer;background:#FBF8F1;border:1px solid #CDBE9C;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:10px;line-height:1;color:#1E1710">{{ zoomLabel }}</button>
+        </div>
+        <div ref="{{ mapaRef }}" onPointerDown="{{ mapaDown }}" onPointerMove="{{ mapaMove }}" onPointerUp="{{ mapaUp }}" onPointerLeave="{{ mapaUp }}" style="position:relative;aspect-ratio:5/6;background:#FBF8F1;border:1px solid #CDBE9C;border-radius:10px;overflow:{{ mapaOverflow }};cursor:{{ mapaCursor }};touch-action:{{ mapaTouch }}">
+        <div style="position:relative;width:{{ mapaZ }};height:{{ mapaZ }}">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">
+            <sc-if value="{{ mapaContinente }}" hint-placeholder-val="{{ true }}">
+              <polygon points="{{ desenho.mar }}" style="fill:#DDE4E6;stroke:#9FB0B5;stroke-width:1.2" vector-effect="non-scaling-stroke"></polygon>
+              <sc-for list="{{ desenho.ilhas }}" as="il" hint-placeholder-count="0">
+                <polygon points="{{ il }}" style="fill:#FBF8F1;stroke:#9FB0B5;stroke-width:1" vector-effect="non-scaling-stroke"></polygon>
+              </sc-for>
+              <sc-for list="{{ desenho.montes }}" as="mt" hint-placeholder-count="0">
+                <polygon points="{{ mt }}" style="fill:#EDE4D2;stroke:#D6C8AA;stroke-width:1;stroke-dasharray:3 3" vector-effect="non-scaling-stroke"></polygon>
+              </sc-for>
+              <sc-for list="{{ desenho.rios }}" as="ri" hint-placeholder-count="0">
+                <polyline points="{{ ri.pts }}" style="fill:none;stroke:#8FB0C2;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round" vector-effect="non-scaling-stroke"></polyline>
+              </sc-for>
+              <line x1="0" y1="66" x2="100" y2="66" style="stroke:#BFAE8A;stroke-width:1;stroke-dasharray:6 4" vector-effect="non-scaling-stroke"></line>
+            </sc-if>
+            <sc-if value="{{ mapaSkellige }}" hint-placeholder-val="{{ false }}">
+              <rect x="0" y="0" width="100" height="100" style="fill:#DDE4E6"></rect>
+              <sc-for list="{{ skIlhas }}" as="si" hint-placeholder-count="0">
+                <polygon points="{{ si.forma }}" style="fill:{{ si.fill }};stroke:#9FB0B5;stroke-width:1.2" vector-effect="non-scaling-stroke"></polygon>
+              </sc-for>
+            </sc-if>
+          </svg>
+          <div style="position:absolute;right:52px;top:14px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#4F4231;text-align:center;line-height:1.1">N<br>↑</div>
           <sc-if value="{{ hasRota }}" hint-placeholder-val="{{ false }}">
             <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">
               <polyline points="{{ rotaPts }}" style="fill:none;stroke:{{ rotaCor }};stroke-width:2.5;stroke-dasharray:7 5;stroke-linejoin:round;stroke-linecap:round;opacity:.85" vector-effect="non-scaling-stroke"></polyline>
             </svg>
           </sc-if>
           <sc-for list="{{ places }}" as="p" hint-placeholder-count="0">
-            <button onClick="{{ p.select }}" style="position:absolute;left:{{ p.left }};top:{{ p.top }};transform:translate(-50%,-50%);background:{{ p.bg }};border:none;border-bottom:{{ p.dom }};border-radius:4px;padding:2px 5px;cursor:{{ p.cursor }};display:flex;align-items:center;gap:5px;white-space:nowrap;font-family:{{ p.ff }};font-size:{{ p.fs }};font-weight:{{ p.fw }};letter-spacing:{{ p.ls }};color:{{ p.color }};font-style:{{ p.fst }};opacity:{{ p.op }}">
-              <sc-if value="{{ p.dot }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span></sc-if>{{ p.n }}<sc-if value="{{ p.evDot }}" hint-placeholder-val="{{ false }}"><span title="Acontece algo aqui neste ano" style="width:9px;height:9px;border-radius:50%;background:#8C2A1B;box-shadow:0 0 0 3px rgba(140,42,27,.25)"></span></sc-if>
+            <button onClick="{{ p.select }}" title="{{ p.n }}" aria-label="{{ p.n }}" style="position:absolute;left:{{ p.left }};top:{{ p.top }};transform:translate(-50%,-50%);background:{{ p.bg }};border:none;border-bottom:{{ p.dom }};border-radius:4px;padding:2px 5px;cursor:{{ p.cursor }};display:flex;align-items:center;gap:5px;white-space:nowrap;font-family:{{ p.ff }};font-size:{{ p.fs }};font-weight:{{ p.fw }};letter-spacing:{{ p.ls }};color:{{ p.color }};font-style:{{ p.fst }};opacity:{{ p.op }}">
+              <sc-if value="{{ p.dot }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span></sc-if><sc-if value="{{ p.showLabel }}" hint-placeholder-val="{{ true }}">{{ p.n }}</sc-if><sc-if value="{{ p.evDot }}" hint-placeholder-val="{{ false }}"><span title="Acontece algo aqui neste ano" style="width:9px;height:9px;border-radius:50%;background:#8C2A1B;box-shadow:0 0 0 3px rgba(140,42,27,.25)"></span></sc-if>
             </button>
           </sc-for>
           <sc-for list="{{ rotaStops }}" as="rs" hint-placeholder-count="0">
@@ -399,6 +435,9 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
               <sc-if value="{{ rs.hasLabel }}" hint-placeholder-val="{{ false }}"><span style="font-family:'EB Garamond',serif;font-style:italic;font-size:14px;color:{{ rs.cor }};background:rgba(251,248,241,.85);padding:0 3px;border-radius:3px;white-space:nowrap">{{ rs.label }}</span></sc-if>
             </button>
           </sc-for>
+        </div>
+        </div>
+        <p style="margin:6px 0 0;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#6B5C46">{{ mapaDica }}</p>
         </div>
         <aside style="flex:1 1 280px;min-width:0;max-width:420px;display:flex;flex-direction:column;gap:12px">
           <sc-if value="{{ rotaPanel }}" hint-placeholder-val="{{ false }}">
@@ -441,6 +480,9 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
             <p style="margin:0;font-size:18px;line-height:1.5;color:#33281C">{{ place.d }}</p>
             <sc-if value="{{ place.hasEntry }}" hint-placeholder-val="{{ false }}">
               <button onClick="{{ place.open }}" style="align-self:flex-start;padding:7px 14px;cursor:pointer;background:#1E1710;color:#F4EEE1;border:none;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">Abrir verbete</button>
+            </sc-if>
+            <sc-if value="{{ place.temIlhas }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ place.verIlhas }}" style="align-self:flex-start;padding:7px 14px;cursor:pointer;background:none;border:1px solid #CDBE9C;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">Ver as ilhas →</button>
             </sc-if>
             <sc-if value="{{ place.hasEvents }}" hint-placeholder-val="{{ false }}">
               <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#4F4231;margin-top:10px">Na história do mundo</span>
