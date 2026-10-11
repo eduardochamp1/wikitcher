@@ -125,6 +125,18 @@ input::placeholder{color:#7A6B55}
           <button onClick="{{ toggleAll }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;color:#1E1710">{{ toggleAllLabel }}</button>
           <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#4F4231">{{ evCount }} eventos</span>
         </div>
+        <sc-if value="{{ hasEvOcultos }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:8px 12px;background:#F1E4E6;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#7A2442">
+            <span>{{ evOcultosTxt }}</span>
+            <button onClick="{{ goLeitura }}" style="background:none;border:none;padding:0;cursor:pointer;color:#7A2442;text-decoration:underline;font-family:'IBM Plex Sans',sans-serif;font-size:13px">ajustar</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ hasPerson }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:8px 12px;background:#1E1710;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#F4EEE1">
+            <span>Só os eventos de <b style="font-weight:600">{{ personName }}</b>{{ personAge }}</span>
+            <button onClick="{{ clearPerson }}" style="background:none;border:none;padding:0;cursor:pointer;color:#E7C7A0;text-decoration:underline;font-family:'IBM Plex Sans',sans-serif;font-size:13px">ver todos</button>
+          </div>
+        </sc-if>
         <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
           <sc-for list="{{ catChips }}" as="c" hint-placeholder-count="10">
             <button onClick="{{ c.toggle }}" style="display:flex;align-items:center;gap:6px;padding:5px 11px 5px 9px;cursor:pointer;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:13px;border-radius:999px">
@@ -386,6 +398,46 @@ input::placeholder{color:#7A6B55}
     </main>
   </sc-if>
 
+  <sc-if value="{{ isLeitura }}" hint-placeholder-val="{{ false }}">
+    <main style="max-width:880px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
+      <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Leitura</div>
+      <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 12px;color:#1E1710">Guia de leitura e de jogo</h1>
+      <p style="max-width:680px;font-size:19px;line-height:1.55;color:#33281C;margin:0 0 26px">A ordem recomendada para entrar no mundo de The Witcher. Marque o que já leu ou jogou; com o modo sem spoilers ligado, o codex esconde o que vem depois.</p>
+      <div style="background:#FBF8F1;border:1px solid #DCCFB3;border-radius:10px;padding:16px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px">
+        <button onClick="{{ spoilerToggle }}" role="switch" aria-checked="{{ spoilerOnStr }}" style="flex:0 0 auto;width:52px;height:30px;border-radius:999px;border:none;cursor:pointer;background:{{ spoilerTrack }};position:relative;padding:0">
+          <span style="position:absolute;top:3px;left:{{ spoilerKnob }};width:24px;height:24px;border-radius:50%;background:#FBF8F1;transition:left .2s"></span>
+        </button>
+        <div style="flex:1 1 300px;display:flex;flex-direction:column;gap:2px">
+          <span style="font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:600;color:#1E1710">Modo sem spoilers {{ spoilerEstado }}</span>
+          <span style="font-size:16px;color:#4F4231;line-height:1.4">{{ spoilerResumo }}</span>
+        </div>
+      </div>
+      <div style="margin:22px 0 8px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#4F4231">
+        <span><b style="font-weight:600;color:#1E1710">{{ leituraFeitas }}</b> de {{ leituraTotal }} obras</span>
+        <button onClick="{{ leituraLimpar }}" style="background:none;border:none;padding:0;cursor:pointer;color:#8C2A1B;text-decoration:underline;font-family:'IBM Plex Sans',sans-serif;font-size:13px">desmarcar tudo</button>
+      </div>
+      <div style="height:8px;border-radius:999px;background:#E6DCC6;overflow:hidden"><div style="height:100%;width:{{ leituraPct }};background:#8C2A1B;transition:width .3s"></div></div>
+      <ol style="list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column;gap:8px">
+        <sc-for list="{{ leituraItens }}" as="li" hint-placeholder-count="12">
+          <li style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:{{ li.bg }};border:1px solid #DCCFB3;border-radius:10px">
+            <button onClick="{{ li.toggle }}" role="checkbox" aria-checked="{{ li.checkedStr }}" aria-label="{{ li.aria }}" style="flex:0 0 auto;width:26px;height:26px;border-radius:6px;border:1.5px solid {{ li.box }};background:{{ li.boxBg }};color:#FBF8F1;cursor:pointer;font-size:16px;line-height:1;padding:0">{{ li.mark }}</button>
+            <div style="flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px">
+              <span style="display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px">
+                <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#8C2A1B">{{ li.num }}</span>
+                <button onClick="{{ li.open }}" style="background:none;border:none;padding:0;cursor:{{ li.cur }};font-family:'IM Fell English',serif;font-size:22px;line-height:1.15;color:#1E1710;text-align:left">{{ li.n }}</button>
+                <span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:{{ li.tagBg }};color:{{ li.tagFg }}">{{ li.tipo }}</span>
+              </span>
+              <span style="font-size:15px;color:#4F4231;font-style:italic">{{ li.sub }}</span>
+            </div>
+            <sc-if value="{{ li.canAte }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ li.ate }}" style="flex:0 0 auto;background:none;border:1px solid #CDBE9C;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#1E1710">li até aqui</button>
+            </sc-if>
+          </li>
+        </sc-for>
+      </ol>
+    </main>
+  </sc-if>
+
   <sc-if value="{{ isFontes }}" hint-placeholder-val="{{ false }}">
     <main style="max-width:880px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
       <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Fontes</div>
@@ -429,6 +481,12 @@ input::placeholder{color:#7A6B55}
         <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(34px,5vw,46px);line-height:1.04;margin:0;color:#1E1710;text-wrap:balance">{{ entry.title }}</h1>
         <p style="margin:8px 0 0;font-size:19px;font-style:italic;color:#4F4231">{{ entry.ep }}</p>
         <p style="margin:18px 0 0;font-size:19px;line-height:1.5;color:#1E1710;background:#F2EBDC;border-radius:8px;padding:12px 16px">{{ entry.s }}</p>
+        <sc-if value="{{ entry.oculto }}" hint-placeholder-val="{{ false }}">
+          <div data-noprint="1" style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px">
+            <button onClick="{{ entry.reveal }}" style="padding:7px 14px;cursor:pointer;background:#7A2442;color:#FBF8F1;border:none;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">Mostrar mesmo assim</button>
+            <button onClick="{{ goLeitura }}" style="padding:7px 14px;cursor:pointer;background:none;border:1px solid #CDBE9C;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px">Ajustar a leitura</button>
+          </div>
+        </sc-if>
         <sc-if value="{{ entry.hasFacts }}" hint-placeholder-val="{{ false }}">
           <dl style="margin:18px 0 0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 18px">
             <sc-for list="{{ entry.facts }}" as="f" hint-placeholder-count="0">
@@ -447,9 +505,12 @@ input::placeholder{color:#7A6B55}
           <sc-for list="{{ entry.events }}" as="ee" hint-placeholder-count="0">
             <button onClick="{{ ee.go }}" style="display:grid;grid-template-columns:minmax(96px,auto) minmax(0,1fr);gap:4px 14px;width:100%;text-align:left;background:none;border:none;border-top:1px solid #E1D5BB;padding:10px 0;cursor:pointer" style-hover="background:#F2EBDC">
               <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#8C2A1B;line-height:1.4">{{ ee.date }}</span>
-              <span style="display:flex;flex-direction:column"><span style="font-size:17px;color:#1E1710;line-height:1.3">{{ ee.title }}</span><span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#6B5C46">Era {{ ee.era }}</span></span>
+              <span style="display:flex;flex-direction:column"><span style="font-size:17px;color:#1E1710;line-height:1.3">{{ ee.title }}</span><span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#6B5C46">Era {{ ee.era }}<sc-if value="{{ ee.hasAge }}" hint-placeholder-val="{{ false }}"> · <b style="font-weight:600;color:#7A2442">{{ ee.age }}</b></sc-if></span></span>
             </button>
           </sc-for>
+          <sc-if value="{{ entry.canPerson }}" hint-placeholder-val="{{ false }}">
+            <button data-noprint="1" onClick="{{ entry.personGo }}" style="margin-top:10px;padding:7px 14px;cursor:pointer;background:#1E1710;color:#F4EEE1;border:none;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">Ver só esta história na linha do tempo</button>
+          </sc-if>
         </sc-if>
         <sc-if value="{{ entry.hasLinks }}" hint-placeholder-val="{{ false }}">
           <h2 style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#8C2A1B;margin:32px 0 10px">Ver também</h2>
@@ -666,7 +727,7 @@ class Component extends DCLogic {
     const out = []; let last = 0; re.lastIndex = 0; let m;
     while ((m = re.exec(text))) {
       const gi = tm[m[1]], it = items[gi];
-      if (used.has(gi) || (it.e && exclude.has(it.e))) continue;
+      if (used.has(gi) || (it.e && (exclude.has(it.e) || (this.hidden && this.hidden.has(it.e))))) continue;
       used.add(gi);
       if (m.index > last) out.push(plain(text.slice(last, m.index)));
       out.push({
@@ -729,13 +790,38 @@ class Component extends DCLogic {
     const mobile = s.w > 0 && s.w < 760;
     const glossOn = p.glossario ?? true, agesOn = p.idades ?? true;
     this.buildGloss(em, catMap);
-    const chip = (id) => { const e = em[id]; if (!e) return null; const c = catMap[e.c]; return { label: e.t, color: c.color, icon: ICONS[e.c], open: () => this.open(id) }; };
+
+    // Modo sem spoilers: um evento aparece se a obra que o conta já foi lida (ou se é história antiga).
+    const X = window.WITCHER_EXTRAS, LE = X.leitura, lidos = new Set(s.leitura.lidos), spOn = s.leitura.on;
+    const lidasL = LE.filter(o => lidos.has(o.id) && o.fim != null);
+    const limTudo = Math.max(-Infinity, ...lidasL.map(o => o.fim));
+    const limJogo = Math.max(-Infinity, ...lidasL.filter(o => o.tipo === 'jogo').map(o => o.fim));
+    const PRE = new Set(['antiga', 'conjuncao', 'chegada', 'magos', 'lara']);
+    const evVisivel = (e) => {
+      if (!spOn) return true;
+      const ex = LE.find(o => (o.eventos || []).includes(e.id));
+      if (ex) return lidos.has(ex.id);
+      if (PRE.has(e.era) || (X.semObra || []).includes(e.id) || /anunciado/i.test(e.d) || (e.era === 'bruxo' && e.s < 1245)) return true;
+      if (e.era === 'fim') return limTudo >= 1268.99;
+      return e.s <= (e.g ? limJogo : limTudo);
+    };
+    // Um verbete some quando todos os eventos que o citam estão escondidos (obras ficam sempre).
+    const citado = {};
+    D.events.forEach(e => (e.l || []).forEach(id => (citado[id] = citado[id] || []).push(e)));
+    const hidden = new Set(spOn ? E.filter(e => e.c !== 'obra' && !s.reveal[e.id] && citado[e.id] && !citado[e.id].some(evVisivel)).map(e => e.id) : []);
+    this.hidden = hidden;
+    const Ev = E.filter(e => !hidden.has(e.id));
+    const fechouSaga = limTudo >= 1268.99, jogouAlgo = limJogo > -Infinity;
+    const ultimaLida = LE.filter(o => lidos.has(o.id)).slice(-1)[0];
+
+    const chip = (id) => { const e = em[id]; if (!e || hidden.has(id)) return null; const c = catMap[e.c]; return { label: e.t, color: c.color, icon: ICONS[e.c], open: () => this.open(id) }; };
     const srcBadge = (game) => game
       ? { src: 'Jogo', srcBg: '#3A4150', srcFg: '#F4EEE1', srcBd: '#3A4150', srcIcon: PAD }
       : { src: 'Livro', srcBg: 'transparent', srcFg: '#1E1710', srcBd: '#9C8B6A', srcIcon: BOOK };
 
     const evAll = D.events.slice().sort((a, b) => a.s - b.s);
-    const evF = evAll.filter(e => (s.src === 'all' || (s.src === 'jogos' ? e.g : !e.g)) && (!s.cats.length || e.c.some(c => s.cats.includes(c))));
+    const evOk = evAll.filter(evVisivel);
+    const evF = evOk.filter(e => (s.src === 'all' || (s.src === 'jogos' ? e.g : !e.g)) && (!s.cats.length || e.c.some(c => s.cats.includes(c))) && (!s.person || (e.l || []).includes(s.person)));
     this._evIds = evF.map(e => e.id);
     const defOpen = s.expandAll ?? (p.expandido ?? false);
     const excl = new Set(['geralt', 'ciri', 'yennefer']);
@@ -768,7 +854,7 @@ class Component extends DCLogic {
           toggle: () => this.setState(st => ({ open: { ...st.open, [e.id]: !isOpen } }))
         };
       });
-      const ids = [...new Set(evAll.filter(e => e.era === er.id).flatMap(e => e.l || []))].filter(id => em[id]);
+      const ids = [...new Set(evOk.filter(e => e.era === er.id).flatMap(e => e.l || []))].filter(id => em[id]);
       ids.sort((a, b) => catOrder[em[a].c] - catOrder[em[b].c]);
       const presentes = ids.map(chip);
       return { ...er, domId: 'era-' + er.id, segs: this.segs(er.summary, new Set(), new Set(), glossOn), events, empty: events.length === 0, presentes, hasPresentes: presentes.length > 0 };
@@ -801,11 +887,11 @@ class Component extends DCLogic {
         toggle: () => this.setState(st => ({ cats: on ? st.cats.filter(x => x !== c.id) : [...st.cats, c.id] })) };
     });
 
-    const counts = {}; E.forEach(e => counts[e.c] = (counts[e.c] || 0) + 1);
+    const counts = {}; Ev.forEach(e => counts[e.c] = (counts[e.c] || 0) + 1);
     const srcName = (e) => (e.fo || ['livros']).map(x => x === 'livros' ? 'Livros' : x === 'jogos' ? 'Jogos' : 'Material próprio').join(' + ');
-    const compTabs = [{ id: 'all', label: 'Todos', color: '#1E1710', count: E.length, icon: ICONS.lenda }, ...D.cats.map(c => ({ id: c.id, label: c.label, color: c.color, count: counts[c.id] || 0, icon: ICONS[c.id] }))]
+    const compTabs = [{ id: 'all', label: 'Todos', color: '#1E1710', count: Ev.length, icon: ICONS.lenda }, ...D.cats.map(c => ({ id: c.id, label: c.label, color: c.color, count: counts[c.id] || 0, icon: ICONS[c.id] }))]
       .filter(t => t.count).map(t => { const on = s.compCat === t.id; return { ...t, border: on ? t.color : '#DCCFB3', bg: on ? t.color : '#FBF8F1', fg: on ? '#FBF8F1' : t.color, select: () => this.setState({ compCat: t.id }) }; });
-    const compCards = E.filter(e => (s.compCat === 'all' || e.c === s.compCat) && (s.compSrc === 'all' || (e.fo || ['livros']).includes(s.compSrc)))
+    const compCards = Ev.filter(e => (s.compCat === 'all' || e.c === s.compCat) && (s.compSrc === 'all' || (e.fo || ['livros']).includes(s.compSrc)))
       .slice().sort((a, b) => s.compCat === 'all' ? (catOrder[a.c] - catOrder[b.c]) : 0)
       .map(e => ({ title: e.t, ep: e.ep, s: e.s, cat: catMap[e.c].label, color: catMap[e.c].color, icon: ICONS[e.c], src: srcName(e), open: () => this.open(e.id) }));
 
@@ -814,20 +900,20 @@ class Component extends DCLogic {
     if (qn.length >= 2) {
       const rank = (list, f) => list.map(x => [x, f(x)]).filter(p => p[1] > 0).sort((a, b) => b[1] - a[1]).map(p => p[0]);
       if (s.qf !== 'eventos') {
-        const er = rank(E, e => Math.max(this.score(qn, e.t), 0.6 * this.score(qn, e.ep)) || (this.norm(e.s + ' ' + e.b.map(this.blockText).join(' ')).includes(qn) ? 10 : 0));
+        const er = rank(Ev, e => Math.max(this.score(qn, e.t), 0.6 * this.score(qn, e.ep)) || (this.norm(e.s + ' ' + e.b.map(this.blockText).join(' ')).includes(qn) ? 10 : 0));
         results = er.slice(0, s.qf === 'verbetes' ? 16 : 10).map(e => ({ kind: catMap[e.c].label, color: catMap[e.c].color, label: e.t, sub: e.ep, open: () => this.setState({ q: '' }, () => this.open(e.id)) }));
       }
       if (s.qf !== 'verbetes') {
-        const evr = rank(evAll, e => this.score(qn, e.t) || (this.norm(e.x).includes(qn) ? 10 : 0)).slice(0, s.qf === 'eventos' ? 16 : 6);
+        const evr = rank(evOk, e => this.score(qn, e.t) || (this.norm(e.x).includes(qn) ? 10 : 0)).slice(0, s.qf === 'eventos' ? 16 : 6);
         results = results.concat(evr.map(e => ({ kind: 'Evento · ' + e.d, color: '#8C2A1B', label: e.t, sub: 'Era ' + eraMap[e.era].numeral + ' · ' + eraMap[e.era].name, open: () => { this.setState({ q: '' }); this.goEvent(e); } })));
       }
     }
 
     // Verbete do dia: muda a cada data, sempre o mesmo para o dia inteiro.
     const hoje = new Date(), diaN = hoje.getFullYear() * 400 + hoje.getMonth() * 31 + hoje.getDate();
-    const ed = E[(diaN * 7919) % E.length];
+    const ed = Ev[(diaN * 7919) % Ev.length];
     const compDay = { title: ed.t, s: ed.s, cat: catMap[ed.c].label, open: () => this.open(ed.id) };
-    const compRandom = () => this.open(E[Math.floor(Math.random() * E.length)].id);
+    const compRandom = () => this.open(Ev[Math.floor(Math.random() * Ev.length)].id);
     const compSrcOpts = [['all', 'Tudo'], ['livros', 'Livros'], ['jogos', 'Jogos']].map(([id, label]) => ({ label, bg: s.compSrc === id ? '#1E1710' : 'transparent', fg: s.compSrc === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ compSrc: id }) }));
 
     const kindLabel = { reino: 'Reino', cidade: 'Lugar', natural: 'Geografia', regiao: 'Região' };
@@ -851,7 +937,7 @@ class Component extends DCLogic {
     if (plSel) {
       hasPlace = true;
       const key = plSel.e;
-      const evs = key ? evAll.filter(e => (e.l || []).includes(key)) : [];
+      const evs = key ? evOk.filter(e => (e.l || []).includes(key)) : [];
       place = { n: plSel.n, d: plSel.d, kind: kindLabel[plSel.k], hasEntry: !!(key && em[key]), open: () => this.open(key),
         hasEvents: evs.length > 0, events: evs.map(e => ({ date: e.d, title: e.t, go: () => this.goEvent(e) })) };
     }
@@ -891,17 +977,53 @@ class Component extends DCLogic {
     let entry = {};
     if (ce) {
       const c = catMap[ce.c];
-      const evs = evAll.filter(e => (e.l || []).includes(ce.id));
+      const evs = evOk.filter(e => (e.l || []).includes(ce.id) || (ce.c === 'obra' && (this.obraDe(e) || {}).id === ce.id));
       const used = new Set();
+      const facts = (ce.f || []).concat(X.fichas[ce.id] || []).map(([k, v]) => ({ k, v }));
+      // Avisos de spoiler e de conteúdo dos jogos ficam recolhidos até o leitor chegar lá (ou clicar).
+      const paras = (ce.b || []).map((t, i) => {
+        const bl = this.block(t, used, new Set([ce.id]), glossOn), key = 'b:' + ce.id + ':' + i;
+        const esconde = spOn && t && t.co && !s.reveal[key] && ((t.co === 'spoiler' && !fechouSaga) || (t.co === 'jogos' && !jogouAlgo));
+        if (esconde) bl.segs = [{ t: 'Escondido pelo modo sem spoilers. Clique para mostrar.', ul: '1.5px dotted #8C2A1B', cur: 'pointer', click: () => this.setState(st => ({ reveal: { ...st.reveal, [key]: true } })) }];
+        return bl;
+      });
+      const nasc = NASC[ce.id];
+      const oculto = hidden.has(ce.id) || (spOn && citado[ce.id] && !citado[ce.id].some(evVisivel) && !s.reveal[ce.id] && ce.c !== 'obra');
       entry = {
-        title: ce.t, ep: ce.ep, s: ce.s, cat: c.label, color: c.color, icon: ICONS[ce.c],
+        title: ce.t, ep: ce.ep, s: oculto ? 'Este verbete fala de acontecimentos que vêm depois do ponto em que você está na leitura.' : ce.s, cat: c.label, color: c.color, icon: ICONS[ce.c],
+        oculto, reveal: () => this.setState(st => ({ reveal: { ...st.reveal, [ce.id]: true } })),
         srcs: (ce.fo || ['livros']).map(x => x === 'jogos' ? { label: 'Jogos', bg: '#3A4150', fg: '#F4EEE1', bd: '#3A4150', icon: PAD } : x === 'livros' ? { label: 'Livros', bg: 'transparent', fg: '#1E1710', bd: '#9C8B6A', icon: BOOK } : { label: 'Material próprio', bg: '#F3E6C6', fg: '#7A520C', bd: '#E0C88E', icon: ICONS.lenda }),
-        facts: (ce.f || []).map(([k, v]) => ({ k, v })), hasFacts: (ce.f || []).length > 0,
-        paras: (ce.b || []).map(t => this.block(t, used, new Set([ce.id]), glossOn)),
-        events: evs.map(e => ({ date: e.d, title: e.t, era: eraMap[e.era].numeral + ' · ' + eraMap[e.era].name, go: () => this.goEvent(e) })), hasEvents: evs.length > 0,
-        links: (ce.l || []).map(chip).filter(Boolean), hasLinks: (ce.l || []).some(id => em[id])
+        facts: oculto ? [] : facts, hasFacts: !oculto && facts.length > 0,
+        paras: oculto ? [] : paras,
+        events: oculto ? [] : evs.map(e => {
+          const age = nasc && /\d/.test(e.d) && e.era !== 'fim' && Math.floor(e.s) >= nasc.y ? (nasc.a ? '≈ ' : '') + (Math.floor(e.s) - nasc.y) + ' anos' : '';
+          return { date: e.d, title: e.t, era: eraMap[e.era].numeral + ' · ' + eraMap[e.era].name, age, hasAge: !!age, go: () => this.goEvent(e) };
+        }), hasEvents: !oculto && evs.length > 0,
+        canPerson: !oculto && ce.c !== 'obra' && evs.length >= 2,
+        personGo: () => { this.setState({ view: 'tempo', stack: [], person: ce.id, cats: [], src: 'all', evLink: null }); window.scrollTo({ top: 0 }); },
+        links: oculto ? [] : (ce.l || []).map(chip).filter(Boolean), hasLinks: !oculto && (ce.l || []).some(id => em[id] && !hidden.has(id))
       };
     }
+
+    // Aba Leitura.
+    const setLidos = (arr) => this.saveLeitura({ ...s.leitura, lidos: LE.map(o => o.id).filter(id => arr.includes(id)) });
+    let nLivro = 0, nJogo = 0;
+    const leituraItens = LE.map((o, i) => {
+      const on = lidos.has(o.id), has = !!em[o.id];
+      const num = o.fim != null ? (o.tipo === 'jogo' ? 'Jogo ' + (++nJogo) : 'Livro ' + (++nLivro)) : 'Extra';
+      const anteriores = LE.slice(0, i + 1).filter(x => x.tipo === o.tipo && x.fim != null).map(x => x.id);
+      return {
+        n: o.n, num, tipo: o.tipo === 'jogo' ? 'Jogo' : 'Livro', sub: o.nota || (has ? em[o.id].ep : ''),
+        tagBg: o.tipo === 'jogo' ? '#3A4150' : '#E6DCC6', tagFg: o.tipo === 'jogo' ? '#F4EEE1' : '#4F4231',
+        bg: on ? '#F2EBDC' : '#FBF8F1', box: on ? '#8C2A1B' : '#9C8B6A', boxBg: on ? '#8C2A1B' : 'transparent', mark: on ? '✓' : '',
+        checkedStr: on ? 'true' : 'false', aria: (on ? 'Desmarcar ' : 'Marcar como lido: ') + o.n,
+        toggle: () => setLidos(on ? s.leitura.lidos.filter(x => x !== o.id) : [...s.leitura.lidos, o.id]),
+        canAte: o.fim != null && anteriores.length > 1, ate: () => setLidos([...new Set([...s.leitura.lidos, ...anteriores])]),
+        cur: has ? 'pointer' : 'default', open: () => { if (has) this.open(o.id); }
+      };
+    });
+    const nOcultosEv = evAll.length - evOk.length;
+    const spoilerAte = ultimaLida ? 'até ' + ultimaLida.n : 'nada lido ainda';
 
     let tip = {};
     if (s.tip && this.gl.items[s.tip.gi]) {
@@ -918,6 +1040,16 @@ class Component extends DCLogic {
       toggleAllLabel: defOpen ? 'Recolher tudo' : 'Expandir tudo',
       toggleAll: () => this.setState({ expandAll: !defOpen, open: {} }),
       compTabs, compCards, compDay, compRandom, compSrcOpts,
+      leituraItens, leituraFeitas: s.leitura.lidos.length, leituraTotal: LE.length, leituraPct: Math.round(100 * s.leitura.lidos.length / LE.length) + '%',
+      leituraLimpar: () => setLidos([]),
+      spoilerToggle: () => this.saveLeitura({ ...s.leitura, on: !spOn }), spoilerOnStr: spOn ? 'true' : 'false',
+      spoilerTrack: spOn ? '#7A2442' : '#CDBE9C', spoilerKnob: spOn ? '25px' : '3px', spoilerEstado: spOn ? 'ligado' : 'desligado',
+      spoilerResumo: spOn ? (nOcultosEv + ' eventos e ' + hidden.size + ' verbetes escondidos, ' + spoilerAte + '. Trechos de spoiler e dos jogos ficam recolhidos.') : 'Ligue para esconder eventos, verbetes e trechos que vêm depois do que você marcou abaixo.',
+      spoilerBadge: spOn, spoilerAte,
+      hasEvOcultos: spOn && nOcultosEv > 0, evOcultosTxt: nOcultosEv + ' eventos escondidos pelo modo sem spoilers (' + spoilerAte + ').',
+      hasPerson: !!(s.person && em[s.person]), personName: s.person && em[s.person] ? em[s.person].t : '',
+      personAge: s.person && NASC[s.person] ? ' · nascimento ' + (NASC[s.person].a ? 'c. ' : '') + NASC[s.person].y : '',
+      clearPerson: () => this.setState({ person: null }),
       copyLabel: s.copied === 'verbete' ? 'link copiado ✓' : 'copiar link',
       copyLink: () => this.copyText(location.href, 'verbete'),
       printEntry: () => window.print(),
