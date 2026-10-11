@@ -21,6 +21,7 @@ input::placeholder{color:#7A6B55}
 <script src="witcher-tempo.js"></script>
 <script src="witcher-verbetes.js"></script>
 <script src="witcher-glossario.js"></script>
+<script src="witcher-wiki-dados.js"></script>
 </helmet>
 <div style="min-height:100vh;display:flex;flex-direction:column">
   <header ref="{{ headerRef }}" style="position:sticky;top:0;z-index:30;background:#F4EEE1;border-bottom:1px solid #D6C8AA">
@@ -400,7 +401,7 @@ input::placeholder{color:#7A6B55}
         </sc-if>
         <div style="margin-top:24px;display:flex;flex-direction:column;gap:14px">
           <sc-for list="{{ entry.paras }}" as="pa" hint-placeholder-count="0">
-            <p style="margin:0;font-size:19px;line-height:1.65;color:#1E1710;text-wrap:pretty"><sc-for list="{{ pa.segs }}" as="sg" hint-placeholder-count="0"><span onMouseEnter="{{ sg.enter }}" onMouseLeave="{{ sg.leave }}" onClick="{{ sg.click }}" style="border-bottom:{{ sg.ul }};cursor:{{ sg.cur }}">{{ sg.t }}</span></sc-for></p>
+            <p style="margin:{{ pa.m }};font-size:{{ pa.fs }};font-family:{{ pa.ff }};font-weight:{{ pa.fw }};line-height:1.6;color:{{ pa.col }};padding:{{ pa.pad }};background:{{ pa.bg }};border-left:{{ pa.bl }};border-radius:{{ pa.br }};text-wrap:pretty"><sc-if value="{{ pa.hasTag }}" hint-placeholder-val="{{ false }}"><span style="font-family:'IBM Plex Sans',sans-serif;font-weight:600;margin-right:8px;color:{{ pa.tagCol }};font-size:{{ pa.tagFs }};letter-spacing:{{ pa.tagLs }};text-transform:{{ pa.tagTt }}">{{ pa.tag }}</span></sc-if><sc-for list="{{ pa.segs }}" as="sg" hint-placeholder-count="0"><span onMouseEnter="{{ sg.enter }}" onMouseLeave="{{ sg.leave }}" onClick="{{ sg.click }}" style="border-bottom:{{ sg.ul }};cursor:{{ sg.cur }}">{{ sg.t }}</span></sc-for></p>
           </sc-for>
         </div>
         <sc-if value="{{ entry.hasEvents }}" hint-placeholder-val="{{ false }}">
@@ -469,7 +470,7 @@ class Component extends DCLogic {
     this.ro.observe(document.documentElement);
     this.onResize();
     const check = () => {
-      if (window.WITCHER_TEMPO && window.WITCHER_VERBETES && window.WITCHER_GLOSSARIO) this.setState({ ready: true }, () => { setTimeout(() => { this.onResize(); this.trackScroll(); }, 150); setTimeout(() => { this.onResize(); this.trackScroll(); }, 600); });
+      if (window.WITCHER_TEMPO && window.WITCHER_VERBETES && window.WITCHER_GLOSSARIO && window.WITCHER_WIKI) this.setState({ ready: true }, () => { setTimeout(() => { this.onResize(); this.trackScroll(); }, 150); setTimeout(() => { this.onResize(); this.trackScroll(); }, 600); });
       else this.t = setTimeout(check, 60);
     };
     check();
@@ -481,9 +482,9 @@ class Component extends DCLogic {
     if (this.ro) this.ro.disconnect();
     clearTimeout(this.t); clearTimeout(this.ft); clearTimeout(this.st);
   }
-  componentDidUpdate(pp, ps) {
-    const a = ps.stack[ps.stack.length - 1], b = this.state.stack[this.state.stack.length - 1];
-    if (a !== b && this.aside) this.aside.scrollTop = 0;
+  componentDidUpdate() {
+    const b = this.state.stack[this.state.stack.length - 1];
+    if (b !== this.topId) { this.topId = b; if (this.aside) this.aside.scrollTop = 0; }
   }
 
   hh() { return this.header ? this.header.getBoundingClientRect().bottom : 0; }
@@ -515,7 +516,7 @@ class Component extends DCLogic {
 
   buildGloss(em, catMap) {
     if (this.gl) return this.gl;
-    const items = window.WITCHER_GLOSSARIO.map(g => {
+    const items = window.WITCHER_GLOSSARIO.concat(window.WITCHER_WIKI.glossario).map(g => {
       const e = g.e && em[g.e];
       return e ? { e: g.e, title: e.t, d: e.s, cat: catMap[e.c].label, color: catMap[e.c].color, k: g.k }
                : { e: null, title: g.t, d: g.d, cat: 'Glossário', color: '#C9B892', k: g.k };
@@ -548,6 +549,19 @@ class Component extends DCLogic {
     if (last < text.length) out.push(plain(text.slice(last)));
     return out;
   }
+  verbetes() {
+    if (!this.E) this.E = window.WITCHER_VERBETES.concat(window.WITCHER_WIKI.verbetes);
+    return this.E;
+  }
+  blockText(b) { return typeof b === 'string' ? b : (b.h || b.li || b.t || ''); }
+  block(b, used, exclude, on) {
+    const P = { m: '0', fs: '19px', ff: 'inherit', fw: '400', col: '#1E1710', pad: '0', bg: 'transparent', bl: 'none', br: '0', hasTag: false, tag: '', tagCol: 'inherit', tagFs: 'inherit', tagLs: '0', tagTt: 'none' };
+    if (typeof b === 'string') return { ...P, segs: this.segs(b, used, exclude, on) };
+    if (b.h) return { ...P, m: '14px 0 -4px', fs: '13px', ff: "'IBM Plex Sans',sans-serif", fw: '600', col: '#8C2A1B', segs: this.segs(b.h, used, exclude, false) };
+    if (b.li) return { ...P, fs: '18px', pad: '0 0 0 4px', hasTag: true, tag: '•', tagCol: '#8C2A1B', segs: this.segs(b.li, used, exclude, on) };
+    const co = { jogos: ['Nos jogos', '#3A4150', '#E9EAEE'], spoiler: ['Spoiler', '#7A2442', '#F1E4E6'], divergencia: ['Divergência', '#7A520C', '#F3E6C6'] }[b.co] || ['Nota', '#4F4231', '#F2EBDC'];
+    return { ...P, fs: '17px', pad: '10px 14px', bg: co[2], bl: '3px solid ' + co[1], br: '0 8px 8px 0', hasTag: true, tag: co[0], tagCol: co[1], tagFs: '11px', tagLs: '.06em', tagTt: 'uppercase', segs: this.segs(b.t, used, exclude, on) };
+  }
   showTip(gi, el) {
     const r = el.getBoundingClientRect(), W = 300;
     const x = Math.min(Math.max(8, r.left), window.innerWidth - W - 8);
@@ -576,7 +590,7 @@ class Component extends DCLogic {
     };
     if (!s.ready) return base;
 
-    const D = window.WITCHER_TEMPO, E = window.WITCHER_VERBETES, F = window.WITCHER_FONTES || [], NASC = window.WITCHER_NASC || {};
+    const D = window.WITCHER_TEMPO, E = this.verbetes(), F = window.WITCHER_FONTES || [], NASC = window.WITCHER_NASC || {};
     const catMap = Object.fromEntries(D.cats.map(c => [c.id, c]));
     const catOrder = Object.fromEntries(D.cats.map((c, i) => [c.id, i]));
     const em = Object.fromEntries(E.map(e => [e.id, e]));
@@ -662,7 +676,7 @@ class Component extends DCLogic {
     const qn = this.norm(s.q).trim();
     if (qn.length >= 2) {
       const hit = (e) => this.norm(e.t + ' ' + e.ep).includes(qn);
-      const er = E.filter(hit).concat(E.filter(e => !hit(e) && this.norm(e.s + ' ' + e.b.join(' ')).includes(qn)));
+      const er = E.filter(hit).concat(E.filter(e => !hit(e) && this.norm(e.s + ' ' + e.b.map(this.blockText).join(' ')).includes(qn)));
       results = er.slice(0, 10).map(e => ({ kind: catMap[e.c].label, color: catMap[e.c].color, label: e.t, sub: e.ep, open: () => this.setState({ q: '' }, () => this.open(e.id)) }));
       const evr = evAll.filter(e => this.norm(e.t + ' ' + e.x).includes(qn)).slice(0, 6);
       results = results.concat(evr.map(e => ({ kind: 'Evento · ' + e.d, color: '#8C2A1B', label: e.t, sub: 'Era ' + eraMap[e.era].numeral + ' · ' + eraMap[e.era].name, open: () => { this.setState({ q: '' }); this.goEvent(e); } })));
@@ -735,7 +749,7 @@ class Component extends DCLogic {
         title: ce.t, ep: ce.ep, s: ce.s, cat: c.label, color: c.color, icon: ICONS[ce.c],
         srcs: (ce.fo || ['livros']).map(x => x === 'jogos' ? { label: 'Jogos', bg: '#3A4150', fg: '#F4EEE1', bd: '#3A4150', icon: PAD } : x === 'livros' ? { label: 'Livros', bg: 'transparent', fg: '#1E1710', bd: '#9C8B6A', icon: BOOK } : { label: 'Material próprio', bg: '#F3E6C6', fg: '#7A520C', bd: '#E0C88E', icon: ICONS.lenda }),
         facts: (ce.f || []).map(([k, v]) => ({ k, v })), hasFacts: (ce.f || []).length > 0,
-        paras: (ce.b || []).map(t => ({ segs: this.segs(t, used, new Set([ce.id]), glossOn) })),
+        paras: (ce.b || []).map(t => this.block(t, used, new Set([ce.id]), glossOn)),
         events: evs.map(e => ({ date: e.d, title: e.t, era: eraMap[e.era].numeral + ' · ' + eraMap[e.era].name, go: () => this.goEvent(e) })), hasEvents: evs.length > 0,
         links: (ce.l || []).map(chip).filter(Boolean), hasLinks: (ce.l || []).some(id => em[id])
       };

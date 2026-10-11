@@ -1,7 +1,7 @@
 window.WITCHER_FONTES = [
   {id:"livros", n:"Saga de Andrzej Sapkowski", d:"O Último Desejo, A Espada do Destino, O Sangue dos Elfos, Tempo do Desprezo, Batismo de Fogo, A Torre da Andorinha, A Senhora do Lago e Estação das Tormentas."},
   {id:"jogos", n:"Jogos da CD Projekt Red", d:"The Witcher (2007), The Witcher 2: Assassins of Kings (2011), The Witcher 3: Wild Hunt (2015) e expansões Hearts of Stone e Blood and Wine."},
-  {id:"usuario", n:"Material condensado do autor da wiki", d:"Pasta witcher-wiki. Aguardando importação dos arquivos.", pend:true}
+  {id:"usuario", n:"Material condensado do autor da wiki", d:"Notas em Markdown da pasta witcher-wiki, importadas por tools/importar-wiki.js. Verbetes que já existiam aqui continuam com o texto original."}
 ];
 window.WITCHER_VERBETES = [
 {id:"conjuncao", c:"cosmo", t:"Conjunção das Esferas", ep:"O cataclismo que uniu os mundos", s:"Colisão entre dimensões que deixou no Continente monstros, magia e, segundo a tradição, os humanos.", b:["Cerca de 1.500 anos antes da saga, diferentes esferas da existência se tocaram. Durante a Conjunção, criaturas de outros mundos atravessaram para o Continente; quando as esferas se separaram, ficaram presas. Carniçais, graveirs, vampiros e muitas outras espécies são, por isso, chamados de resquícios da Conjunção.","A Conjunção também trouxe o Caos, a magia em estado bruto, e é associada à chegada dos humanos. Elfos e humanos interpretam o evento de formas diferentes, mas ambos o tratam como o ponto em que o mundo mudou de natureza. Os bruxos existem para lidar com o que ela deixou para trás."], f:[["Data","c. 230 a.R."],["Consequências","monstros, magia, humanos"]], l:["caos","necrofagos","vampiros","humanos","bruxos"]},
