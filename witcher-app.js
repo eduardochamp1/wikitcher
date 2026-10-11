@@ -27,7 +27,7 @@
   class WitcherApp {
     static estadoInicial() {
       return { ready: false, view: 'tempo', cats: [], src: 'all', q: '', qf: 'all', searchOpen: false, stack: [], compCat: 'all', compSrc: 'all', place: null, node: 'ciri', w: 0, flash: null, open: {}, expandAll: null, curEv: null, tip: null,
-        evLink: null, copied: false, leitura: lerLeitura(), reveal: {}, person: null, rota: null, ano: null, arvore: 'sangue', relMode: 'curado', contraste: 'all', quiz: null };
+        evLink: null, copied: false, leitura: lerLeitura(), conA: null, conB: null, conQa: '', conQb: '', reveal: {}, person: null, rota: null, ano: null, arvore: 'sangue', relMode: 'curado', contraste: 'all', quiz: null };
     }
 
     // Endereço: #/<aba>, #/<aba>/<verbete> ou #/tempo/@<evento>.
@@ -272,6 +272,44 @@
     quizIr(mode, zerar) {
       const q = this.novaPergunta(mode);
       this.setState(st => ({ quiz: { mode, q, picked: null, acertos: zerar || !st.quiz ? 0 : st.quiz.acertos, total: zerar || !st.quiz ? 0 : st.quiz.total } }));
+    }
+    // Grafo de todos os verbetes visíveis: ligação quando um cita o outro ou quando aparecem no mesmo evento.
+    grafo(Ev, events, hidden) {
+      const key = [...hidden].sort().join(',') + '#' + events.length + '#' + Ev.length;
+      if (this._grafo && this._grafo.key === key) return this._grafo.v;
+      const ok = new Set(Ev.map(e => e.id)), adj = {}, t = Object.fromEntries(Ev.map(e => [e.id, e.t]));
+      const ligar = (a, b, por, forte) => {
+        if (a === b || !ok.has(a) || !ok.has(b)) return;
+        adj[a] = adj[a] || {};
+        if (!adj[a][b] || (forte && !adj[a][b].forte)) adj[a][b] = { por, forte };
+      };
+      Ev.forEach(e => (e.l || []).forEach(o => { if (ok.has(o)) { const por = t[e.id] + ' cita ' + t[o] + ' no verbete'; ligar(e.id, o, por, true); ligar(o, e.id, por, true); } }));
+      events.forEach(ev => {
+        const ids = [...new Set((ev.l || []).filter(id => ok.has(id)))];
+        ids.forEach(a => ids.forEach(b => ligar(a, b, 'aparecem juntos em “' + ev.t + '” (' + ev.d + ')', false)));
+      });
+      this._grafo = { key, v: adj };
+      return adj;
+    }
+    // Busca em largura; cada passo guarda o motivo da ligação com o anterior.
+    caminho(adj, a, b) {
+      if (a === b) return [{ id: a }];
+      const prev = { [a]: null }, fila = [a];
+      while (fila.length) {
+        const x = fila.shift();
+        for (const [y, info] of Object.entries(adj[x] || {})) {
+          if (y in prev) continue;
+          prev[y] = { de: x, por: info.por };
+          if (y === b) {
+            const out = [];
+            for (let c = b; c; c = prev[c] && prev[c].de) out.unshift({ id: c, por: prev[c] ? prev[c].por : '' });
+            // O motivo fica no passo de onde a ligação parte, para ler de cima para baixo.
+            return out.map((p, i) => ({ id: p.id, por: out[i + 1] ? out[i + 1].por : '' }));
+          }
+          fila.push(y);
+        }
+      }
+      return null;
     }
     copyText(t, key) {
       const done = () => { this.setState({ copied: key }); clearTimeout(this.ct); this.ct = setTimeout(() => this.setState({ copied: false }), 1600); };
@@ -606,7 +644,40 @@
           return { other: nm[o].full || nm[o].n, type: R.types[t].label, color: R.types[t].color, label: l, select: () => this.setState({ node: o }) };
         })
       };
-      const relModes = [['curado', 'Laços principais'], ['auto', 'Rede do codex']].map(([id, label]) => ({ label, bg: s.relMode === id ? '#1E1710' : 'transparent', fg: s.relMode === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ relMode: id }) }));
+      const relModes = [['curado', 'Laços principais'], ['auto', 'Rede do codex'], ['conexoes', 'Conexões']].map(([id, label]) => ({ label, bg: s.relMode === id ? '#1E1710' : 'transparent', fg: s.relMode === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ relMode: id }) }));
+
+      // Conexões: dois verbetes, o caminho mais curto entre eles e o que têm em comum.
+      const conexOn = s.relMode === 'conexoes';
+      const lado = (qKey, idKey, label, ph) => {
+        const q = s[qKey], sel = s[idKey] && em[s[idKey]];
+        const qn2 = this.norm(q).trim();
+        const sug = qn2.length >= 2 && !(sel && sel.t === q) ? Ev.map(e => [e, Math.max(this.score(qn2, e.t), 0.6 * this.score(qn2, e.ep))]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([e]) => ({
+          t: e.t, cat: catMap[e.c].label, color: catMap[e.c].color, pick: () => this.setState({ [idKey]: e.id, [qKey]: e.t })
+        })) : [];
+        return { label, ph, q, hasSug: sug.length > 0, sug, onQ: (ev) => this.setState({ [qKey]: ev.target.value }) };
+      };
+      const pickers = conexOn ? [lado('conQa', 'conA', 'Primeiro verbete', 'Ex.: Jaskier'), lado('conQb', 'conB', 'Segundo verbete', 'Ex.: Eredin')] : [];
+      let conex = { tem: false, vazio: true, vazioTxt: 'Escolha dois verbetes para ver como eles se ligam.' };
+      const cA = s.conA && em[s.conA] && !hidden.has(s.conA) ? s.conA : null, cB = s.conB && em[s.conB] && !hidden.has(s.conB) ? s.conB : null;
+      if (conexOn && cA && cB) {
+        const G = this.grafo(Ev, evOk, hidden), caminho = this.caminho(G, cA, cB);
+        const juntos = evOk.filter(e => (e.l || []).includes(cA) && (e.l || []).includes(cB));
+        const ligs = [...new Set((em[cA].l || []).filter(x => (em[cB].l || []).includes(x)))].filter(x => x !== cA && x !== cB).map(chip).filter(Boolean);
+        const info = (id) => {
+          const nv = NASC[id], ev = evOk.filter(e => (e.l || []).includes(id));
+          return [nv ? 'Nascimento: ' + (nv.a ? 'c. ' : '') + nv.y : '', ev.length + (ev.length === 1 ? ' evento' : ' eventos') + ' na linha do tempo'].filter(Boolean).join(' · ');
+        };
+        const idade = (id, e) => { const nv = NASC[id]; return nv && /\d/.test(e.d) && Math.floor(e.s) >= nv.y ? em[id].t.split(' ')[0] + ' ' + (nv.a ? '≈ ' : '') + (Math.floor(e.s) - nv.y) + ' anos' : ''; };
+        conex = {
+          tem: true, vazio: !caminho, vazioTxt: 'Não há caminho entre os dois com os verbetes visíveis.',
+          passosTxt: !caminho ? 'Nenhum caminho encontrado.' : caminho.length === 1 ? 'É o mesmo verbete.' : (caminho.length - 1) + (caminho.length === 2 ? ' passo: estão ligados diretamente.' : ' passos de distância.'),
+          passos: (caminho || []).map((p, i) => ({ t: em[p.id].t, color: catMap[em[p.id].c].color, open: () => this.open(p.id), temLiga: i < caminho.length - 1, liga: p.por })),
+          lados: [cA, cB].map(id => ({ t: em[id].t, ep: em[id].ep, cat: catMap[em[id].c].label, color: catMap[em[id].c].color, info: info(id), open: () => this.open(id) })),
+          comunsTitulo: juntos.length ? 'Eventos em comum (' + juntos.length + ')' : 'Nenhum evento em comum na linha do tempo',
+          comuns: juntos.map(e => { const ag = [idade(cA, e), idade(cB, e)].filter(Boolean).join(' · '); return { date: e.d, title: e.t, ages: ag, hasAges: !!ag, go: () => this.goEvent(e) }; }),
+          ligs, temLigs: ligs.length > 0
+        };
+      }
 
       const fontes = F.map(f => ({ n: f.n, d: f.d, status: f.pend ? 'Pendente' : E.filter(e => (e.fo || ['livros']).includes(f.id)).length + ' verbetes', color: f.pend ? '#7A520C' : '#2F4A1F', bg: f.pend ? '#F3E6C6' : '#E3EAD6' }));
 
@@ -737,7 +808,8 @@
         quizPlacar: qz ? qz.acertos + ' acertos em ' + qz.total + (qz.total === 1 ? ' pergunta' : ' perguntas') : '',
         arvoreOpts, arvoreTitulo: arv.titulo, arvoreSub: arv.sub,
         tree, relEdges, relNodes, relSel, relLegend: Object.values(R.types), relAspect: mobile ? '3 / 4' : '16 / 11', relModes,
-        relModeDesc: auto ? R.nodes.length + ' personagens ligados por citações nos verbetes e por eventos em comum.' : 'Os laços mais importantes da saga, escolhidos à mão.' + (spOn ? ' Atenção: estes laços não são filtrados pelo modo sem spoilers.' : ''),
+        relGraph: !conexOn, relConex: conexOn, pickers, conex,
+        relModeDesc: conexOn ? 'Escolha dois verbetes: o caminho mais curto entre eles e o que têm em comum.' : auto ? R.nodes.length + ' personagens ligados por citações nos verbetes e por eventos em comum.' : 'Os laços mais importantes da saga, escolhidos à mão.' + (spOn ? ' Atenção: estes laços não são filtrados pelo modo sem spoilers.' : ''),
         fontes,
         hasEntry: !!ce, entry, canBack: s.stack.length > 1,
         back: () => this.setState(st => ({ stack: st.stack.slice(0, -1) })),

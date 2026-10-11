@@ -445,6 +445,7 @@ input::placeholder{color:#7A6B55}
         </div>
         <span style="font-size:16px;color:#4F4231;font-style:italic">{{ relModeDesc }}</span>
       </div>
+      <sc-if value="{{ relGraph }}" hint-placeholder-val="{{ true }}">
       <div style="display:flex;flex-wrap:wrap;gap:6px 16px;margin:0 0 22px">
         <sc-for list="{{ relLegend }}" as="lg" hint-placeholder-count="6">
           <span style="display:flex;align-items:center;gap:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#33281C"><span style="width:18px;height:3px;border-radius:2px;background:{{ lg.color }}"></span>{{ lg.label }}</span>
@@ -473,6 +474,76 @@ input::placeholder{color:#7A6B55}
           </sc-for>
         </aside>
       </div>
+      </sc-if>
+      <sc-if value="{{ relConex }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;margin-bottom:22px">
+          <sc-for list="{{ pickers }}" as="pk" hint-placeholder-count="2">
+            <div style="position:relative;display:flex;flex-direction:column;gap:6px">
+              <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8C2A1B">{{ pk.label }}</span>
+              <input value="{{ pk.q }}" onChange="{{ pk.onQ }}" placeholder="{{ pk.ph }}" aria-label="{{ pk.label }}" style="width:100%;padding:10px 12px;background:#FBF8F1;border:1px solid #CDBE9C;border-radius:8px;font-family:'IM Fell English',serif;font-size:20px;color:#1E1710;outline:none">
+              <sc-if value="{{ pk.hasSug }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:100%;left:0;right:0;margin-top:4px;background:#FBF8F1;border:1px solid #D6C8AA;border-radius:8px;box-shadow:0 12px 28px rgba(30,23,16,.14);z-index:20;overflow:hidden">
+                  <sc-for list="{{ pk.sug }}" as="sg" hint-placeholder-count="0">
+                    <button onClick="{{ sg.pick }}" style="display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #ECE3D0;padding:8px 12px;cursor:pointer" style-hover="background:#F2EBDC"><span style="font-size:17px;color:#1E1710">{{ sg.t }}</span><span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;color:{{ sg.color }}">{{ sg.cat }}</span></button>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ conex.tem }}" hint-placeholder-val="{{ false }}">
+          <section style="background:#FBF8F1;border:1px solid #DCCFB3;border-radius:12px;padding:18px clamp(14px,3vw,24px);margin-bottom:16px">
+            <h2 style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#8C2A1B;margin:0 0 4px">Caminho mais curto</h2>
+            <p style="margin:0 0 14px;font-size:17px;color:#4F4231">{{ conex.passosTxt }}</p>
+            <ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column">
+              <sc-for list="{{ conex.passos }}" as="ps" hint-placeholder-count="0">
+                <li style="display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:12px">
+                  <div style="display:flex;flex-direction:column;align-items:center">
+                    <span style="width:14px;height:14px;margin-top:8px;border-radius:50%;background:{{ ps.color }}"></span>
+                    <sc-if value="{{ ps.temLiga }}" hint-placeholder-val="{{ false }}"><span style="flex:1;width:2px;background:#DCCFB3;min-height:30px"></span></sc-if>
+                  </div>
+                  <div style="padding-bottom:10px">
+                    <button onClick="{{ ps.open }}" style="background:none;border:none;padding:0;cursor:pointer;font-family:'IM Fell English',serif;font-size:22px;color:#1E1710;text-align:left" style-hover="color:#8C2A1B">{{ ps.t }}</button>
+                    <sc-if value="{{ ps.temLiga }}" hint-placeholder-val="{{ false }}"><p style="margin:2px 0 0;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#6B5C46">↓ {{ ps.liga }}</p></sc-if>
+                  </div>
+                </li>
+              </sc-for>
+            </ol>
+          </section>
+          <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;margin-bottom:16px">
+            <sc-for list="{{ conex.lados }}" as="ld" hint-placeholder-count="2">
+              <button onClick="{{ ld.open }}" style="text-align:left;background:#FBF8F1;border:1px solid #DCCFB3;border-radius:12px;padding:16px 20px;cursor:pointer;display:flex;flex-direction:column;gap:4px" style-hover="border-color:#8C2A1B">
+                <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:500;color:{{ ld.color }}">{{ ld.cat }}</span>
+                <span style="font-family:'IM Fell English',serif;font-size:28px;line-height:1.1;color:#1E1710">{{ ld.t }}</span>
+                <span style="font-size:16px;font-style:italic;color:#4F4231">{{ ld.ep }}</span>
+                <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#33281C;margin-top:4px">{{ ld.info }}</span>
+              </button>
+            </sc-for>
+          </section>
+          <section style="background:#FBF8F1;border:1px solid #DCCFB3;border-radius:12px;padding:18px clamp(14px,3vw,24px)">
+            <h2 style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#8C2A1B;margin:0 0 8px">{{ conex.comunsTitulo }}</h2>
+            <sc-for list="{{ conex.comuns }}" as="cm" hint-placeholder-count="0">
+              <button onClick="{{ cm.go }}" style="display:grid;grid-template-columns:minmax(96px,auto) minmax(0,1fr);gap:2px 14px;width:100%;text-align:left;background:none;border:none;border-top:1px solid #E1D5BB;padding:9px 0;cursor:pointer" style-hover="background:#F2EBDC">
+                <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#8C2A1B">{{ cm.date }}</span>
+                <span style="display:flex;flex-direction:column"><span style="font-size:17px;color:#1E1710">{{ cm.title }}</span><sc-if value="{{ cm.hasAges }}" hint-placeholder-val="{{ false }}"><span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#7A2442">{{ cm.ages }}</span></sc-if></span>
+              </button>
+            </sc-for>
+            <sc-if value="{{ conex.temLigs }}" hint-placeholder-val="{{ false }}">
+              <h2 style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#8C2A1B;margin:18px 0 8px">Ligados aos dois</h2>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ conex.ligs }}" as="lk" hint-placeholder-count="0">
+                  <button onClick="{{ lk.open }}" style="display:flex;align-items:center;gap:5px;padding:4px 11px 4px 9px;cursor:pointer;background:#F4EEE1;border:1px solid #DCCFB3;border-radius:999px;font-size:16px" style-hover="border-color:#8C2A1B">
+                    <svg viewBox="0 0 16 16" width="12" height="12" style="fill:none;stroke:{{ lk.color }};stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><path d="{{ lk.icon }}"></path></svg>{{ lk.label }}
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </section>
+        </sc-if>
+        <sc-if value="{{ conex.vazio }}" hint-placeholder-val="{{ true }}">
+          <p style="margin:0;font-size:18px;font-style:italic;color:#4F4231">{{ conex.vazioTxt }}</p>
+        </sc-if>
+      </sc-if>
     </main>
   </sc-if>
 
