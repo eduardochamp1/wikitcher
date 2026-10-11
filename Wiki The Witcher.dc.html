@@ -17,7 +17,15 @@ a:hover{color:#1E1710}
 *{box-sizing:border-box}
 button{font:inherit;color:inherit}
 input::placeholder{color:#7A6B55}
+@media print{
+  body *{visibility:hidden}
+  #verbete,#verbete *{visibility:visible}
+  #verbete{position:absolute!important;inset:0 auto auto 0!important;width:100%!important;overflow:visible!important;box-shadow:none!important}
+  #verbete [data-noprint]{display:none!important}
+  #verbete>div:first-child{position:static!important;border:none!important}
+}
 </style>
+<script src="witcher-extras.js"></script>
 <script src="witcher-tempo.js"></script>
 <script src="witcher-verbetes.js"></script>
 <script src="witcher-glossario.js"></script>
@@ -31,17 +39,22 @@ input::placeholder{color:#7A6B55}
         <span style="font-family:'IM Fell English',serif;font-size:26px;line-height:1;color:#1E1710">Crônicas de The Witcher</span>
       </button>
       <nav style="display:flex;flex-wrap:wrap;gap:2px 22px;flex:1 1 auto">
-        <button onClick="{{ goTempo }}" style="background:none;border:none;border-bottom:2px solid {{ tabTempo }};padding:8px 0 5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710">Linha do Tempo</button>
-        <button onClick="{{ goComp }}" style="background:none;border:none;border-bottom:2px solid {{ tabComp }};padding:8px 0 5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710">Compêndio</button>
-        <button onClick="{{ goMapa }}" style="background:none;border:none;border-bottom:2px solid {{ tabMapa }};padding:8px 0 5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710">Mapa</button>
-        <button onClick="{{ goLinhagem }}" style="background:none;border:none;border-bottom:2px solid {{ tabLinhagem }};padding:8px 0 5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710">Linhagem</button>
-        <button onClick="{{ goRel }}" style="background:none;border:none;border-bottom:2px solid {{ tabRel }};padding:8px 0 5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710">Relações</button>
-        <button onClick="{{ goFontes }}" style="background:none;border:none;border-bottom:2px solid {{ tabFontes }};padding:8px 0 5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710">Fontes</button>
+        <sc-for list="{{ navTabs }}" as="nt" hint-placeholder-count="9">
+          <button onClick="{{ nt.go }}" style="background:none;border:none;border-bottom:2px solid {{ nt.bd }};padding:8px 0 5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710">{{ nt.label }}</button>
+        </sc-for>
       </nav>
+      <sc-if value="{{ spoilerBadge }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ goLeitura }}" title="Modo sem spoilers ligado" style="display:flex;align-items:center;gap:6px;padding:4px 10px;cursor:pointer;background:#F1E4E6;border:1px solid #D9B5BF;border-radius:999px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:500;color:#7A2442">Sem spoilers · {{ spoilerAte }}</button>
+      </sc-if>
       <div style="position:relative;flex:1 1 220px;max-width:320px">
         <input value="{{ q }}" onChange="{{ onQ }}" onFocus="{{ openSearch }}" onBlur="{{ closeSearch }}" placeholder="Buscar personagem, lugar, evento…" style="width:100%;padding:9px 12px;background:#FBF8F1;border:1px solid #D6C8AA;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:#1E1710;outline:none">
         <sc-if value="{{ showResults }}" hint-placeholder-val="{{ false }}">
           <div style="position:absolute;top:calc(100% + 6px);right:0;width:min(420px,92vw);max-height:70vh;overflow-y:auto;background:#FBF8F1;border:1px solid #D6C8AA;border-radius:8px;box-shadow:0 14px 34px rgba(30,23,16,.16);z-index:50">
+            <div style="display:flex;gap:4px;padding:8px 10px;border-bottom:1px solid #ECE3D0;position:sticky;top:0;background:#FBF8F1">
+              <sc-for list="{{ qFilters }}" as="qf" hint-placeholder-count="3">
+                <button onMouseDown="{{ qf.keep }}" onClick="{{ qf.select }}" style="padding:3px 10px;cursor:pointer;border:1px solid #CDBE9C;border-radius:999px;background:{{ qf.bg }};color:{{ qf.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:12px">{{ qf.label }}</button>
+              </sc-for>
+            </div>
             <sc-for list="{{ results }}" as="r" hint-placeholder-count="0">
               <button onClick="{{ r.open }}" style="display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #ECE3D0;padding:10px 14px;cursor:pointer" style-hover="background:#F2EBDC">
                 <span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:{{ r.color }}">{{ r.kind }}</span>
@@ -197,9 +210,17 @@ input::placeholder{color:#7A6B55}
                       </div>
                     </sc-if>
                   </sc-if>
-                  <sc-if value="{{ ev.canOpen }}" hint-placeholder-val="{{ false }}">
-                    <button onClick="{{ ev.toggle }}" style="align-self:flex-start;background:none;border:none;padding:2px 0;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;color:#8C2A1B">{{ ev.toggleLabel }}</button>
-                  </sc-if>
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 18px">
+                    <sc-if value="{{ ev.canOpen }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ ev.toggle }}" style="background:none;border:none;padding:2px 0;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;color:#8C2A1B">{{ ev.toggleLabel }}</button>
+                    </sc-if>
+                    <sc-if value="{{ ev.hasObra }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ ev.openObra }}" title="Obra em que isso acontece" style="display:flex;align-items:center;gap:5px;background:none;border:none;padding:2px 0;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#4F4231" style-hover="color:#8C2A1B">
+                        <svg viewBox="0 0 16 16" width="13" height="13" style="fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round"><path d="{{ ev.obraIcon }}"></path></svg>Em {{ ev.obra }}
+                      </button>
+                    </sc-if>
+                    <button onClick="{{ ev.copy }}" title="Copiar o link deste evento" style="background:none;border:none;padding:2px 0;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#7A6B55" style-hover="color:#8C2A1B">{{ ev.copyLabel }}</button>
+                  </div>
                 </div>
               </li>
             </sc-for>
@@ -216,6 +237,21 @@ input::placeholder{color:#7A6B55}
     <main style="max-width:1180px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
       <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Compêndio</div>
       <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 24px;color:#1E1710">Verbetes do Continente</h1>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:stretch;margin-bottom:22px">
+        <button onClick="{{ compDay.open }}" style="flex:1 1 380px;min-width:0;text-align:left;background:#1E1710;color:#F4EEE1;border:none;border-radius:10px;padding:16px 20px;cursor:pointer;display:flex;flex-direction:column;gap:4px" style-hover="background:#33281C">
+          <span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#E7C7A0">Verbete do dia · {{ compDay.cat }}</span>
+          <span style="font-family:'IM Fell English',serif;font-size:28px;line-height:1.1">{{ compDay.title }}</span>
+          <span style="font-size:16px;line-height:1.4;color:#E9DFCB">{{ compDay.s }}</span>
+        </button>
+        <div style="flex:0 1 260px;display:flex;flex-direction:column;gap:8px;justify-content:center">
+          <button onClick="{{ compRandom }}" style="padding:10px 14px;cursor:pointer;background:#FBF8F1;border:1px solid #CDBE9C;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710" style-hover="border-color:#8C2A1B">Sortear um verbete</button>
+          <div style="display:flex;border:1px solid #CDBE9C;border-radius:6px;overflow:hidden">
+            <sc-for list="{{ compSrcOpts }}" as="cs" hint-placeholder-count="3">
+              <button onClick="{{ cs.select }}" style="flex:1;background:{{ cs.bg }};color:{{ cs.fg }};border:none;padding:6px 8px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">{{ cs.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
       <div style="display:flex;flex-wrap:wrap;gap:6px">
         <sc-for list="{{ compTabs }}" as="t" hint-placeholder-count="11">
           <button onClick="{{ t.select }}" style="display:flex;align-items:center;gap:6px;padding:5px 12px 5px 10px;cursor:pointer;border:1px solid {{ t.border }};background:{{ t.bg }};color:{{ t.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:13px;border-radius:999px">
@@ -370,12 +406,14 @@ input::placeholder{color:#7A6B55}
 
   <sc-if value="{{ hasEntry }}" hint-placeholder-val="{{ false }}">
     <div onClick="{{ closeEntry }}" style="position:fixed;inset:0;background:rgba(30,23,16,.34);z-index:60"></div>
-    <aside ref="{{ asideRef }}" style="position:fixed;top:0;right:0;bottom:0;width:min(620px,100vw);background:#FBF8F1;z-index:61;overflow-y:auto;box-shadow:-20px 0 44px rgba(30,23,16,.2)">
+    <aside id="verbete" ref="{{ asideRef }}" style="position:fixed;top:0;right:0;bottom:0;width:min(620px,100vw);background:#FBF8F1;z-index:61;overflow-y:auto;box-shadow:-20px 0 44px rgba(30,23,16,.2)">
       <div style="position:sticky;top:0;background:#FBF8F1;border-bottom:1px solid #E1D5BB;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;z-index:1">
         <span style="display:flex;align-items:center;gap:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;color:{{ entry.color }}">
           <svg viewBox="0 0 16 16" width="14" height="14" style="fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round"><path d="{{ entry.icon }}"></path></svg>{{ entry.cat }}
         </span>
-        <div style="display:flex;gap:6px">
+        <div data-noprint="1" style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px">
+          <button onClick="{{ copyLink }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">{{ copyLabel }}</button>
+          <button onClick="{{ printEntry }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">imprimir</button>
           <sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ back }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">← voltar</button></sc-if>
           <button onClick="{{ closeEntry }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">fechar ✕</button>
         </div>
@@ -454,8 +492,42 @@ const BOOK = "M2 3.5c2-1 4-1 6 .5 2-1.5 4-1.5 6-.5v9.5c-2-1-4-1-6 .5-2-1.5-4-1.5
 ICONS.obra = BOOK;
 const PAD = "M4.5 5h7a3 3 0 0 1 3 3v1.5a2.5 2.5 0 0 1-4.6 1.3L9 9.5H7l-.9 1.3A2.5 2.5 0 0 1 1.5 9.5V8a3 3 0 0 1 3-3ZM5 7v2M4 8h2M11 7.5h.01M12 9h.01";
 
+const VIEWS = [['tempo', 'Linha do Tempo'], ['comp', 'Compêndio'], ['mapa', 'Mapa'], ['linhagem', 'Linhagem'], ['rel', 'Relações'], ['contraste', 'Livros × Jogos'], ['leitura', 'Leitura'], ['quiz', 'Quiz'], ['fontes', 'Fontes']];
+const LS_KEY = 'witcher-leitura';
+function lerLeitura() {
+  try { const v = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (v && Array.isArray(v.lidos)) return { on: !!v.on, lidos: v.lidos }; } catch (e) {}
+  return { on: false, lidos: [] };
+}
+
 class Component extends DCLogic {
-  state = { ready: false, view: 'tempo', cats: [], src: 'all', q: '', searchOpen: false, stack: [], compCat: 'all', place: null, node: 'ciri', w: 0, flash: null, open: {}, expandAll: null, curEv: null, tip: null };
+  state = { ready: false, view: 'tempo', cats: [], src: 'all', q: '', qf: 'all', searchOpen: false, stack: [], compCat: 'all', compSrc: 'all', place: null, node: 'ciri', w: 0, flash: null, open: {}, expandAll: null, curEv: null, tip: null,
+    evLink: null, copied: false, leitura: lerLeitura(), reveal: {}, person: null, rota: null, ano: null, arvore: 'sangue', relMode: 'curado', contraste: 'all', quiz: null };
+
+  // Endereço: #/<aba>, #/<aba>/<verbete> ou #/tempo/@<evento>.
+  parseHash() {
+    const m = /^#\/(\w+)(?:\/(@?)([^/?#]+))?/.exec(decodeURIComponent(location.hash || ''));
+    if (!m || !VIEWS.some(v => v[0] === m[1])) return null;
+    return { view: m[1], ev: m[2] ? m[3] : null, id: m[2] ? null : (m[3] || null) };
+  }
+  hashFor(s) {
+    const top = s.stack[s.stack.length - 1];
+    return '#/' + s.view + (top ? '/' + top : (s.view === 'tempo' && s.evLink ? '/@' + s.evLink : ''));
+  }
+  applyHash() {
+    const h = this.parseHash();
+    this.popping = true; this.hashReady = true;
+    if (!h) { this.setState({ stack: [] }); return; }
+    if (h.ev) { const ev = window.WITCHER_TEMPO.events.find(e => e.id === h.ev); if (ev) { this.goEvent(ev); return; } }
+    this.setState(s => {
+      let stack = [];
+      if (h.id) { const i = s.stack.indexOf(h.id); stack = i >= 0 ? s.stack.slice(0, i + 1) : [h.id]; }
+      return { view: h.view, stack, evLink: null };
+    });
+  }
+  saveLeitura(l) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(l)); } catch (e) {}
+    this.setState({ leitura: l });
+  }
 
   componentDidMount() {
     this.onResize = () => { const w = document.documentElement.clientWidth || window.innerWidth; if (w !== this.state.w) this.setState({ w }); };
@@ -467,11 +539,16 @@ class Component extends DCLogic {
     window.addEventListener('resize', this.onResize);
     window.addEventListener('keydown', this.onKey);
     window.addEventListener('scroll', this.onScroll, { passive: true });
+    this.onPop = () => this.applyHash();
+    window.addEventListener('popstate', this.onPop);
     this.ro = new ResizeObserver(this.onResize);
     this.ro.observe(document.documentElement);
     this.onResize();
     const check = () => {
-      if (window.WITCHER_TEMPO && window.WITCHER_VERBETES && window.WITCHER_GLOSSARIO && window.WITCHER_WIKI) this.setState({ ready: true }, () => { setTimeout(() => { this.onResize(); this.trackScroll(); }, 150); setTimeout(() => { this.onResize(); this.trackScroll(); }, 600); });
+      if (window.WITCHER_TEMPO && window.WITCHER_VERBETES && window.WITCHER_GLOSSARIO && window.WITCHER_WIKI && window.WITCHER_EXTRAS) this.setState({ ready: true }, () => {
+        this.applyHash();
+        setTimeout(() => { this.onResize(); this.trackScroll(); }, 150); setTimeout(() => { this.onResize(); this.trackScroll(); }, 600);
+      });
       else this.t = setTimeout(check, 60);
     };
     check();
@@ -480,12 +557,20 @@ class Component extends DCLogic {
     window.removeEventListener('resize', this.onResize);
     window.removeEventListener('keydown', this.onKey);
     window.removeEventListener('scroll', this.onScroll);
+    window.removeEventListener('popstate', this.onPop);
     if (this.ro) this.ro.disconnect();
     clearTimeout(this.t); clearTimeout(this.ft); clearTimeout(this.st);
   }
   componentDidUpdate() {
     const b = this.state.stack[this.state.stack.length - 1];
     if (b !== this.topId) { this.topId = b; if (this.aside) this.aside.scrollTop = 0; }
+    if (!this.state.ready || !this.hashReady) return;
+    // Cada navegação vira um passo do histórico; o que veio do próprio histórico só substitui.
+    const want = this.hashFor(this.state);
+    if (decodeURIComponent(location.hash) !== want) {
+      try { history[this.popping || !this.hashSet ? 'replaceState' : 'pushState'](null, '', want); } catch (e) {}
+    }
+    this.hashSet = true; this.popping = false;
   }
 
   hh() { return this.header ? this.header.getBoundingClientRect().bottom : 0; }
@@ -508,12 +593,57 @@ class Component extends DCLogic {
   norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
   open(id) { this.setState(s => ({ stack: [...s.stack, id], searchOpen: false, tip: null })); }
   goEvent(ev) {
-    this.setState(s => ({ view: 'tempo', stack: [], flash: ev.id, searchOpen: false, cats: [], src: 'all', open: { ...s.open, [ev.id]: true } }), () => {
+    this.setState(s => ({ view: 'tempo', stack: [], flash: ev.id, evLink: ev.id, person: null, searchOpen: false, cats: [], src: 'all', open: { ...s.open, [ev.id]: true } }), () => {
       setTimeout(() => this.scrollToEl(document.getElementById('ev-' + ev.id)), 60);
       clearTimeout(this.ft); this.ft = setTimeout(() => this.setState({ flash: null }), 2200);
     });
   }
-  go(view) { this.setState({ view, searchOpen: false, tip: null }); window.scrollTo({ top: 0 }); }
+  go(view) { this.setState({ view, searchOpen: false, tip: null, evLink: null, stack: [] }); window.scrollTo({ top: 0 }); }
+
+  // Busca tolerante: prefixo e trecho valem mais; palavras com um ou dois erros de digitação ainda contam.
+  lev(a, b) {
+    if (Math.abs(a.length - b.length) > 2) return 9;
+    // Distância de edição em que trocar duas letras vizinhas conta como um erro só.
+    const d = Array.from({ length: a.length + 1 }, (_, i) => Array.from({ length: b.length + 1 }, (_, j) => i ? (j ? 0 : i) : j));
+    for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) {
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+    }
+    return d[a.length][b.length];
+  }
+  score(q, text) {
+    const t = this.norm(text);
+    if (!q || !t) return 0;
+    if (t.startsWith(q)) return 100;
+    if (t.includes(q)) return 80;
+    const words = t.split(/[^a-z0-9']+/).filter(Boolean);
+    const toks = q.split(/\s+/).filter(Boolean);
+    let total = 0;
+    for (const k of toks) {
+      let best = 0;
+      for (const w of words) {
+        if (w.startsWith(k)) { best = Math.max(best, 40); continue; }
+        if (k.length < 4) continue;
+        const tol = k.length >= 7 ? 2 : 1, dd = Math.min(this.lev(k, w), this.lev(k, w.slice(0, k.length)));
+        if (dd <= tol) best = Math.max(best, 30 - 8 * dd);
+      }
+      if (!best) return 0;
+      total += best;
+    }
+    return total / toks.length;
+  }
+  // Obra em que o evento é contado: a lista explícita da obra ou o primeiro corte da ordem de leitura que o alcança.
+  obraDe(e) {
+    const X = window.WITCHER_EXTRAS, L = X.leitura;
+    const ex = L.find(o => (o.eventos || []).includes(e.id));
+    if (ex) return ex;
+    if ((X.semObra || []).includes(e.id) || !['bruxo', 'guerras', 'depois'].includes(e.era) || /anunciado/i.test(e.d)) return null;
+    return L.find(o => o.fim != null && (o.tipo === 'jogo') === !!e.g && e.s <= o.fim) || null;
+  }
+  copyText(t, key) {
+    const done = () => { this.setState({ copied: key }); clearTimeout(this.ct); this.ct = setTimeout(() => this.setState({ copied: false }), 1600); };
+    try { navigator.clipboard.writeText(t).then(done, done); } catch (e) { done(); }
+  }
 
   buildGloss(em, catMap) {
     if (this.gl) return this.gl;
@@ -576,18 +706,18 @@ class Component extends DCLogic {
 
   renderVals() {
     const s = this.state, p = this.props;
-    const tabs = { tabTempo: 'transparent', tabComp: 'transparent', tabMapa: 'transparent', tabLinhagem: 'transparent', tabRel: 'transparent', tabFontes: 'transparent' };
-    tabs[{ tempo: 'tabTempo', comp: 'tabComp', mapa: 'tabMapa', linhagem: 'tabLinhagem', rel: 'tabRel', fontes: 'tabFontes' }[s.view]] = '#8C2A1B';
+    const navTabs = VIEWS.map(([id, label]) => ({ label, bd: s.view === id ? '#8C2A1B' : 'transparent', go: () => this.go(id) }));
+    const keep = (e) => e.preventDefault();
+    const qFilters = [['all', 'Tudo'], ['verbetes', 'Verbetes'], ['eventos', 'Eventos']].map(([id, label]) => ({ label, keep, bg: s.qf === id ? '#1E1710' : 'transparent', fg: s.qf === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ qf: id }) }));
     const base = {
-      ...tabs, q: s.q, loading: !s.ready,
+      navTabs, qFilters, q: s.q, loading: !s.ready,
       headerRef: (el) => { this.header = el; },
-      goTempo: () => this.go('tempo'), goComp: () => this.go('comp'), goMapa: () => this.go('mapa'),
-      goLinhagem: () => this.go('linhagem'), goRel: () => this.go('rel'), goFontes: () => this.go('fontes'),
+      goTempo: () => this.go('tempo'), goLeitura: () => this.go('leitura'),
       onQ: (e) => this.setState({ q: e.target.value, searchOpen: true }),
       openSearch: () => this.setState({ searchOpen: true }),
       closeSearch: () => setTimeout(() => this.setState({ searchOpen: false }), 250),
-      isTempo: false, isComp: false, isMapa: false, isLinhagem: false, isRel: false, isFontes: false,
-      hasEntry: false, showResults: false, hasTip: false, cur: {}, mini: []
+      isTempo: false, isComp: false, isMapa: false, isLinhagem: false, isRel: false, isFontes: false, isContraste: false, isLeitura: false, isQuiz: false,
+      hasEntry: false, showResults: false, hasTip: false, cur: {}, mini: [], spoilerBadge: false, spoilerAte: ''
     };
     if (!s.ready) return base;
 
@@ -620,6 +750,7 @@ class Component extends DCLogic {
         let rel = '';
         if (e.era !== 'fim' && /\d/.test(e.d) && e.s < 1230) rel = '≈ ' + Math.round(1263 - e.s).toLocaleString('pt-BR') + ' anos antes da saga';
         const yr = Math.floor(e.s);
+        const ob = this.obraDe(e);
         const ages = agesOn && e.era !== 'fim' && /\d/.test(e.d) ? (e.l || []).filter(id => NASC[id] && yr > NASC[id].y && yr - NASC[id].y < 500).map(id => ({ n: em[id] ? em[id].t.split(' ')[0] : id, a: (NASC[id].a ? '≈ ' : '') + (yr - NASC[id].y) + ' anos' })) : [];
         return {
           id: e.id, domId: 'ev-' + e.id, date: e.d, title: e.t, rel, hasRel: !!rel, cols,
@@ -629,6 +760,10 @@ class Component extends DCLogic {
           sum: this.segs(a, used, excl, glossOn), rest: b ? this.segs(b, used, excl, glossOn) : [], hasRest: !!b,
           ages, hasAges: ages.length > 0,
           chips, hasChips: chips.length > 0, isOpen, canOpen: !!b || chips.length > 0,
+          hasObra: !!ob, obra: ob ? ob.n : '', obraIcon: ob && ob.tipo === 'jogo' ? PAD : BOOK,
+          openObra: () => { if (ob && em[ob.id]) this.open(ob.id); },
+          copy: () => this.copyText(location.href.split('#')[0] + '#/tempo/@' + e.id, e.id),
+          copyLabel: s.copied === e.id ? 'link copiado ✓' : 'copiar link',
           toggleLabel: isOpen ? 'Recolher ▴' : (b ? 'Ler mais ▾' : 'Ver verbetes ligados ▾'),
           toggle: () => this.setState(st => ({ open: { ...st.open, [e.id]: !isOpen } }))
         };
@@ -670,19 +805,30 @@ class Component extends DCLogic {
     const srcName = (e) => (e.fo || ['livros']).map(x => x === 'livros' ? 'Livros' : x === 'jogos' ? 'Jogos' : 'Material próprio').join(' + ');
     const compTabs = [{ id: 'all', label: 'Todos', color: '#1E1710', count: E.length, icon: ICONS.lenda }, ...D.cats.map(c => ({ id: c.id, label: c.label, color: c.color, count: counts[c.id] || 0, icon: ICONS[c.id] }))]
       .filter(t => t.count).map(t => { const on = s.compCat === t.id; return { ...t, border: on ? t.color : '#DCCFB3', bg: on ? t.color : '#FBF8F1', fg: on ? '#FBF8F1' : t.color, select: () => this.setState({ compCat: t.id }) }; });
-    const compCards = E.filter(e => s.compCat === 'all' || e.c === s.compCat)
+    const compCards = E.filter(e => (s.compCat === 'all' || e.c === s.compCat) && (s.compSrc === 'all' || (e.fo || ['livros']).includes(s.compSrc)))
       .slice().sort((a, b) => s.compCat === 'all' ? (catOrder[a.c] - catOrder[b.c]) : 0)
       .map(e => ({ title: e.t, ep: e.ep, s: e.s, cat: catMap[e.c].label, color: catMap[e.c].color, icon: ICONS[e.c], src: srcName(e), open: () => this.open(e.id) }));
 
     let results = [];
     const qn = this.norm(s.q).trim();
     if (qn.length >= 2) {
-      const hit = (e) => this.norm(e.t + ' ' + e.ep).includes(qn);
-      const er = E.filter(hit).concat(E.filter(e => !hit(e) && this.norm(e.s + ' ' + e.b.map(this.blockText).join(' ')).includes(qn)));
-      results = er.slice(0, 10).map(e => ({ kind: catMap[e.c].label, color: catMap[e.c].color, label: e.t, sub: e.ep, open: () => this.setState({ q: '' }, () => this.open(e.id)) }));
-      const evr = evAll.filter(e => this.norm(e.t + ' ' + e.x).includes(qn)).slice(0, 6);
-      results = results.concat(evr.map(e => ({ kind: 'Evento · ' + e.d, color: '#8C2A1B', label: e.t, sub: 'Era ' + eraMap[e.era].numeral + ' · ' + eraMap[e.era].name, open: () => { this.setState({ q: '' }); this.goEvent(e); } })));
+      const rank = (list, f) => list.map(x => [x, f(x)]).filter(p => p[1] > 0).sort((a, b) => b[1] - a[1]).map(p => p[0]);
+      if (s.qf !== 'eventos') {
+        const er = rank(E, e => Math.max(this.score(qn, e.t), 0.6 * this.score(qn, e.ep)) || (this.norm(e.s + ' ' + e.b.map(this.blockText).join(' ')).includes(qn) ? 10 : 0));
+        results = er.slice(0, s.qf === 'verbetes' ? 16 : 10).map(e => ({ kind: catMap[e.c].label, color: catMap[e.c].color, label: e.t, sub: e.ep, open: () => this.setState({ q: '' }, () => this.open(e.id)) }));
+      }
+      if (s.qf !== 'verbetes') {
+        const evr = rank(evAll, e => this.score(qn, e.t) || (this.norm(e.x).includes(qn) ? 10 : 0)).slice(0, s.qf === 'eventos' ? 16 : 6);
+        results = results.concat(evr.map(e => ({ kind: 'Evento · ' + e.d, color: '#8C2A1B', label: e.t, sub: 'Era ' + eraMap[e.era].numeral + ' · ' + eraMap[e.era].name, open: () => { this.setState({ q: '' }); this.goEvent(e); } })));
+      }
     }
+
+    // Verbete do dia: muda a cada data, sempre o mesmo para o dia inteiro.
+    const hoje = new Date(), diaN = hoje.getFullYear() * 400 + hoje.getMonth() * 31 + hoje.getDate();
+    const ed = E[(diaN * 7919) % E.length];
+    const compDay = { title: ed.t, s: ed.s, cat: catMap[ed.c].label, open: () => this.open(ed.id) };
+    const compRandom = () => this.open(E[Math.floor(Math.random() * E.length)].id);
+    const compSrcOpts = [['all', 'Tudo'], ['livros', 'Livros'], ['jogos', 'Jogos']].map(([id, label]) => ({ label, bg: s.compSrc === id ? '#1E1710' : 'transparent', fg: s.compSrc === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ compSrc: id }) }));
 
     const kindLabel = { reino: 'Reino', cidade: 'Lugar', natural: 'Geografia', regiao: 'Região' };
     const places = D.places.map(pl => {
@@ -766,11 +912,15 @@ class Component extends DCLogic {
     return {
       ...base,
       isTempo: s.view === 'tempo', isComp: s.view === 'comp', isMapa: s.view === 'mapa', isLinhagem: s.view === 'linhagem', isRel: s.view === 'rel', isFontes: s.view === 'fontes',
+      isContraste: s.view === 'contraste', isLeitura: s.view === 'leitura', isQuiz: s.view === 'quiz',
       erasView, cur, mini, ruler, srcOpts, catChips, evCount: evF.length,
       hasCatFilter: s.cats.length > 0 || s.src !== 'all', clearCats: () => this.setState({ cats: [], src: 'all' }),
       toggleAllLabel: defOpen ? 'Recolher tudo' : 'Expandir tudo',
       toggleAll: () => this.setState({ expandAll: !defOpen, open: {} }),
-      compTabs, compCards,
+      compTabs, compCards, compDay, compRandom, compSrcOpts,
+      copyLabel: s.copied === 'verbete' ? 'link copiado ✓' : 'copiar link',
+      copyLink: () => this.copyText(location.href, 'verbete'),
+      printEntry: () => window.print(),
       results, showResults: s.searchOpen && qn.length >= 2, noResults: results.length === 0,
       places, place, hasPlace, noPlace: !hasPlace,
       tree, relEdges, relNodes, relSel, relLegend: Object.values(R.types), relAspect: mobile ? '3 / 4' : '16 / 11',
