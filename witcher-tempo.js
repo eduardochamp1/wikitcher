@@ -189,7 +189,7 @@ places: [
   {id:"brugge", n:"Brugge", k:"reino", x:26, y:57, e:"brugge", d:"Reino entre Brokilon e Cintra."},
   {id:"sodden", n:"Sodden", k:"reino", x:40, y:56, e:"sodden", d:"Onde se travou a Batalha da Colina."},
   {id:"cintra", n:"Cintra", k:"reino", x:22, y:64, e:"cintra", d:"Reino de Calanthe, na foz do Yaruga."},
-  {id:"skellige", n:"Ilhas Skellige", k:"reino", x:5, y:48, e:"skellige", d:"Arquipélago dos jarls e de Freya."},
+  {id:"skellige", n:"Ilhas Skellige", k:"reino", x:9, y:48, e:"skellige", d:"Arquipélago dos jarls e de Freya."},
   {id:"yaruga", n:"rio Yaruga", k:"natural", x:44, y:63, e:"yaruga", d:"A fronteira entre o Norte e o Império."},
   {id:"amell", n:"Montes Amell", k:"natural", x:56, y:68, e:"montes-amell", d:"Cordilheira que separa o Norte do sul."},
   {id:"toussaint", n:"Toussaint", k:"reino", x:72, y:72, e:"toussaint", d:"Ducado vassalo de Nilfgaard, terra do vinho."},
