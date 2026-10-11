@@ -9,7 +9,8 @@ cats: [
   {id:"personagem", label:"Personagens", color:"#A0375A"},
   {id:"magia", label:"Magia e Feiticeiros", color:"#22696B"},
   {id:"bruxo", label:"Bruxos", color:"#4A4E57"},
-  {id:"besta", label:"Bestiário", color:"#2B2B22"}
+  {id:"besta", label:"Bestiário", color:"#2B2B22"},
+  {id:"obra", label:"Obras", color:"#5B4A2E"}
 ],
 eras: [
   {id:"antiga", numeral:"I", name:"A Era Antiga", span:"antes de c. 230 a.R.", summary:"Antes que existissem humanos no Continente, a terra pertencia a povos antigos. Gnomos e anões ocupavam as montanhas, dríades guardavam as florestas, e povos hoje quase esquecidos, como os vrans e os werbubbs, deixaram apenas túmulos. Milênios depois chegaram os elfos Aen Seidhe, em navios brancos, e ergueram cidades que ainda hoje assombram as ruínas do Norte."},

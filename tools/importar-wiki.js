@@ -19,8 +19,10 @@ const MESMO = {
   'Lara Dorren': 'lara-dorren', 'Nimue': 'nimue', 'Vysogota': 'vysogota', 'Tir ná Lia': 'aen-elle',
   'Profecia de Ithlinne': 'profecia-ithlinne', 'Lei da Surpresa': 'lei-da-surpresa', 'Sinais dos Bruxos': 'sinais'
 };
+// Notas que não viram verbete, mas cujos links devem levar a um verbete parecido.
+const LINK = { 'Linhagem de Ciri': 'sangue-antigo' };
 // Categoria do app por tipo da nota, com exceções por nome.
-const CAT_TIPO = { personagem: 'personagem', lugar: 'politica', evento: 'politica', conceito: 'cosmo', raca: 'raca', organizacao: 'politica' };
+const CAT_TIPO = { personagem: 'personagem', lugar: 'politica', evento: 'politica', conceito: 'cosmo', raca: 'raca', organizacao: 'politica', obra: 'obra' };
 const CAT_NOTA = { 'Mutações dos Bruxos': 'bruxo', 'Massacre de Kaer Morhen': 'bruxo', 'Batalha de Kaer Morhen': 'bruxo', 'Destino': 'profecia', 'Bestiário': 'besta', 'Hansa de Geralt': 'personagem', 'Eskel': 'bruxo', 'Lambert': 'bruxo', 'Coën': 'bruxo' };
 const TIPOS = new Set(Object.keys(CAT_TIPO));
 const FONTE = { livros: ['livros', 'usuario'], jogos: ['jogos', 'usuario'], ambos: ['livros', 'jogos', 'usuario'] };
@@ -70,7 +72,7 @@ function converter(n) {
     linhas.forEach(c => {
       const v = c.map(x => limpar(x, links));
       if (ficha && v.length === 2) fatos.push([v[0], v[1]]);
-      else if (v.some(Boolean)) blocos.push({ li: v.filter(Boolean).join(' · ') });
+      else if (v.some(x => x && x !== '—')) blocos.push({ li: v.filter(x => x && x !== '—').join(' · ') });
     });
   };
   for (const l of n.corpo.split('\n')) {
@@ -117,6 +119,7 @@ function converter(n) {
 const TAG = { feiticeira: 'feiticeira', bruxo: 'bruxo', realeza: 'realeza', antagonista: 'antagonista', espiao: 'espião', druida: 'druida', cidade: 'cidade', reino: 'reino', templo: 'templo', batalha: 'batalha', guerra: 'guerra', diplomacia: 'diplomacia', bando: 'bando', companheiros: 'companheiros' };
 const CERTEZA = { '●': 'firme', '◐': 'aproximada', '○': 'especulativa' };
 function rotulo(n) {
+  if (n.tipo === 'obra') return [n.tags.includes('jogo') ? 'Jogo' : n.tags.includes('contos') ? 'Livro de contos' : 'Romance', n.fm.ano].filter(Boolean).join(' · ');
   const base = { personagem: n.fm.raca || 'Personagem', lugar: 'Lugar', evento: 'Evento', conceito: 'Conceito', raca: 'Povo', organizacao: 'Organização' }[n.tipo];
   const r = [base, ...n.tags.map(x => TAG[x]).filter(Boolean).slice(0, 2)].join(' · ');
   return r.charAt(0).toUpperCase() + r.slice(1);
@@ -138,6 +141,15 @@ for (const n of notas) {
 }
 const alvo = new Map();
 for (const n of notas) if (destino.has(n.nome)) [n.nome, ...n.aliases].forEach(a => { if (!alvo.has(norm(a))) alvo.set(norm(a), destino.get(n.nome)); });
+for (const [nome, id] of Object.entries(LINK)) { if (!ids.has(id)) throw new Error('LINK aponta para id inexistente: ' + id); alvo.set(norm(nome), id); }
+
+// Título original de cada obra, tirado da tabela do Índice de Obras.
+const original = new Map();
+const indiceObras = notas.find(n => n.nome === 'Índice de Obras');
+if (indiceObras) for (const l of indiceObras.corpo.split('\n')) {
+  const c = /^\|/.test(l.trim()) ? celulas(l) : [], t = /\[\[([^\]|]+)/.exec(c[1] || '');
+  if (t && c[2]) original.set(t[1].trim(), limpar(c[2]));
+}
 
 // 2) Converte as notas novas.
 const verbetes = [], gloss = [], semLink = new Set();
@@ -148,6 +160,11 @@ for (const n of novos) {
   const l = [...new Set(c.links.map(x => { const d = alvo.get(norm(x)); if (!d) semLink.add(x); return d; }).filter(d => d && d !== id))];
   const v = { id, c: CAT_NOTA[n.nome] || CAT_TIPO[n.tipo], t: n.nome, ep: c.ep || rotulo(n), s: c.resumo, b: c.blocos };
   if (n.fm.data && !c.fatos.some(f => f[0] === 'Data')) c.fatos.unshift(['Data', n.fm.data + (CERTEZA[n.fm.certeza] ? ' (' + CERTEZA[n.fm.certeza] + ')' : '')]);
+  if (n.tipo === 'obra') {
+    if (original.has(n.nome)) c.fatos.push(['Título original', original.get(n.nome)]);
+    if (n.fm.ano) c.fatos.push(['Publicação', n.fm.ano]);
+    if (n.fm.periodo) c.fatos.push(['Ano no mundo', n.fm.periodo]);
+  }
   if (c.fatos.length) v.f = c.fatos;
   if (l.length) v.l = l;
   v.fo = FONTE[n.fonte] || ['usuario'];
