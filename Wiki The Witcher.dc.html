@@ -291,18 +291,78 @@ input::placeholder{color:#7A6B55}
     <main style="max-width:1180px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
       <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Mapa</div>
       <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 10px;color:#1E1710">O Continente</h1>
-      <p style="max-width:640px;font-size:18px;line-height:1.5;color:#4F4231;margin:0 0 26px">Esquema aproximado das posições de reinos, cidades e regiões. Toque em um nome para ver o que aconteceu ali.</p>
+      <p style="max-width:640px;font-size:18px;line-height:1.5;color:#4F4231;margin:0 0 20px">Esquema aproximado das posições de reinos, cidades e regiões. Toque em um nome para ver o que aconteceu ali, siga uma jornada ou percorra os anos.</p>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-bottom:12px">
+        <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#1E1710">Jornadas</span>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <sc-for list="{{ rotaOpts }}" as="ro" hint-placeholder-count="4">
+            <button onClick="{{ ro.select }}" style="display:flex;align-items:center;gap:6px;padding:5px 11px;cursor:pointer;border:1px solid {{ ro.bd }};background:{{ ro.bg }};color:{{ ro.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:13px;border-radius:999px"><span style="width:14px;height:3px;border-radius:2px;background:{{ ro.cor }}"></span>{{ ro.n }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-bottom:22px;padding:10px 14px;background:#FBF8F1;border:1px solid #DCCFB3;border-radius:10px">
+        <button onClick="{{ anoToggle }}" style="padding:5px 12px;cursor:pointer;border:1px solid #CDBE9C;border-radius:6px;background:{{ anoBtnBg }};color:{{ anoBtnFg }};font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">{{ anoBtn }}</button>
+        <sc-if value="{{ anoOn }}" hint-placeholder-val="{{ false }}">
+          <input type="range" min="1245" max="1276" step="1" value="{{ anoVal }}" onChange="{{ anoChange }}" aria-label="Ano" style="flex:1 1 220px;accent-color:#8C2A1B">
+          <span style="font-family:'IM Fell English',serif;font-size:26px;min-width:64px;text-align:right;color:#8C2A1B">{{ anoVal }}</span>
+        </sc-if>
+        <sc-if value="{{ anoOff }}" hint-placeholder-val="{{ true }}">
+          <span style="font-size:16px;color:#4F4231">Veja quem domina cada reino e o que acontece em cada lugar, de 1245 a 1276.</span>
+        </sc-if>
+      </div>
       <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start">
         <div style="flex:1 1 520px;min-width:0;max-width:760px;position:relative;aspect-ratio:5/6;background:#FBF8F1;border:1px solid #CDBE9C;border-radius:10px;overflow:hidden">
           <div style="position:absolute;left:0;right:0;top:66%;border-top:1px dashed #BFAE8A"></div>
           <div style="position:absolute;right:16px;top:14px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#4F4231;text-align:center;line-height:1.1">N<br>↑</div>
+          <sc-if value="{{ hasRota }}" hint-placeholder-val="{{ false }}">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">
+              <polyline points="{{ rotaPts }}" style="fill:none;stroke:{{ rotaCor }};stroke-width:2.5;stroke-dasharray:7 5;stroke-linejoin:round;stroke-linecap:round;opacity:.85" vector-effect="non-scaling-stroke"></polyline>
+            </svg>
+          </sc-if>
           <sc-for list="{{ places }}" as="p" hint-placeholder-count="0">
-            <button onClick="{{ p.select }}" style="position:absolute;left:{{ p.left }};top:{{ p.top }};transform:translate(-50%,-50%);background:{{ p.bg }};border:none;border-radius:4px;padding:2px 5px;cursor:{{ p.cursor }};display:flex;align-items:center;gap:5px;white-space:nowrap;font-family:{{ p.ff }};font-size:{{ p.fs }};font-weight:{{ p.fw }};letter-spacing:{{ p.ls }};color:{{ p.color }};font-style:{{ p.fst }}">
-              <sc-if value="{{ p.dot }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span></sc-if>{{ p.n }}
+            <button onClick="{{ p.select }}" style="position:absolute;left:{{ p.left }};top:{{ p.top }};transform:translate(-50%,-50%);background:{{ p.bg }};border:none;border-bottom:{{ p.dom }};border-radius:4px;padding:2px 5px;cursor:{{ p.cursor }};display:flex;align-items:center;gap:5px;white-space:nowrap;font-family:{{ p.ff }};font-size:{{ p.fs }};font-weight:{{ p.fw }};letter-spacing:{{ p.ls }};color:{{ p.color }};font-style:{{ p.fst }};opacity:{{ p.op }}">
+              <sc-if value="{{ p.dot }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span></sc-if>{{ p.n }}<sc-if value="{{ p.evDot }}" hint-placeholder-val="{{ false }}"><span title="Acontece algo aqui neste ano" style="width:9px;height:9px;border-radius:50%;background:#8C2A1B;box-shadow:0 0 0 3px rgba(140,42,27,.25)"></span></sc-if>
+            </button>
+          </sc-for>
+          <sc-for list="{{ rotaStops }}" as="rs" hint-placeholder-count="0">
+            <button onClick="{{ rs.go }}" title="{{ rs.title }}" style="position:absolute;left:{{ rs.left }};top:{{ rs.top }};transform:translate(-50%,-50%);display:flex;align-items:center;gap:4px;padding:0;border:none;background:none;cursor:pointer">
+              <span style="width:22px;height:22px;border-radius:50%;background:{{ rs.cor }};color:#FBF8F1;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #FBF8F1">{{ rs.num }}</span>
+              <sc-if value="{{ rs.hasLabel }}" hint-placeholder-val="{{ false }}"><span style="font-family:'EB Garamond',serif;font-style:italic;font-size:14px;color:{{ rs.cor }};background:rgba(251,248,241,.85);padding:0 3px;border-radius:3px;white-space:nowrap">{{ rs.label }}</span></sc-if>
             </button>
           </sc-for>
         </div>
         <aside style="flex:1 1 280px;min-width:0;max-width:420px;display:flex;flex-direction:column;gap:12px">
+          <sc-if value="{{ rotaPanel }}" hint-placeholder-val="{{ false }}">
+            <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:{{ rotaCor }}">Jornada</span>
+            <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:32px;line-height:1.05;margin:0">{{ rotaNome }}</h2>
+            <p style="margin:0;font-size:17px;line-height:1.45;color:#4F4231;font-style:italic">{{ rotaSub }} · posições aproximadas.</p>
+            <sc-for list="{{ rotaStops }}" as="rs" hint-placeholder-count="0">
+              <button onClick="{{ rs.go }}" style="display:grid;grid-template-columns:26px minmax(0,1fr);gap:2px 10px;text-align:left;background:none;border:none;border-top:1px solid #E1D5BB;padding:9px 0;cursor:pointer" style-hover="background:#F2EBDC">
+                <span style="grid-row:span 2;width:22px;height:22px;border-radius:50%;background:{{ rs.cor }};color:#FBF8F1;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ rs.num }}</span>
+                <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#8C2A1B">{{ rs.d }} · {{ rs.title }}</span>
+                <span style="font-size:16px;color:#1E1710;line-height:1.35">{{ rs.t }}</span>
+              </button>
+            </sc-for>
+          </sc-if>
+          <sc-if value="{{ showAnoPanel }}" hint-placeholder-val="{{ false }}">
+            <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8C2A1B">O Continente em</span>
+            <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:40px;line-height:1;margin:0">{{ anoVal }}</h2>
+            <sc-if value="{{ hasDomAtivos }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+                <sc-for list="{{ domAtivos }}" as="da" hint-placeholder-count="0">
+                  <span style="display:flex;align-items:center;gap:8px;font-size:16px;color:#1E1710"><span style="flex:0 0 auto;width:14px;height:4px;border-radius:2px;background:{{ da.cor }}"></span><b style="font-weight:600">{{ da.n }}</b> {{ da.txt }}</span>
+                </sc-for>
+              </div>
+            </sc-if>
+            <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#4F4231;margin-top:10px">{{ anoEvTitulo }}</span>
+            <sc-for list="{{ anoEventos }}" as="ae" hint-placeholder-count="0">
+              <button onClick="{{ ae.go }}" style="display:flex;flex-direction:column;gap:1px;text-align:left;background:none;border:none;border-top:1px solid #E1D5BB;padding:8px 0;cursor:pointer">
+                <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#8C2A1B">{{ ae.date }}</span>
+                <span style="font-size:17px;color:#1E1710">{{ ae.title }}</span>
+              </button>
+            </sc-for>
+            <p style="margin:8px 0 0;font-size:14px;font-style:italic;color:#6B5C46">Domínios aproximados. O sublinhado colorido marca quem controla o lugar.</p>
+          </sc-if>
           <sc-if value="{{ hasPlace }}" hint-placeholder-val="{{ false }}">
             <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8C2A1B">{{ place.kind }}</span>
             <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:34px;line-height:1.05;margin:0">{{ place.n }}</h2>
@@ -321,7 +381,7 @@ input::placeholder{color:#7A6B55}
             </sc-if>
           </sc-if>
           <sc-if value="{{ noPlace }}" hint-placeholder-val="{{ true }}">
-            <p style="margin:0;font-size:18px;font-style:italic;color:#4F4231">Escolha um lugar no mapa.</p>
+            <p style="margin:0;font-size:18px;font-style:italic;color:#4F4231">Escolha um lugar no mapa, uma jornada ou um ano.</p>
           </sc-if>
         </aside>
       </div>
@@ -917,9 +977,15 @@ class Component extends DCLogic {
     const compSrcOpts = [['all', 'Tudo'], ['livros', 'Livros'], ['jogos', 'Jogos']].map(([id, label]) => ({ label, bg: s.compSrc === id ? '#1E1710' : 'transparent', fg: s.compSrc === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ compSrc: id }) }));
 
     const kindLabel = { reino: 'Reino', cidade: 'Lugar', natural: 'Geografia', regiao: 'Região' };
+    // Mapa no tempo: domínio de cada lugar no ano escolhido e lugares citados por eventos daquele ano.
+    const ano = s.ano, noAno = (e) => ano != null && Math.floor(e.s) === ano && /\d/.test(e.d);
+    const anoEvs = ano != null ? evOk.filter(noAno) : [];
+    const domDe = (pid) => { if (ano == null) return null; const d = X.dominios.find(x => x.p === pid); const f = d && d.faixas.find(f => ano + 1 > f.de && ano < f.ate); return f ? { ...f, cor: X.dominioTipos[f.k].cor } : null; };
+    const plEvento = new Set(anoEvs.flatMap(e => D.places.filter(pl => pl.e && (e.l || []).includes(pl.e)).map(pl => pl.id)));
     const places = D.places.map(pl => {
-      const sel = s.place === pl.id, k = pl.k;
+      const sel = s.place === pl.id, k = pl.k, dm = domDe(pl.id);
       return {
+        dom: dm ? '3px solid ' + dm.cor : 'none', evDot: plEvento.has(pl.id), op: s.rota && !sel ? '.55' : '1',
         n: pl.n, left: pl.x + '%', top: pl.y + '%',
         ff: k === 'reino' || k === 'regiao' ? "'IBM Plex Sans',sans-serif" : "'EB Garamond',serif",
         fw: k === 'reino' ? '600' : k === 'regiao' ? '500' : '400',
@@ -941,6 +1007,27 @@ class Component extends DCLogic {
       place = { n: plSel.n, d: plSel.d, kind: kindLabel[plSel.k], hasEntry: !!(key && em[key]), open: () => this.open(key),
         hasEvents: evs.length > 0, events: evs.map(e => ({ date: e.d, title: e.t, go: () => this.goEvent(e) })) };
     }
+
+    // Jornadas: pontos com evento escondido pelo modo sem spoilers ficam de fora.
+    const rotaSel = X.rotas.find(r => r.id === s.rota);
+    const evById = Object.fromEntries(evAll.map(e => [e.id, e]));
+    const rotaOpts = [{ id: null, n: 'Nenhuma', cor: 'transparent' }, ...X.rotas].map(r => {
+      const on = (s.rota || null) === r.id;
+      return { n: r.n, cor: r.cor, bd: on ? '#1E1710' : '#DCCFB3', bg: on ? '#1E1710' : '#FBF8F1', fg: on ? '#F4EEE1' : '#1E1710', select: () => this.setState({ rota: r.id, place: null }) };
+    });
+    let rotaStops = [];
+    if (rotaSel) {
+      const plById = Object.fromEntries(D.places.map(pl => [pl.id, pl]));
+      rotaStops = rotaSel.pontos.filter(pt => !pt.ev || !evById[pt.ev] || evVisivel(evById[pt.ev])).map((pt, i) => {
+        const pl = pt.p ? plById[pt.p] : null, ev = pt.ev && evById[pt.ev];
+        // Pontos sobre um nome do mapa ficam logo abaixo dele, para não cobrir o rótulo.
+        const x = pl ? pl.x - 3 : pt.x, y = pl ? pl.y + 3.2 : pt.y;
+        return { num: i + 1, x, y, left: x + '%', top: y + '%', cor: rotaSel.cor, d: pt.d, t: pt.t, title: pl ? pl.n : pt.n,
+          hasLabel: !pl, label: pt.n, go: () => { if (ev) this.goEvent(ev); } };
+      });
+    }
+    const rotaPts = rotaStops.map(r => r.x + ',' + r.y).join(' ');
+    const domAtivos = ano == null ? [] : X.dominios.map(d => ({ d, f: domDe(d.p) })).filter(x => x.f).map(({ d, f }) => ({ n: (D.places.find(pl => pl.id === d.p) || {}).n || d.p, txt: f.txt.charAt(0).toLowerCase() + f.txt.slice(1), cor: f.cor }));
 
     const tree = D.tree.map((g, i) => {
       const last = i === D.tree.length - 1, pp = g.p, has = pp.id && em[pp.id];
@@ -1054,7 +1141,15 @@ class Component extends DCLogic {
       copyLink: () => this.copyText(location.href, 'verbete'),
       printEntry: () => window.print(),
       results, showResults: s.searchOpen && qn.length >= 2, noResults: results.length === 0,
-      places, place, hasPlace, noPlace: !hasPlace,
+      places, place, hasPlace, noPlace: !hasPlace && !rotaSel && ano == null,
+      rotaOpts, hasRota: rotaStops.length > 1, rotaPanel: !!rotaSel && !hasPlace, rotaStops, rotaPts, rotaCor: rotaSel ? rotaSel.cor : '#000', rotaNome: rotaSel ? rotaSel.n : '', rotaSub: rotaSel ? rotaSel.sub : '',
+      anoOn: ano != null, anoOff: ano == null, anoVal: ano == null ? 1263 : ano,
+      anoBtn: ano == null ? 'Ver o mapa ao longo do tempo' : 'Fechar a linha do tempo', anoBtnBg: ano == null ? '#1E1710' : 'transparent', anoBtnFg: ano == null ? '#F4EEE1' : '#1E1710',
+      anoToggle: () => this.setState({ ano: ano == null ? 1263 : null }),
+      anoChange: (e) => this.setState({ ano: +e.target.value }),
+      showAnoPanel: ano != null && !hasPlace && !rotaSel, domAtivos, hasDomAtivos: domAtivos.length > 0,
+      anoEventos: anoEvs.map(e => ({ date: e.d, title: e.t, go: () => this.goEvent(e) })),
+      anoEvTitulo: anoEvs.length ? 'Neste ano' : 'Nenhum evento registrado neste ano',
       tree, relEdges, relNodes, relSel, relLegend: Object.values(R.types), relAspect: mobile ? '3 / 4' : '16 / 11',
       fontes,
       hasEntry: !!ce, entry, canBack: s.stack.length > 1,
