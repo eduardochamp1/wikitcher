@@ -22,7 +22,8 @@ function lerNotas() {
     const m = /^---\n([\s\S]*?)\n---\n?/.exec(txt);
     const fm = {};
     if (m) m[1].split('\n').forEach(l => { const k = /^(\w+):\s*(.*)$/.exec(l); if (k) fm[k[1]] = k[2].trim(); });
-    const lista = v => (v || '').replace(/^\[|\]$/g, '').split(',').map(x => x.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+    // Lista [a, b, "c, com vírgula"]: vírgulas dentro de aspas não separam itens.
+    const lista = v => ((v || '').replace(/^\[|\]$/g, '').match(/"[^"]*"|'[^']*'|[^,]+/g) || []).map(x => x.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
     return { rel: path.relative(WIKI, f), nome: path.basename(f, '.md'), tipo: fm.tipo || '', fonte: fm.fonte || '', aliases: lista(fm.aliases), tags: lista(fm.tags), fm, corpo: m ? txt.slice(m[0].length) : txt };
   });
 }

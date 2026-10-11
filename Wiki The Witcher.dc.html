@@ -332,6 +332,13 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
           </button>
         </sc-for>
       </div>
+      <sc-if value="{{ hasCompTemas }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:12px;border-top:1px dashed #DCCFB3">
+          <sc-for list="{{ compTemas }}" as="ct" hint-placeholder-count="0">
+            <button onClick="{{ ct.select }}" style="padding:4px 11px;cursor:pointer;border:1px solid {{ ct.bd }};background:{{ ct.bg }};color:{{ ct.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:12px;border-radius:999px">{{ ct.label }} <span style="opacity:.7">{{ ct.count }}</span></button>
+          </sc-for>
+        </div>
+      </sc-if>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:24px">
         <sc-for list="{{ compCards }}" as="e" hint-placeholder-count="9">
           <button onClick="{{ e.open }}" style="background:#FBF8F1;border:1px solid #DCCFB3;border-radius:10px;text-align:left;padding:16px 18px 18px;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:150px" style-hover="border-color:#8C2A1B">
@@ -735,6 +742,7 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
               <span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:{{ fo.bg }};color:{{ fo.color }}">{{ fo.status }}</span>
             </div>
             <p style="margin:0;font-size:17px;line-height:1.5;color:#33281C">{{ fo.d }}</p>
+            <sc-if value="{{ fo.hasUrl }}" hint-placeholder-val="{{ false }}"><a href="{{ fo.url }}" target="_blank" rel="noopener" style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;overflow-wrap:anywhere">{{ fo.url }}</a></sc-if>
           </div>
         </sc-for>
       </div>
@@ -778,7 +786,7 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
           <dl style="margin:18px 0 0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 18px">
             <sc-for list="{{ entry.facts }}" as="f" hint-placeholder-count="0">
               <dt style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;color:#6B5C46;padding-top:2px">{{ f.k }}</dt>
-              <dd style="margin:0;font-size:17px;color:#1E1710">{{ f.v }}</dd>
+              <dd style="margin:0;font-size:17px;color:#1E1710;overflow-wrap:anywhere"><sc-if value="{{ f.semUrl }}" hint-placeholder-val="{{ true }}">{{ f.v }}</sc-if><sc-if value="{{ f.hasUrl }}" hint-placeholder-val="{{ false }}">{{ f.vTxt }} <a href="{{ f.url }}" target="_blank" rel="noopener">abrir página ↗</a></sc-if></dd>
             </sc-for>
           </dl>
         </sc-if>
@@ -798,6 +806,15 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
           <sc-if value="{{ entry.canPerson }}" hint-placeholder-val="{{ false }}">
             <button data-noprint="1" onClick="{{ entry.personGo }}" style="margin-top:10px;padding:7px 14px;cursor:pointer;background:#1E1710;color:#F4EEE1;border:none;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">Ver só esta história na linha do tempo</button>
           </sc-if>
+        </sc-if>
+        <sc-if value="{{ entry.hasEscritos }}" hint-placeholder-val="{{ false }}">
+          <h2 style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#6E4A63;margin:32px 0 6px">Nos escritos do jogo</h2>
+          <sc-for list="{{ entry.escritos }}" as="es" hint-placeholder-count="0">
+            <button onClick="{{ es.open }}" style="display:flex;flex-direction:column;gap:1px;width:100%;text-align:left;background:none;border:none;border-top:1px solid #E1D5BB;padding:8px 0;cursor:pointer" style-hover="background:#F2EBDC">
+              <span style="font-size:17px;color:#1E1710">{{ es.label }}</span>
+              <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#6B5C46">{{ es.sub }}</span>
+            </button>
+          </sc-for>
         </sc-if>
         <sc-if value="{{ entry.hasLinks }}" hint-placeholder-val="{{ false }}">
           <h2 style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#8C2A1B;margin:32px 0 10px">Ver também</h2>

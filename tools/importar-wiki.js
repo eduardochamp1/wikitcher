@@ -21,7 +21,11 @@ const MESMO = {
 // Notas que não viram verbete, mas cujos links devem levar a um verbete parecido.
 const LINK = { 'Linhagem de Ciri': 'sangue-antigo' };
 // Categoria do app por tipo da nota, com exceções por nome.
-const CAT_TIPO = { personagem: 'personagem', lugar: 'politica', evento: 'politica', conceito: 'cosmo', raca: 'raca', organizacao: 'politica', obra: 'obra' };
+const CAT_TIPO = { personagem: 'personagem', lugar: 'politica', evento: 'politica', conceito: 'cosmo', raca: 'raca', organizacao: 'politica', obra: 'obra', escrito: 'escrito' };
+// Escritos de The Witcher 3 (pasta "10 - Escritos do Jogo"): rótulos de subtipo e tema.
+const SUBTIPO = { livro: 'Livro', carta: 'Carta', diario: 'Diário', relatorio: 'Relatório', poema: 'Poema', guia: 'Guia', documento: 'Documento' };
+const TEMA = { historia: 'História', mitologia: 'Mitologia', lendas: 'Lendas', profecias: 'Profecias', bestiario: 'Bestiário', povos: 'Povos', magia: 'Magia', lugares: 'Lugares', personagens: 'Personagens', bruxos: 'Bruxos', cotidiano: 'Cotidiano' };
+const JOGO = { 'Wild Hunt': 'The Witcher 3', 'Hearts of Stone': 'Hearts of Stone', 'Blood and Wine': 'Blood and Wine' };
 const CAT_NOTA = { 'Mutações dos Bruxos': 'bruxo', 'Massacre de Kaer Morhen': 'bruxo', 'Batalha de Kaer Morhen': 'bruxo', 'Destino': 'profecia', 'Bestiário': 'besta', 'Hansa de Geralt': 'personagem', 'Eskel': 'bruxo', 'Lambert': 'bruxo', 'Coën': 'bruxo' };
 const TIPOS = new Set(Object.keys(CAT_TIPO));
 const FONTE = { livros: ['livros', 'usuario'], jogos: ['jogos', 'usuario'], ambos: ['livros', 'jogos', 'usuario'] };
@@ -88,6 +92,7 @@ function converter(n) {
 const TAG = { feiticeira: 'feiticeira', bruxo: 'bruxo', realeza: 'realeza', antagonista: 'antagonista', espiao: 'espião', druida: 'druida', cidade: 'cidade', reino: 'reino', templo: 'templo', batalha: 'batalha', guerra: 'guerra', diplomacia: 'diplomacia', bando: 'bando', companheiros: 'companheiros' };
 const CERTEZA = { '●': 'firme', '◐': 'aproximada', '○': 'especulativa' };
 function rotulo(n) {
+  if (n.tipo === 'escrito') return [SUBTIPO[n.fm.subtipo] || 'Escrito', TEMA[n.fm.tema], JOGO[n.fm.jogo]].filter(Boolean).join(' · ');
   if (n.tipo === 'obra') return [n.tags.includes('jogo') ? 'Jogo' : n.tags.includes('contos') ? 'Livro de contos' : 'Romance', n.fm.ano].filter(Boolean).join(' · ');
   const base = { personagem: n.fm.raca || 'Personagem', lugar: 'Lugar', evento: 'Evento', conceito: 'Conceito', raca: 'Povo', organizacao: 'Organização' }[n.tipo];
   const r = [base, ...n.tags.map(x => TAG[x]).filter(Boolean).slice(0, 2)].join(' · ');
@@ -101,7 +106,10 @@ const notas = lerNotas();
 
 // 1) Decide o destino de cada nota: verbete existente, verbete novo ou fora da importação.
 const destino = new Map(), novos = [], iguais = [], fora = [];
+// Escritos nunca se fundem com verbetes existentes: o título do livro do jogo pode coincidir com um conceito.
+const tituloH1 = n => (/^#\s+(.+)$/m.exec(n.corpo) || [])[1];
 for (const n of notas) {
+  if (n.tipo === 'escrito') { destino.set(n.nome, 'escrito-' + slug(n.nome)); novos.push(n); continue; }
   const k = norm(semArtigo(n.nome));
   const id = MESMO[n.nome] || porTitulo.get(k) || (ids.has(slug(n.nome)) ? slug(n.nome) : null);
   if (id) { if (!ids.has(id)) throw new Error('MESMO aponta para id inexistente: ' + id); destino.set(n.nome, id); iguais.push([n, id]); }
@@ -111,6 +119,8 @@ for (const n of notas) {
 const alvo = new Map();
 for (const n of notas) if (destino.has(n.nome)) [n.nome, ...n.aliases].forEach(a => { if (!alvo.has(norm(a))) alvo.set(norm(a), destino.get(n.nome)); });
 for (const [nome, id] of Object.entries(LINK)) { if (!ids.has(id)) throw new Error('LINK aponta para id inexistente: ' + id); alvo.set(norm(nome), id); }
+// Links também podem apontar para verbetes que só existem no app (Melitele, Freya...), pelo título.
+for (const e of E) [e.t, semArtigo(e.t)].forEach(t => { if (!alvo.has(norm(t))) alvo.set(norm(t), e.id); });
 
 // Título original de cada obra, tirado da tabela do Índice de Obras.
 const original = new Map();
@@ -127,7 +137,15 @@ for (const n of novos) {
   const c = converter(n), id = destino.get(n.nome);
   if (ids.has(id) || verbetes.some(v => v.id === id)) throw new Error('id repetido: ' + id);
   const l = [...new Set(c.links.map(x => { const d = alvo.get(norm(x)); if (!d) semLink.add(x); return d; }).filter(d => d && d !== id))];
-  const v = { id, c: CAT_NOTA[n.nome] || CAT_TIPO[n.tipo], t: n.nome, ep: c.ep || rotulo(n), s: c.resumo, b: c.blocos };
+  const escrito = n.tipo === 'escrito';
+  const v = { id, c: CAT_NOTA[n.nome] || CAT_TIPO[n.tipo], t: escrito ? (tituloH1(n) || n.nome).trim() : n.nome, ep: escrito ? rotulo(n) : (c.ep || rotulo(n)), s: c.resumo, b: c.blocos };
+  if (escrito) {
+    // O resumo é o parágrafo da nota; a frase de identificação (> **...**) só entra se ele faltar.
+    if (!v.s && c.ep) v.s = c.ep.replace(/\.?$/, '.');
+    // O tema serve de filtro no Compêndio.
+    if (n.fm.tema) v.tm = n.fm.tema;
+    if (n.fm.referencia) c.fatos.push(['Referência', 'Witcher Wiki (Fandom): ' + n.fm.referencia]);
+  }
   if (n.fm.data && !c.fatos.some(f => f[0] === 'Data')) c.fatos.unshift(['Data', n.fm.data + (CERTEZA[n.fm.certeza] ? ' (' + CERTEZA[n.fm.certeza] + ')' : '')]);
   if (n.tipo === 'obra') {
     if (original.has(n.nome)) c.fatos.push(['Título original', original.get(n.nome)]);
@@ -136,10 +154,11 @@ for (const n of novos) {
   }
   if (c.fatos.length) v.f = c.fatos;
   if (l.length) v.l = l;
-  v.fo = FONTE[n.fonte] || ['usuario'];
+  v.fo = escrito ? ['jogos', 'fandom'] : (FONTE[n.fonte] || ['usuario']);
   verbetes.push(v);
   // O nome da nota passa a ser sublinhado nos textos do app (apelidos ficam de fora: são ambíguos demais).
-  if (!jaNoGloss.has(n.nome)) gloss.push({ e: id, k: [n.nome] });
+  // Títulos de escritos não: são muitos e genéricos ("Carta", "Diário").
+  if (!escrito && !jaNoGloss.has(n.nome)) gloss.push({ e: id, k: [n.nome] });
 }
 
 // Todas as chaves de glossário já usadas, para não repetir termo (comparação sem maiúsculas).

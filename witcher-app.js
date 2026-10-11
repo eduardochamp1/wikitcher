@@ -11,7 +11,8 @@
     personagem: "M8 2a2.8 2.8 0 1 0 .01 0M2.8 14.5c0-3 2.3-5 5.2-5s5.2 2 5.2 5",
     magia: "M8 1.5c1 3 4.2 4 4.2 8a4.2 4.2 0 0 1-8.4 0c0-2 1-3.2 2-4 0 2 1 3 2 3 0-3-.8-4.2.2-7Z",
     bruxo: "M2.5 2.5 12 12M13.5 2.5 4 12M10 13.5l3.5-3.5M2.5 10 6 13.5",
-    besta: "M3 13.5C4 8.5 5 5 4 2M7.5 13.5c1-5 2-8.5 1-11.5M12 13.5c1-5 2-8.5 1-11.5"
+    besta: "M3 13.5C4 8.5 5 5 4 2M7.5 13.5c1-5 2-8.5 1-11.5M12 13.5c1-5 2-8.5 1-11.5",
+    escrito: "M4 2.5h7.5a1.5 1.5 0 0 1 0 3H11v8H5a1.5 1.5 0 0 1 0-3h.5v-8M5.5 5.5H11M7 8h2.5M7 10.5h2.5"
   };
   const BOOK = "M2 3.5c2-1 4-1 6 .5 2-1.5 4-1.5 6-.5v9.5c-2-1-4-1-6 .5-2-1.5-4-1.5-6-.5ZM8 4v9.5";
   ICONS.obra = BOOK;
@@ -39,7 +40,7 @@
   class WitcherApp {
     static estadoInicial() {
       return { prefs: lerPrefs(), ajuda: false, ready: false, view: 'tempo', cats: [], src: 'all', q: '', qf: 'all', searchOpen: false, stack: [], compCat: 'all', compSrc: 'all', place: null, node: 'ciri', w: 0, flash: null, open: {}, expandAll: null, curEv: null, tip: null,
-        evLink: null, copied: false, leitura: lerLeitura(), conA: null, conB: null, conQa: '', conQb: '', escala: null, escSel: null, reveal: {}, person: null, rota: null, ano: null, arvore: 'sangue', relMode: 'curado', contraste: 'all', quiz: null };
+        evLink: null, copied: false, leitura: lerLeitura(), conA: null, conB: null, conQa: '', conQb: '', escala: null, escSel: null, compTema: 'all', reveal: {}, person: null, rota: null, ano: null, arvore: 'sangue', relMode: 'curado', contraste: 'all', quiz: null };
     }
 
     // Endereço: #/<aba>, #/<aba>/<verbete> ou #/tempo/@<evento>.
@@ -526,7 +527,9 @@
       // Um verbete some quando todos os eventos que o citam estão escondidos (obras ficam sempre).
       const citado = {};
       D.events.forEach(e => (e.l || []).forEach(id => (citado[id] = citado[id] || []).push(e)));
-      const hidden = new Set(spOn ? E.filter(e => e.c !== 'obra' && !s.reveal[e.id] && citado[e.id] && !citado[e.id].some(evVisivel)).map(e => e.id) : []);
+      // Os escritos de The Witcher 3 (e expansões) só aparecem para quem já jogou o jogo.
+      const jogouTW3 = lidos.has('the-witcher-3');
+      const hidden = new Set(spOn ? E.filter(e => e.c !== 'obra' && !s.reveal[e.id] && ((e.c === 'escrito' && !jogouTW3) || (citado[e.id] && !citado[e.id].some(evVisivel)))).map(e => e.id) : []);
       this.hidden = hidden;
       const Ev = E.filter(e => !hidden.has(e.id));
       const fechouSaga = limTudo >= 1268.99, jogouAlgo = limJogo > -Infinity;
@@ -639,10 +642,18 @@
       });
 
       const counts = {}; Ev.forEach(e => counts[e.c] = (counts[e.c] || 0) + 1);
-      const srcName = (e) => (e.fo || ['livros']).map(x => x === 'livros' ? 'Livros' : x === 'jogos' ? 'Jogos' : 'Material próprio').join(' + ');
+      const srcName = (e) => (e.fo || ['livros']).map(x => x === 'livros' ? 'Livros' : x === 'jogos' ? 'Jogos' : x === 'fandom' ? 'Witcher Wiki' : 'Material próprio').join(' + ');
       const compTabs = [{ id: 'all', label: 'Todos', color: '#1E1710', count: Ev.length, icon: ICONS.lenda }, ...D.cats.map(c => ({ id: c.id, label: c.label, color: c.color, count: counts[c.id] || 0, icon: ICONS[c.id] }))]
         .filter(t => t.count).map(t => { const on = s.compCat === t.id; return { ...t, border: on ? t.color : '#DCCFB3', bg: on ? t.color : '#FBF8F1', fg: on ? '#FBF8F1' : t.color, select: () => this.setState({ compCat: t.id }) }; });
-      const compCards = Ev.filter(e => (s.compCat === 'all' || e.c === s.compCat) && (s.compSrc === 'all' || (e.fo || ['livros']).includes(s.compSrc)))
+      // Escritos do Mundo: filtro extra por tema (história, mitologia, lendas...).
+      const TEMAS_ESC = { historia: 'História', mitologia: 'Mitologia', lendas: 'Lendas', profecias: 'Profecias', bestiario: 'Bestiário', povos: 'Povos', magia: 'Magia', lugares: 'Lugares', personagens: 'Personagens', bruxos: 'Bruxos', cotidiano: 'Cotidiano' };
+      const escritos = Ev.filter(e => e.c === 'escrito');
+      const temaCont = {}; escritos.forEach(e => { if (e.tm) temaCont[e.tm] = (temaCont[e.tm] || 0) + 1; });
+      const compTemas = s.compCat === 'escrito' ? [['all', 'Todos os temas', escritos.length], ...Object.keys(TEMAS_ESC).filter(k => temaCont[k]).map(k => [k, TEMAS_ESC[k], temaCont[k]])].map(([id, label, count]) => {
+        const on = (s.compTema || 'all') === id;
+        return { label, count, bd: on ? '#6E4A63' : '#DCCFB3', bg: on ? '#6E4A63' : '#FBF8F1', fg: on ? '#FBF8F1' : '#6E4A63', select: () => this.setState({ compTema: id }) };
+      }) : [];
+      const compCards = Ev.filter(e => (s.compCat === 'all' || e.c === s.compCat) && (s.compSrc === 'all' || (e.fo || ['livros']).includes(s.compSrc)) && (s.compCat !== 'escrito' || !s.compTema || s.compTema === 'all' || e.tm === s.compTema))
         .slice().sort((a, b) => s.compCat === 'all' ? (catOrder[a.c] - catOrder[b.c]) : 0)
         .map(e => {
           const fc = (X.fichas[e.id] || [])[0];
@@ -809,7 +820,7 @@
         };
       }
 
-      const fontes = F.map(f => ({ n: f.n, d: f.d, status: f.pend ? 'Pendente' : E.filter(e => (e.fo || ['livros']).includes(f.id)).length + ' verbetes', color: f.pend ? '#7A520C' : '#2F4A1F', bg: f.pend ? '#F3E6C6' : '#E3EAD6' }));
+      const fontes = F.map(f => ({ n: f.n, d: f.d, url: f.url || '', hasUrl: !!f.url, status: f.pend ? 'Pendente' : E.filter(e => (e.fo || ['livros']).includes(f.id)).length + ' verbetes', color: f.pend ? '#7A520C' : '#2F4A1F', bg: f.pend ? '#F3E6C6' : '#E3EAD6' }));
 
       const curId = s.stack[s.stack.length - 1];
       const ce = curId && em[curId];
@@ -827,12 +838,15 @@
           return bl;
         });
         const nasc = NASC[ce.id];
+        // Escritos do jogo que citam este verbete.
+        const escList = ce.c === 'escrito' ? [] : Ev.filter(e => e.c === 'escrito' && (e.l || []).includes(ce.id)).map(e => ({ label: e.t, sub: e.ep, open: () => this.open(e.id) }));
         const oculto = hidden.has(ce.id) || (spOn && citado[ce.id] && !citado[ce.id].some(evVisivel) && !s.reveal[ce.id] && ce.c !== 'obra');
         entry = {
           title: ce.t, ep: ce.ep, s: oculto ? 'Este verbete fala de acontecimentos que vêm depois do ponto em que você está na leitura.' : ce.s, cat: c.label, color: c.color, icon: ICONS[ce.c],
           oculto, reveal: () => this.setState(st => ({ reveal: { ...st.reveal, [ce.id]: true } })),
-          srcs: (ce.fo || ['livros']).map(x => x === 'jogos' ? { label: 'Jogos', bg: '#3A4150', fg: '#F4EEE1', bd: '#3A4150', icon: PAD } : x === 'livros' ? { label: 'Livros', bg: 'transparent', fg: '#1E1710', bd: '#9C8B6A', icon: BOOK } : { label: 'Material próprio', bg: '#F3E6C6', fg: '#7A520C', bd: '#E0C88E', icon: ICONS.lenda }),
-          facts: oculto ? [] : facts, hasFacts: !oculto && facts.length > 0,
+          srcs: (ce.fo || ['livros']).map(x => x === 'jogos' ? { label: 'Jogos', bg: '#3A4150', fg: '#F4EEE1', bd: '#3A4150', icon: PAD } : x === 'livros' ? { label: 'Livros', bg: 'transparent', fg: '#1E1710', bd: '#9C8B6A', icon: BOOK } : x === 'fandom' ? { label: 'Witcher Wiki', bg: '#EDE3EA', fg: '#6E4A63', bd: '#D6BFD0', icon: ICONS.escrito } : { label: 'Material próprio', bg: '#F3E6C6', fg: '#7A520C', bd: '#E0C88E', icon: ICONS.lenda }),
+          facts: oculto ? [] : facts.map(f => { const u = /(https?:\/\/\S+)/.exec(f.v); return { ...f, url: u ? u[1] : '', hasUrl: !!u, semUrl: !u, vTxt: u ? f.v.replace(u[1], '').replace(/[:\s]+$/, '') : f.v }; }), hasFacts: !oculto && facts.length > 0,
+          escritos: oculto ? [] : escList, hasEscritos: !oculto && escList.length > 0,
           paras: oculto ? [] : paras,
           events: oculto ? [] : evs.map(e => {
             const age = nasc && /\d/.test(e.d) && e.era !== 'fim' && Math.floor(e.s) >= nasc.y ? (nasc.a ? '≈ ' : '') + (Math.floor(e.s) - nasc.y) + ' anos' : '';
@@ -908,7 +922,7 @@
         hasCatFilter: s.cats.length > 0 || s.src !== 'all', clearCats: () => this.setState({ cats: [], src: 'all' }),
         toggleAllLabel: defOpen ? 'Recolher tudo' : 'Expandir tudo',
         toggleAll: () => this.setState({ expandAll: !defOpen, open: {} }),
-        compTabs, compCards, compDay, compRandom, compSrcOpts,
+        compTabs, compCards, compDay, compRandom, compSrcOpts, compTemas, hasCompTemas: compTemas.length > 0,
         leituraItens, leituraFeitas: s.leitura.lidos.length, leituraTotal: LE.length, leituraPct: Math.round(100 * s.leitura.lidos.length / LE.length) + '%',
         leituraLimpar: () => setLidos([]),
         spoilerToggle: () => this.saveLeitura({ ...s.leitura, on: !spOn }), spoilerOnStr: spOn ? 'true' : 'false',
