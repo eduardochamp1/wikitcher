@@ -2,10 +2,9 @@
 // Uso: node tools/importar-wiki.js   (gera witcher-wiki-dados.js na raiz)
 // Notas que já têm verbete escrito à mão em witcher-verbetes.js não são importadas;
 // só servem para resolver links. O relatório no terminal lista o que foi feito.
-const fs = require('fs'), path = require('path'), vm = require('vm');
+const fs = require('fs'), path = require('path');
+const { ROOT, norm, celulas, carregarApp, lerNotas, limpar } = require('./lib-wiki');
 
-const ROOT = path.join(__dirname, '..');
-const WIKI = path.join(ROOT, 'witcher-wiki');
 const OUT = path.join(ROOT, 'witcher-wiki-dados.js');
 
 // Nota da wiki -> id de verbete já existente no app, quando o título não bate sozinho.
@@ -27,38 +26,8 @@ const CAT_NOTA = { 'Mutações dos Bruxos': 'bruxo', 'Massacre de Kaer Morhen': 
 const TIPOS = new Set(Object.keys(CAT_TIPO));
 const FONTE = { livros: ['livros', 'usuario'], jogos: ['jogos', 'usuario'], ambos: ['livros', 'jogos', 'usuario'] };
 
-const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
 const semArtigo = s => s.replace(/^(a|o|as|os) /i, '');
 const slug = s => norm(s).replace(/ /g, '-');
-
-function carregarApp() {
-  const win = {}, ctx = vm.createContext({ window: win });
-  for (const f of ['witcher-tempo.js', 'witcher-verbetes.js', 'witcher-glossario.js']) vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx);
-  return win;
-}
-
-function lerNotas() {
-  const files = [];
-  (function walk(d) { for (const n of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, n.name); if (n.isDirectory()) walk(p); else if (p.endsWith('.md')) files.push(p); } })(WIKI);
-  return files.sort().map(f => {
-    const txt = fs.readFileSync(f, 'utf8').replace(/\r\n/g, '\n');
-    const m = /^---\n([\s\S]*?)\n---\n?/.exec(txt);
-    const fm = {};
-    if (m) m[1].split('\n').forEach(l => { const k = /^(\w+):\s*(.*)$/.exec(l); if (k) fm[k[1]] = k[2].trim(); });
-    const lista = v => (v || '').replace(/^\[|\]$/g, '').split(',').map(x => x.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
-    return { rel: path.relative(WIKI, f), nome: path.basename(f, '.md'), tipo: fm.tipo || '', fonte: fm.fonte || '', aliases: lista(fm.aliases), tags: lista(fm.tags), fm, corpo: m ? txt.slice(m[0].length) : txt };
-  });
-}
-
-// Texto corrido: tira a marcação e anota os alvos dos [[links]].
-function limpar(t, links) {
-  return t.replace(/\[\[([^\]]+?)\]\]/g, (_, x) => {
-    const [alvo, rotulo] = x.split(/\\?\|/);
-    if (links) links.push(alvo.split('#')[0].trim());
-    return (rotulo || alvo).trim();
-  }).replace(/\*\*(.+?)\*\*/g, '$1').replace(/(^|[^*])\*([^*]+)\*/g, '$1$2').replace(/`([^`]+)`/g, '$1').replace(/\s*🎮\s*/g, ' ').replace(/\s+/g, ' ').trim();
-}
-const celulas = l => l.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map(c => c.trim());
 
 function converter(n) {
   const links = [], fatos = [], blocos = [];
@@ -125,7 +94,7 @@ function rotulo(n) {
   return r.charAt(0).toUpperCase() + r.slice(1);
 }
 
-const app = carregarApp();
+const app = carregarApp(['witcher-tempo.js', 'witcher-verbetes.js', 'witcher-glossario.js']);
 const E = app.WITCHER_VERBETES, ids = new Set(E.map(e => e.id));
 const porTitulo = new Map(E.map(e => [norm(semArtigo(e.t)), e.id]));
 const notas = lerNotas();
@@ -235,7 +204,9 @@ for (const n of notas) {
 
 const linhas = a => a.map(x => JSON.stringify(x)).join(',\n');
 fs.writeFileSync(OUT, '// GERADO por tools/importar-wiki.js a partir de witcher-wiki/ — não edite à mão.\n' +
-  'window.WITCHER_WIKI = {\nverbetes: [\n' + linhas(verbetes) + '\n],\nglossario: [\n' + linhas(gloss) + '\n],\ncontrastes: [\n' + linhas(contrastes) + '\n]\n};\n');
+  'window.WITCHER_WIKI = {\nverbetes: [\n' + linhas(verbetes) + '\n],\nglossario: [\n' + linhas(gloss) + '\n],\ncontrastes: [\n' + linhas(contrastes) + '\n],\n' +
+  // Nome (ou apelido) normalizado de cada nota -> id do verbete; usado por tools/verificar.js e tools/diferencas.js.
+  'notas: ' + JSON.stringify(Object.fromEntries(alvo)) + '\n};\n');
 
 const porCat = {}; verbetes.forEach(v => porCat[v.c] = (porCat[v.c] || 0) + 1);
 console.log('Notas lidas: ' + notas.length);
