@@ -37,7 +37,7 @@ X.arvores.forEach(a => (a.geracoes || []).forEach(g => { verb(g.p.id, 'Árvore '
 Object.keys(X.fichas).forEach(id => verb(id, 'Ficha do bestiário'));
 W.contrastes.forEach(c => verb(c.e, 'Livros × Jogos'));
 Object.keys(app.WITCHER_NASC || {}).forEach(id => verb(id, 'Nascimento'));
-X.leitura.forEach(o => { if (!ids.has(o.id) && o.id !== 'thronebreaker') aviso('Obra da leitura sem verbete: ' + o.id); (o.eventos || []).forEach(ev => { if (!evIds.has(ev)) erro('Leitura ' + o.id + ' cita evento inexistente: ' + ev); }); });
+X.leitura.forEach(o => { if (!ids.has(o.id)) aviso('Obra da leitura sem verbete: ' + o.id); (o.eventos || []).forEach(ev => { if (!evIds.has(ev)) erro('Leitura ' + o.id + ' cita evento inexistente: ' + ev); }); });
 ['livro', 'jogo'].forEach(t => {
   const f = X.leitura.filter(o => o.tipo === t && o.fim != null).map(o => o.fim);
   if (f.some((v, i) => i && v <= f[i - 1])) erro('Os cortes "fim" da leitura (' + t + ') não estão em ordem crescente');

@@ -26,4 +26,4 @@ tags: [indice, obras]
 | [[The Witcher 3]]: *Wild Hunt* | 2015 | 1272 |
 | ↳ *Hearts of Stone* | 2015 | c. 1272 |
 | ↳ *Blood and Wine* | 2016 | 1275–1276 |
-| *Thronebreaker: The Witcher Tales* | 2018 | 1267 |
+| [[Thronebreaker]]: *The Witcher Tales* | 2018 | 1267 |

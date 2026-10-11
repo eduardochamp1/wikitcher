@@ -27,8 +27,8 @@ window.WITCHER_GLOSSARIO = [
 {t:"Ard Gaeth",k:["Ard Gaeth"],d:"Portal pelo qual os elfos Aen Seidhe deixam o mundo."},
 {t:"Gwynbleidd",k:["Gwynbleidd"],d:"“Lobo Branco”, o nome élfico de Geralt."},
 {t:"Zireael",k:["Zireael"],d:"“Andorinha”, o nome élfico de Ciri."},
-{t:"Yaruga",k:["Yaruga"],d:"Grande rio que marca a fronteira entre os Reinos do Norte e Nilfgaard."},
-{t:"Pontar",k:["Pontar"],d:"Rio que separa Redania de Temeria e deságua em Novigrad."},
+{t:"Yaruga",e:"yaruga",k:["Yaruga"],d:"Grande rio que marca a fronteira entre os Reinos do Norte e Nilfgaard."},
+{t:"Pontar",e:"pontar",k:["Pontar"],d:"Rio que separa Redania de Temeria e deságua em Novigrad."},
 {t:"Marnadal",k:["Marnadal"],d:"Os Degraus de Marnadal, onde o exército de Cintra foi derrotado em 1263."},
 {t:"Abismo de Sedna",k:["Abismo de Sedna"],d:"Trecho de mar onde Pavetta e Duny desapareceram num naufrágio."},
 {t:"Stygga",k:["Stygga"],d:"Castelo onde Vilgefortz se escondia; palco do confronto final da saga."},
@@ -40,6 +40,6 @@ window.WITCHER_GLOSSARIO = [
 {t:"O Usurpador",k:["Usurpador"],d:"Quem tomou o trono de Nilfgaard do imperador Fergus e amaldiçoou o jovem Emhyr."},
 {t:"Garstang",k:["Garstang"],d:"Palácio dos magos na ilha de Thanedd."},
 {t:"Montecalvo",k:["Montecalvo"],d:"Castelo de Philippa Eilhart, sede da Loja das Feiticeiras."},
-{t:"Korath",k:["Korath"],d:"Deserto a leste, onde Ciri reaparece depois de atravessar a Torre da Gaivota."},
+{t:"Korath",e:"korath",k:["Korath"],d:"Deserto a leste, onde Ciri reaparece depois de atravessar a Torre da Gaivota."},
 {t:"Lan Exeter",k:["Lan Exeter"],d:"Capital de Kovir; dá nome aos tratados que separaram Kovir de Redania."}
 ];

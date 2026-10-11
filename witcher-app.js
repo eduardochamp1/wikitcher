@@ -313,6 +313,17 @@
       if (last < text.length) out.push(plain(text.slice(last)));
       return out;
     }
+    // Ano de nascimento: WITCHER_NASC e, para os demais, o fato "Nascimento" do verbete (que vem das notas da wiki).
+    nascimentos(E) {
+      if (this._nasc) return this._nasc;
+      const N = { ...(window.WITCHER_NASC || {}) };
+      E.forEach(e => {
+        if (N[e.id]) return;
+        const f = (e.f || []).find(([k]) => /^nasc/i.test(k)), m = f && /(\d{3,4})/.exec(f[1]);
+        if (m) N[e.id] = { y: +m[1], a: /\bc\.|cerca|aprox/i.test(f[1]) ? 1 : 0 };
+      });
+      return (this._nasc = N);
+    }
     verbetes() {
       if (!this.E) this.E = window.WITCHER_VERBETES.concat(window.WITCHER_WIKI.verbetes);
       return this.E;
@@ -354,7 +365,7 @@
       };
       if (!s.ready) return base;
 
-      const D = window.WITCHER_TEMPO, E = this.verbetes(), F = window.WITCHER_FONTES || [], NASC = window.WITCHER_NASC || {};
+      const D = window.WITCHER_TEMPO, E = this.verbetes(), F = window.WITCHER_FONTES || [], NASC = this.nascimentos(E);
       const catMap = Object.fromEntries(D.cats.map(c => [c.id, c]));
       const catOrder = Object.fromEntries(D.cats.map((c, i) => [c.id, i]));
       const em = Object.fromEntries(E.map(e => [e.id, e]));
