@@ -106,6 +106,17 @@
       this.onPop = () => this.applyHash();
       // Funcionar sem internet (só em http/https; abrindo o arquivo direto do disco não há service worker).
       if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
+      // Atualização ao vivo: com tools/observar.js, a página recarrega quando a wiki ou o app mudam.
+      // Em qualquer outro servidor o endereço não existe, e a conexão é fechada no primeiro erro.
+      if (window.EventSource && /^https?:$/.test(location.protocol)) {
+        try {
+          let aberto = false;
+          this.es = new EventSource('__mudou');
+          this.es.onopen = () => { aberto = true; };
+          this.es.onmessage = () => location.reload();
+          this.es.onerror = () => { if (!aberto) this.es.close(); };
+        } catch (e) {}
+      }
       window.addEventListener('popstate', this.onPop);
       this.ro = new ResizeObserver(this.onResize);
       this.ro.observe(document.documentElement);
@@ -124,6 +135,7 @@
       window.removeEventListener('keydown', this.onKey);
       window.removeEventListener('scroll', this.onScroll);
       window.removeEventListener('popstate', this.onPop);
+      if (this.es) this.es.close();
       if (this.ro) this.ro.disconnect();
       clearTimeout(this.t); clearTimeout(this.ft); clearTimeout(this.st);
     }
