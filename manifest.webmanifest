@@ -1,0 +1,16 @@
+{
+  "name": "Crônicas de The Witcher",
+  "short_name": "Codex Witcher",
+  "description": "Linha do tempo, verbetes, mapa e quiz do mundo de The Witcher.",
+  "lang": "pt-BR",
+  "start_url": "./Wiki%20The%20Witcher.dc.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F4EEE1",
+  "theme_color": "#1E1710",
+  "icons": [
+    { "src": "icone-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

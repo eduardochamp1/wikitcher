@@ -104,6 +104,8 @@
       window.addEventListener('keydown', this.onKey);
       window.addEventListener('scroll', this.onScroll, { passive: true });
       this.onPop = () => this.applyHash();
+      // Funcionar sem internet (só em http/https; abrindo o arquivo direto do disco não há service worker).
+      if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
       window.addEventListener('popstate', this.onPop);
       this.ro = new ResizeObserver(this.onResize);
       this.ro.observe(document.documentElement);
