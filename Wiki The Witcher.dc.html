@@ -433,6 +433,14 @@ input::placeholder{color:#7A6B55}
     <main style="max-width:1180px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
       <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Relações</div>
       <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 12px;color:#1E1710">Quem é quem</h1>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 14px">
+        <div style="display:flex;border:1px solid #CDBE9C;border-radius:6px;overflow:hidden">
+          <sc-for list="{{ relModes }}" as="rm" hint-placeholder-count="2">
+            <button onClick="{{ rm.select }}" style="background:{{ rm.bg }};color:{{ rm.fg }};border:none;padding:6px 14px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">{{ rm.label }}</button>
+          </sc-for>
+        </div>
+        <span style="font-size:16px;color:#4F4231;font-style:italic">{{ relModeDesc }}</span>
+      </div>
       <div style="display:flex;flex-wrap:wrap;gap:6px 16px;margin:0 0 22px">
         <sc-for list="{{ relLegend }}" as="lg" hint-placeholder-count="6">
           <span style="display:flex;align-items:center;gap:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#33281C"><span style="width:18px;height:3px;border-radius:2px;background:{{ lg.color }}"></span>{{ lg.label }}</span>
@@ -492,6 +500,49 @@ input::placeholder{color:#7A6B55}
           </div>
         </sc-for>
       </div>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ isQuiz }}" hint-placeholder-val="{{ false }}">
+    <main style="max-width:780px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
+      <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Quiz</div>
+      <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 12px;color:#1E1710">Teste o que você sabe</h1>
+      <p style="max-width:640px;font-size:19px;line-height:1.55;color:#33281C;margin:0 0 22px">Perguntas geradas a partir do próprio codex. No contrato de bruxo, você recebe as pistas de uma criatura e precisa dizer qual é.</p>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-bottom:16px">
+        <div style="display:flex;border:1px solid #CDBE9C;border-radius:6px;overflow:hidden">
+          <sc-for list="{{ quizModes }}" as="qm" hint-placeholder-count="2">
+            <button onClick="{{ qm.select }}" style="background:{{ qm.bg }};color:{{ qm.fg }};border:none;padding:7px 14px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">{{ qm.label }}</button>
+          </sc-for>
+        </div>
+        <span style="font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:#4F4231">{{ quizPlacar }}</span>
+      </div>
+      <sc-if value="{{ quizVazio }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ quizStart }}" style="padding:12px 22px;cursor:pointer;background:#1E1710;color:#F4EEE1;border:none;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:500">Começar</button>
+      </sc-if>
+      <sc-if value="{{ quizTem }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FBF8F1;border:1px solid #DCCFB3;border-radius:12px;padding:22px clamp(16px,3vw,28px);display:flex;flex-direction:column;gap:14px">
+          <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8C2A1B">{{ quiz.kind }}</span>
+          <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(24px,3vw,30px);line-height:1.2;margin:0;color:#1E1710">{{ quiz.text }}</h2>
+          <sc-if value="{{ quiz.hasSubject }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:20px;line-height:1.4;color:#33281C;font-style:italic">{{ quiz.subject }}</p></sc-if>
+          <sc-if value="{{ quiz.hasClues }}" hint-placeholder-val="{{ false }}">
+            <ul style="margin:0;padding:0 0 0 20px;display:flex;flex-direction:column;gap:6px">
+              <sc-for list="{{ quiz.clues }}" as="cl" hint-placeholder-count="0"><li style="font-size:18px;line-height:1.45;color:#1E1710">{{ cl }}</li></sc-for>
+            </ul>
+          </sc-if>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:8px">
+            <sc-for list="{{ quiz.opts }}" as="qo" hint-placeholder-count="4">
+              <button onClick="{{ qo.pick }}" style="text-align:left;padding:12px 14px;cursor:{{ qo.cur }};border:1.5px solid {{ qo.bd }};background:{{ qo.bg }};color:{{ qo.fg }};border-radius:8px;font-size:17px;line-height:1.35" style-hover="border-color:#8C2A1B">{{ qo.label }}</button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ quiz.answered }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding-top:6px;border-top:1px solid #ECE3D0">
+              <span style="font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:600;color:{{ quiz.fbCor }}">{{ quiz.feedback }}</span>
+              <button onClick="{{ quiz.saber }}" style="background:none;border:none;padding:0;cursor:pointer;color:#8C2A1B;text-decoration:underline;font-family:'IBM Plex Sans',sans-serif;font-size:14px">{{ quiz.saberLabel }}</button>
+              <button onClick="{{ quizNext }}" style="margin-left:auto;padding:8px 16px;cursor:pointer;background:#1E1710;color:#F4EEE1;border:none;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500">Próxima →</button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
     </main>
   </sc-if>
 
@@ -798,6 +849,112 @@ class Component extends DCLogic {
     if ((X.semObra || []).includes(e.id) || !['bruxo', 'guerras', 'depois'].includes(e.era) || /anunciado/i.test(e.d)) return null;
     return L.find(o => o.fim != null && (o.tipo === 'jogo') === !!e.g && e.s <= o.fim) || null;
   }
+  // Rede de personagens: peso 2 quando um verbete cita o outro, mais 1 por evento em comum.
+  // O layout é um modelo de forças simples, calculado uma vez para cada conjunto de verbetes visíveis.
+  rede(E, events, hidden) {
+    const key = [...hidden].sort().join(',') + '#' + events.length;
+    if (this._rede && this._rede.key === key) return this._rede.v;
+    const extra = new Set(['coen', 'eskel', 'lambert', 'o-dimm']);
+    const pessoas = E.filter(e => (e.c === 'personagem' || extra.has(e.id)) && !hidden.has(e.id));
+    const ok = new Set(pessoas.map(e => e.id)), byId = Object.fromEntries(pessoas.map(e => [e.id, e]));
+    const par = (a, b) => a < b ? a + '|' + b : b + '|' + a;
+    const cit = {}, junto = {};
+    pessoas.forEach(e => (e.l || []).forEach(o => { if (ok.has(o) && o !== e.id) cit[par(e.id, o)] = 1; }));
+    events.forEach(ev => {
+      const ps = [...new Set((ev.l || []).filter(id => ok.has(id)))];
+      for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) { const k = par(ps[i], ps[j]); junto[k] = (junto[k] || 0) + 1; }
+    });
+    const w = {};
+    new Set([...Object.keys(cit), ...Object.keys(junto)]).forEach(k => { w[k] = (cit[k] ? 2 : 0) + (junto[k] || 0); });
+    const grau = {};
+    Object.entries(w).forEach(([k, v]) => k.split('|').forEach(id => { grau[id] = (grau[id] || 0) + v; }));
+    const top = pessoas.filter(e => grau[e.id]).sort((a, b) => grau[b.id] - grau[a.id]).slice(0, 36).map(e => e.id);
+    const T = new Set(top), idx = Object.fromEntries(top.map((id, i) => [id, i]));
+    const ligs = Object.entries(w).map(([k, v]) => [...k.split('|'), v]).filter(([a, b]) => T.has(a) && T.has(b));
+    const n = top.length, kk = Math.sqrt(1 / Math.max(n, 1)) * 0.9;
+    const pos = top.map((id, i) => ({ x: 0.5 + 0.4 * Math.cos(2 * Math.PI * i / n), y: 0.5 + 0.4 * Math.sin(2 * Math.PI * i / n) }));
+    for (let it = 0; it < 500; it++) {
+      const temp = 0.08 * (1 - it / 500) + 0.002, disp = pos.map(() => ({ x: 0, y: 0 }));
+      for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+        let dx = pos[i].x - pos[j].x, dy = pos[i].y - pos[j].y; const d = Math.max(0.01, Math.hypot(dx, dy)), f = kk * kk / d;
+        dx /= d; dy /= d; disp[i].x += dx * f; disp[i].y += dy * f; disp[j].x -= dx * f; disp[j].y -= dy * f;
+      }
+      ligs.forEach(([a, b, v]) => {
+        const i = idx[a], j = idx[b]; let dx = pos[i].x - pos[j].x, dy = pos[i].y - pos[j].y;
+        const d = Math.max(0.01, Math.hypot(dx, dy)), f = d * d / kk * Math.min(1, 0.3 + v / 6);
+        dx /= d; dy /= d; disp[i].x -= dx * f; disp[i].y -= dy * f; disp[j].x += dx * f; disp[j].y += dy * f;
+      });
+      pos.forEach((p, i) => {
+        disp[i].x += (0.5 - p.x) * 0.05; disp[i].y += (0.5 - p.y) * 0.05;
+        const d = Math.max(0.0001, Math.hypot(disp[i].x, disp[i].y));
+        p.x += disp[i].x / d * Math.min(d, temp); p.y += disp[i].y / d * Math.min(d, temp);
+      });
+    }
+    const xs = pos.map(p => p.x), ys = pos.map(p => p.y);
+    const nx = (v) => 9 + 82 * (v - Math.min(...xs)) / Math.max(0.001, Math.max(...xs) - Math.min(...xs));
+    const ny = (v) => 6 + 88 * (v - Math.min(...ys)) / Math.max(0.001, Math.max(...ys) - Math.min(...ys));
+    const curado = Object.fromEntries(window.WITCHER_TEMPO.rels.nodes.map(x => [x.id, x.n]));
+    const nodes = top.map((id, i) => ({ id, full: byId[id].t, n: curado[id] || byId[id].t.replace(/ (de|da|do|var|aep|von|verch) .*$/, ''), x: nx(pos[i].x), y: ny(pos[i].y) }));
+    // Afasta rótulos que se cobrem (caixas estimadas em % da área do gráfico).
+    const caixa = nodes.map(nd => ({ w: 3.2 + nd.n.length * 1.05, h: 5.4 }));
+    for (let it = 0; it < 300; it++) {
+      let mexeu = false;
+      for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j];
+        const ox = (caixa[i].w + caixa[j].w) / 2 - Math.abs(a.x - b.x), oy = (caixa[i].h + caixa[j].h) / 2 - Math.abs(a.y - b.y);
+        if (ox <= 0 || oy <= 0) continue;
+        mexeu = true;
+        if (ox / caixa[i].w < oy / caixa[i].h) { const d = (a.x < b.x ? -1 : 1) * ox / 2; a.x += d; b.x -= d; }
+        else { const d = (a.y < b.y ? -1 : 1) * oy / 2; a.y += d; b.y -= d; }
+      }
+      nodes.forEach((nd, i) => { nd.x = Math.min(100 - caixa[i].w / 2 - 1, Math.max(caixa[i].w / 2 + 1, nd.x)); nd.y = Math.min(96, Math.max(4, nd.y)); });
+      if (!mexeu) break;
+    }
+    const tipo = (v) => v >= 4 ? 'forte' : v >= 2 ? 'medio' : 'fraco';
+    const edges = ligs.map(([a, b, v]) => {
+      const k = par(a, b), jt = junto[k] || 0;
+      const label = [cit[k] ? 'Um aparece no verbete do outro' : '', jt ? jt + (jt === 1 ? ' evento em comum' : ' eventos em comum') : ''].filter(Boolean).join(' · ');
+      return [a, b, tipo(v), label, v];
+    });
+    const v = { nodes, edges, forte: (a, b) => (w[par(a, b)] || 0) >= 3,
+      types: { forte: { label: 'Muito ligados', color: '#8C2A1B' }, medio: { label: 'Ligados', color: '#8A5E10' }, fraco: { label: 'Citados juntos uma vez', color: '#9C8B6A' } } };
+    this._rede = { key, v };
+    return v;
+  }
+  // Quiz: as perguntas saem dos dados visíveis (respeitam o modo sem spoilers) guardados em this.qdata.
+  sortear(a, n) { const c = a.slice(); for (let i = c.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [c[i], c[j]] = [c[j], c[i]]; } return c.slice(0, n); }
+  novaPergunta(mode) {
+    const Q = this.qdata; if (!Q) return null;
+    const montar = (certo, outros, extra) => {
+      const opts = this.sortear([certo, ...this.sortear(outros.filter(o => o !== certo), 3)], 4);
+      return { ...extra, opts, answer: opts.indexOf(certo) };
+    };
+    if (mode === 'contrato') {
+      const b = this.sortear(Q.bestas, 1)[0];
+      const esconde = (t) => b.t.split(/\s+/).concat(b.t.replace(/s$/, '')).filter(w => w.length > 3).reduce((x, w) => x.replace(new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '▇▇▇'), t);
+      const clues = [esconde(b.s)];
+      (Q.fichas[b.id] || []).forEach(([k, v]) => clues.push(k + ': ' + v));
+      (b.f || []).forEach(([k, v]) => clues.push(k + ': ' + esconde(v)));
+      if (b.ep && b.ep !== 'Criatura') clues.push('Conhecido como: ' + esconde(b.ep));
+      return montar(b.t, Q.bestas.map(x => x.t), { kind: 'Contrato de bruxo', text: 'Que criatura é esta?', clues, ref: { tipo: 'verbete', id: b.id } });
+    }
+    const tipos = ['data', 'quem', 'quem'].concat(Q.gloss.length >= 4 ? ['termo'] : []);
+    const t = this.sortear(tipos, 1)[0];
+    if (t === 'data') {
+      const e = this.sortear(Q.datas, 1)[0];
+      return montar(e.d, [...new Set(Q.datas.filter(x => Math.floor(x.s) !== Math.floor(e.s)).map(x => x.d))], { kind: 'Linha do tempo', text: 'Quando aconteceu?', subject: e.t, ref: { tipo: 'evento', id: e.id } });
+    }
+    if (t === 'termo') {
+      const g = this.sortear(Q.gloss, 1)[0];
+      return montar(g.d, Q.gloss.map(x => x.d), { kind: 'Glossário', text: 'O que é “' + g.title + '”?', ref: null });
+    }
+    const p = this.sortear(Q.pessoas, 1)[0];
+    return montar(p.t, Q.pessoas.map(x => x.t), { kind: 'Personagens', text: 'Quem é conhecido como…', subject: '“' + p.ep + '”', ref: { tipo: 'verbete', id: p.id } });
+  }
+  quizIr(mode, zerar) {
+    const q = this.novaPergunta(mode);
+    this.setState(st => ({ quiz: { mode, q, picked: null, acertos: zerar || !st.quiz ? 0 : st.quiz.acertos, total: zerar || !st.quiz ? 0 : st.quiz.total } }));
+  }
   copyText(t, key) {
     const done = () => { this.setState({ copied: key }); clearTimeout(this.ct); this.ct = setTimeout(() => this.setState({ copied: false }), 1600); };
     try { navigator.clipboard.writeText(t).then(done, done); } catch (e) { done(); }
@@ -1098,24 +1255,29 @@ class Component extends DCLogic {
       };
     });
 
-    const R = D.rels, nm = Object.fromEntries(R.nodes.map(n => [n.id, n]));
-    const linked = new Set([s.node]);
-    R.edges.forEach(([a, b]) => { if (a === s.node) linked.add(b); if (b === s.node) linked.add(a); });
-    const relEdges = R.edges.map(([a, b, t]) => {
-      const on = a === s.node || b === s.node;
-      return { x1: nm[a].x + '%', y1: nm[a].y + '%', x2: nm[b].x + '%', y2: nm[b].y + '%', color: R.types[t].color, w: on ? 2.5 : 1, op: on ? 1 : 0.2 };
+    // Relações: o mapa curado de witcher-tempo.js ou a rede montada a partir dos verbetes e eventos.
+    const auto = s.relMode === 'auto';
+    const R = auto ? this.rede(E, evOk, hidden) : D.rels;
+    const nm = Object.fromEntries(R.nodes.map(n => [n.id, n]));
+    const node = nm[s.node] ? s.node : (nm.geralt ? 'geralt' : R.nodes[0].id);
+    const linked = new Set([node]);
+    R.edges.forEach(([a, b]) => { if (a === node) linked.add(b); if (b === node) linked.add(a); });
+    const relEdges = R.edges.filter(([a, b]) => !auto || a === node || b === node || R.forte(a, b)).map(([a, b, t]) => {
+      const on = a === node || b === node;
+      return { x1: nm[a].x + '%', y1: nm[a].y + '%', x2: nm[b].x + '%', y2: nm[b].y + '%', color: R.types[t].color, w: on ? 2.5 : 1, op: on ? 1 : (auto ? 0.12 : 0.2) };
     });
     const relNodes = R.nodes.map(n => {
-      const sel = n.id === s.node, near = linked.has(n.id);
-      return { n: n.n, left: n.x + '%', top: n.y + '%', bg: sel ? '#1E1710' : '#FBF8F1', fg: sel ? '#FBF8F1' : '#1E1710', border: sel ? '#1E1710' : near ? '#8C2A1B' : '#DCCFB3', op: near ? 1 : 0.55, fs: mobile ? '13px' : (sel ? '19px' : '16px'), select: () => this.setState({ node: n.id }) };
+      const sel = n.id === node, near = linked.has(n.id);
+      return { n: n.n, left: n.x + '%', top: n.y + '%', bg: sel ? '#1E1710' : '#FBF8F1', fg: sel ? '#FBF8F1' : '#1E1710', border: sel ? '#1E1710' : near ? '#8C2A1B' : '#DCCFB3', op: near ? 1 : (auto ? 0.45 : 0.55), fs: mobile ? (auto ? '11px' : '13px') : (sel ? '19px' : (auto ? '13px' : '16px')), select: () => this.setState({ node: n.id }) };
     });
     const relSel = {
-      n: nm[s.node].n, open: () => this.open(s.node),
-      list: R.edges.filter(([a, b]) => a === s.node || b === s.node).map(([a, b, t, l]) => {
-        const o = a === s.node ? b : a;
-        return { other: nm[o].n, type: R.types[t].label, color: R.types[t].color, label: l, select: () => this.setState({ node: o }) };
+      n: nm[node].full || nm[node].n, open: () => this.open(node),
+      list: R.edges.filter(([a, b]) => a === node || b === node).sort((x, y) => (y[4] || 0) - (x[4] || 0)).map(([a, b, t, l]) => {
+        const o = a === node ? b : a;
+        return { other: nm[o].full || nm[o].n, type: R.types[t].label, color: R.types[t].color, label: l, select: () => this.setState({ node: o }) };
       })
     };
+    const relModes = [['curado', 'Laços principais'], ['auto', 'Rede do codex']].map(([id, label]) => ({ label, bg: s.relMode === id ? '#1E1710' : 'transparent', fg: s.relMode === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ relMode: id }) }));
 
     const fontes = F.map(f => ({ n: f.n, d: f.d, status: f.pend ? 'Pendente' : E.filter(e => (e.fo || ['livros']).includes(f.id)).length + ' verbetes', color: f.pend ? '#7A520C' : '#2F4A1F', bg: f.pend ? '#F3E6C6' : '#E3EAD6' }));
 
@@ -1151,6 +1313,35 @@ class Component extends DCLogic {
         links: oculto ? [] : (ce.l || []).map(chip).filter(Boolean), hasLinks: !oculto && (ce.l || []).some(id => em[id] && !hidden.has(id))
       };
     }
+
+    // Quiz.
+    const pessoasQ = Ev.filter(e => e.c === 'personagem' && e.ep && !/^(Personagem|Humano|Humana|Elfo|Elfa)\b/.test(e.ep) && !this.norm(e.ep).includes(this.norm(e.t.split(' ')[0])));
+    this.qdata = {
+      pessoas: pessoasQ, bestas: Ev.filter(e => e.c === 'besta'), fichas: X.fichas,
+      datas: evOk.filter(e => /\b\d{3,4}\b/.test(e.d) && e.era !== 'fim' && !/incerta/i.test(e.d)),
+      gloss: this.gl.items.filter(it => !it.e && it.d && it.d.length < 140)
+    };
+    const qz = s.quiz, qq = qz && qz.q;
+    let quiz = {};
+    if (qq) {
+      const answered = qz.picked != null, acertou = answered && qz.picked === qq.answer;
+      const refEv = qq.ref && qq.ref.tipo === 'evento' ? evAll.find(e => e.id === qq.ref.id) : null;
+      quiz = {
+        kind: qq.kind, text: qq.text, subject: qq.subject || '', hasSubject: !!qq.subject, clues: qq.clues || [], hasClues: !!(qq.clues && qq.clues.length),
+        answered, feedback: acertou ? 'Acertou!' : 'Era: ' + qq.opts[qq.answer], fbCor: acertou ? '#2F4A1F' : '#8C2A1B',
+        saberLabel: refEv ? 'ver na linha do tempo' : (qq.ref ? 'abrir verbete' : ''),
+        saber: () => { if (refEv) this.goEvent(refEv); else if (qq.ref) this.open(qq.ref.id); },
+        opts: qq.opts.map((label, i) => {
+          const certo = i === qq.answer, esse = i === qz.picked;
+          return { label, cur: answered ? 'default' : 'pointer',
+            bd: answered ? (certo ? '#2F4A1F' : esse ? '#8C2A1B' : '#DCCFB3') : '#CDBE9C',
+            bg: answered ? (certo ? '#E3EAD6' : esse ? '#F1E4E6' : '#FBF8F1') : '#FBF8F1', fg: '#1E1710',
+            pick: () => { if (!answered) this.setState(st => ({ quiz: { ...st.quiz, picked: i, total: st.quiz.total + 1, acertos: st.quiz.acertos + (certo ? 1 : 0) } })); } };
+        })
+      };
+    }
+    const qMode = qz ? qz.mode : 'perguntas';
+    const quizModes = [['perguntas', 'Perguntas'], ['contrato', 'Contrato de bruxo']].map(([id, label]) => ({ label, bg: qMode === id ? '#1E1710' : 'transparent', fg: qMode === id ? '#F4EEE1' : '#1E1710', select: () => this.quizIr(id, true) }));
 
     // Aba Leitura.
     const setLidos = (arr) => this.saveLeitura({ ...s.leitura, lidos: LE.map(o => o.id).filter(id => arr.includes(id)) });
@@ -1211,8 +1402,11 @@ class Component extends DCLogic {
       anoEventos: anoEvs.map(e => ({ date: e.d, title: e.t, go: () => this.goEvent(e) })),
       anoEvTitulo: anoEvs.length ? 'Neste ano' : 'Nenhum evento registrado neste ano',
       contrasteTabs, contrasteGrupos, contrasteAviso: spOn,
+      quiz, quizTem: !!qq, quizVazio: !qq, quizModes, quizStart: () => this.quizIr(qMode, true), quizNext: () => this.quizIr(qMode, false),
+      quizPlacar: qz ? qz.acertos + ' acertos em ' + qz.total + (qz.total === 1 ? ' pergunta' : ' perguntas') : '',
       arvoreOpts, arvoreTitulo: arv.titulo, arvoreSub: arv.sub,
-      tree, relEdges, relNodes, relSel, relLegend: Object.values(R.types), relAspect: mobile ? '3 / 4' : '16 / 11',
+      tree, relEdges, relNodes, relSel, relLegend: Object.values(R.types), relAspect: mobile ? '3 / 4' : '16 / 11', relModes,
+      relModeDesc: auto ? R.nodes.length + ' personagens ligados por citações nos verbetes e por eventos em comum.' : 'Os laços mais importantes da saga, escolhidos à mão.',
       fontes,
       hasEntry: !!ce, entry, canBack: s.stack.length > 1,
       back: () => this.setState(st => ({ stack: st.stack.slice(0, -1) })),
