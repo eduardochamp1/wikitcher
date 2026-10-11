@@ -357,6 +357,36 @@
       }
       return null;
     }
+    // Cartão 1200×630 em PNG para compartilhar um verbete ou o placar do quiz.
+    async cartao({ kicker, titulo, sub, texto, cor, arquivo }) {
+      try { await document.fonts.ready; } catch (e) {}
+      const W = 1200, H = 630, c = document.createElement('canvas'); c.width = W; c.height = H;
+      const g = c.getContext('2d');
+      g.fillStyle = '#F4EEE1'; g.fillRect(0, 0, W, H);
+      g.fillStyle = cor || '#8C2A1B'; g.fillRect(0, 0, 18, H);
+      g.strokeStyle = '#D6C8AA'; g.lineWidth = 2; g.strokeRect(46, 40, W - 92, H - 80);
+      const linhas = (t, max, fonte) => {
+        g.font = fonte; const out = []; let l = '';
+        for (const w of String(t || '').split(/\s+/)) { const x = l ? l + ' ' + w : w; if (g.measureText(x).width > max && l) { out.push(l); l = w; } else l = x; }
+        if (l) out.push(l); return out;
+      };
+      let y = 110;
+      g.fillStyle = cor || '#8C2A1B'; g.font = "600 22px 'IBM Plex Sans', sans-serif"; g.fillText(String(kicker || '').toUpperCase(), 90, y);
+      y += 30;
+      g.fillStyle = '#1E1710';
+      for (const l of linhas(titulo, W - 180, "72px 'IM Fell English', serif").slice(0, 2)) { y += 76; g.font = "72px 'IM Fell English', serif"; g.fillText(l, 90, y); }
+      if (sub) { y += 46; g.fillStyle = '#4F4231'; g.font = "italic 30px 'EB Garamond', serif"; g.fillText(linhas(sub, W - 180, "italic 30px 'EB Garamond', serif")[0], 90, y); }
+      y += 24;
+      g.fillStyle = '#33281C';
+      const corpo = linhas(texto, W - 180, "30px 'EB Garamond', serif"), cabe = Math.max(1, Math.floor((H - 120 - y) / 40));
+      corpo.slice(0, cabe).forEach((l, i) => { y += 40; g.font = "30px 'EB Garamond', serif"; g.fillText(i === cabe - 1 && corpo.length > cabe ? l.replace(/\s*\S*$/, ' …') : l, 90, y); });
+      g.fillStyle = '#8C2A1B'; g.font = "600 18px 'IBM Plex Sans', sans-serif"; g.fillText('CODEX DO CONTINENTE · CRÔNICAS DE THE WITCHER', 90, H - 72);
+      const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+      const file = new File([blob], arquivo + '.png', { type: 'image/png' });
+      try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: titulo }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    }
     copyText(t, key) {
       const done = () => { this.setState({ copied: key }); clearTimeout(this.ct); this.ct = setTimeout(() => this.setState({ copied: false }), 1600); };
       try { navigator.clipboard.writeText(t).then(done, done); } catch (e) { done(); }
@@ -878,6 +908,9 @@
         compListas: [['Favoritos', pr.favs, 'favs'], ['Vistos recentemente', pr.recentes, 'recentes']].map(([titulo, ids, campo]) => ({
           titulo, itens: ids.map(chip).filter(Boolean).slice(0, 10), limpar: () => this.savePrefs(() => ({ [campo]: [] }))
         })).filter(l => l.itens.length),
+        cartaoVerbete: () => { if (ce) this.cartao({ kicker: catMap[ce.c].label, titulo: ce.t, sub: ce.ep, texto: entry.oculto ? entry.s : [ce.s, (ce.b || []).find(b => typeof b === 'string') || ''].join(' '), cor: catMap[ce.c].color, arquivo: 'verbete-' + ce.id }); },
+        cartaoQuiz: () => { if (qz && qz.total) this.cartao({ kicker: qz.mode === 'contrato' ? 'Contrato de bruxo' : 'Quiz', titulo: qz.acertos + ' de ' + qz.total, sub: qz.acertos === qz.total ? 'Nenhum erro. Digno de Kaer Morhen.' : 'acertos no quiz do codex', texto: 'Perguntas geradas a partir da linha do tempo, dos verbetes e do glossário de The Witcher.', cor: '#8C2A1B', arquivo: 'quiz-witcher' }); },
+        quizTemPlacar: !!(qz && qz.total),
         favToggle: () => { if (curId) this.toggleFav(curId); }, favStr: pr.favs.includes(curId) ? 'true' : 'false',
         favLabel: pr.favs.includes(curId) ? '★ favorito' : '☆ favoritar', favBg: pr.favs.includes(curId) ? '#8A5E10' : 'transparent', favFg: pr.favs.includes(curId) ? '#FBF8F1' : '#1E1710',
         copyLabel: s.copied === 'verbete' ? 'link copiado ✓' : 'copiar link',

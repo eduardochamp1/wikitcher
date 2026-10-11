@@ -643,7 +643,9 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg);background:#0d0b0
             <button onClick="{{ qm.select }}" style="background:{{ qm.bg }};color:{{ qm.fg }};border:none;padding:7px 14px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">{{ qm.label }}</button>
           </sc-for>
         </div>
-        <span style="font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:#4F4231">{{ quizPlacar }}</span>
+        <span style="display:flex;align-items:center;gap:10px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:#4F4231">{{ quizPlacar }}
+          <sc-if value="{{ quizTemPlacar }}" hint-placeholder-val="{{ false }}"><button onClick="{{ cartaoQuiz }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#1E1710">compartilhar placar</button></sc-if>
+        </span>
       </div>
       <sc-if value="{{ quizVazio }}" hint-placeholder-val="{{ true }}">
         <button onClick="{{ quizStart }}" style="padding:12px 22px;cursor:pointer;background:#1E1710;color:#F4EEE1;border:none;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:500">Começar</button>
@@ -744,6 +746,7 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg);background:#0d0b0
           <button onClick="{{ favToggle }}" aria-pressed="{{ favStr }}" title="Favoritar (F)" style="background:{{ favBg }};color:{{ favFg }};border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">{{ favLabel }}</button>
           <button onClick="{{ copyLink }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">{{ copyLabel }}</button>
           <button onClick="{{ printEntry }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">imprimir</button>
+          <button onClick="{{ cartaoVerbete }}" title="Gerar uma imagem para compartilhar" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">cartão</button>
           <sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ back }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">← voltar</button></sc-if>
           <button onClick="{{ closeEntry }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">fechar ✕</button>
         </div>
