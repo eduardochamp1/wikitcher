@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IM+Fell+English:ital@0;1&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+html,body{margin:0;padding:0;background:#F4EEE1;color:#1E1710;font-family:'EB Garamond',Georgia,serif;-webkit-font-smoothing:antialiased}
+a{color:#8C2A1B;text-decoration:underline;text-underline-offset:3px}
+a:hover{color:#1E1710}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit}
+input::placeholder{color:#7A6B55}
+</style>
+<script src="witcher-tempo.js"></script>
+<script src="witcher-verbetes.js"></script>
+<script src="witcher-glossario.js"></script>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column">
+  <header ref="{{ headerRef }}" style="position:sticky;top:0;z-index:30;background:#F4EEE1;border-bottom:1px solid #D6C8AA">
+    <div style="max-width:1180px;margin:0 auto;padding:12px clamp(16px,4vw,40px);display:flex;flex-wrap:wrap;align-items:center;gap:10px 32px">
+      <button onClick="{{ goTempo }}" style="background:none;border:none;padding:0;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:3px">
+        <span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#8C2A1B">Codex do Continente</span>
+        <span style="font-family:'IM Fell English',serif;font-size:26px;line-height:1;color:#1E1710">Crônicas de The Witcher</span>
+      </button>
+      <nav style="display:flex;flex-wrap:wrap;gap:2px 22px;flex:1 1 auto">
+        <button onClick="{{ goTempo }}" style="background:none;border:none;border-bottom:2px solid {{ tabTempo }};padding:8px 0 5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710">Linha do Tempo</button>
+        <button onClick="{{ goComp }}" style="background:none;border:none;border-bottom:2px solid {{ tabComp }};padding:8px 0 5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710">Compêndio</button>
+        <button onClick="{{ goMapa }}" style="background:none;border:none;border-bottom:2px solid {{ tabMapa }};padding:8px 0 5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710">Mapa</button>
+        <button onClick="{{ goLinhagem }}" style="background:none;border:none;border-bottom:2px solid {{ tabLinhagem }};padding:8px 0 5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710">Linhagem</button>
+        <button onClick="{{ goRel }}" style="background:none;border:none;border-bottom:2px solid {{ tabRel }};padding:8px 0 5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710">Relações</button>
+        <button onClick="{{ goFontes }}" style="background:none;border:none;border-bottom:2px solid {{ tabFontes }};padding:8px 0 5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710">Fontes</button>
+      </nav>
+      <div style="position:relative;flex:1 1 220px;max-width:320px">
+        <input value="{{ q }}" onChange="{{ onQ }}" onFocus="{{ openSearch }}" onBlur="{{ closeSearch }}" placeholder="Buscar personagem, lugar, evento…" style="width:100%;padding:9px 12px;background:#FBF8F1;border:1px solid #D6C8AA;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:#1E1710;outline:none">
+        <sc-if value="{{ showResults }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:calc(100% + 6px);right:0;width:min(420px,92vw);max-height:70vh;overflow-y:auto;background:#FBF8F1;border:1px solid #D6C8AA;border-radius:8px;box-shadow:0 14px 34px rgba(30,23,16,.16);z-index:50">
+            <sc-for list="{{ results }}" as="r" hint-placeholder-count="0">
+              <button onClick="{{ r.open }}" style="display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #ECE3D0;padding:10px 14px;cursor:pointer" style-hover="background:#F2EBDC">
+                <span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:{{ r.color }}">{{ r.kind }}</span>
+                <span style="font-size:18px;color:#1E1710;line-height:1.2">{{ r.label }}</span>
+                <span style="font-size:14px;color:#4F4231;font-style:italic">{{ r.sub }}</span>
+              </button>
+            </sc-for>
+            <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:14px;font-style:italic;color:#4F4231">Nada encontrado.</div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+    <sc-if value="{{ isTempo }}" hint-placeholder-val="{{ true }}">
+      <div style="border-top:1px solid #E6DCC6;background:#EFE7D6">
+        <div style="max-width:1180px;margin:0 auto;padding:8px clamp(16px,4vw,40px) 10px;display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 16px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#4F4231">
+            <span><span style="font-weight:600;color:#8C2A1B">Era {{ cur.numeral }}</span> · {{ cur.name }} <span style="color:#7A6B55">({{ cur.span }})</span></span>
+            <span style="color:#1E1710"><span style="font-weight:600">{{ cur.date }}</span> {{ cur.title }}</span>
+          </div>
+          <div style="display:flex;gap:3px">
+            <sc-for list="{{ mini }}" as="m" hint-placeholder-count="9">
+              <button onClick="{{ m.go }}" title="{{ m.name }}" style="flex:{{ m.flex }} 1 0;min-width:22px;height:22px;padding:0;border:none;border-radius:3px;cursor:pointer;background:{{ m.bg }};color:{{ m.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600" style-hover="opacity:.85">{{ m.numeral }}</button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </header>
+
+  <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:120px 20px;text-align:center;font-size:22px;color:#4F4231;font-style:italic">Abrindo o codex…</div>
+  </sc-if>
+
+  <sc-if value="{{ isTempo }}" hint-placeholder-val="{{ true }}">
+    <main style="max-width:1180px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
+      <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">A história do mundo</div>
+      <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,68px);line-height:1.02;margin:10px 0 16px;color:#1E1710;text-wrap:balance;max-width:880px">Da Conjunção das Esferas à Geada Branca</h1>
+      <p style="max-width:680px;font-size:20px;line-height:1.55;color:#33281C;margin:0;text-wrap:pretty">Uma crônica única do mundo de The Witcher, em nove eras. Cada evento mostra o essencial em uma frase; abra-o para ler mais. Palavras sublinhadas têm explicação ao passar o mouse.</p>
+
+      <div style="margin-top:32px;background:#FBF8F1;border:1px solid #DCCFB3;border-radius:10px;padding:18px 20px 20px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px">
+          <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#1E1710">Como ler as datas</span>
+          <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#4F4231;max-width:640px">Os anos são contados a partir da <b style="font-weight:600">Ressurreição</b> (ano 0). Antes dela: <b style="font-weight:600">a.R.</b> Depois: só o número do ano. Datas antigas são aproximadas.</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:0">
+          <sc-for list="{{ ruler }}" as="rm" hint-placeholder-count="6">
+            <div style="flex:1 1 120px;min-width:0;display:flex;flex-direction:column;gap:6px;padding:0 8px 6px 0">
+              <div style="display:flex;align-items:center">
+                <span style="width:11px;height:11px;border-radius:50%;background:{{ rm.dot }};flex:0 0 auto"></span>
+                <span style="flex:1;height:2px;background:{{ rm.line }}"></span>
+              </div>
+              <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:{{ rm.col }}">{{ rm.y }}</span>
+              <span style="font-size:15px;line-height:1.25;color:#33281C">{{ rm.t }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="margin-top:22px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px">
+          <div style="display:flex;border:1px solid #CDBE9C;border-radius:6px;overflow:hidden">
+            <sc-for list="{{ srcOpts }}" as="so" hint-placeholder-count="3">
+              <button onClick="{{ so.select }}" style="background:{{ so.bg }};color:{{ so.fg }};border:none;padding:6px 14px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">{{ so.label }}</button>
+            </sc-for>
+          </div>
+          <button onClick="{{ toggleAll }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;color:#1E1710">{{ toggleAllLabel }}</button>
+          <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#4F4231">{{ evCount }} eventos</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+          <sc-for list="{{ catChips }}" as="c" hint-placeholder-count="10">
+            <button onClick="{{ c.toggle }}" style="display:flex;align-items:center;gap:6px;padding:5px 11px 5px 9px;cursor:pointer;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:13px;border-radius:999px">
+              <svg viewBox="0 0 16 16" width="14" height="14" style="fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round"><path d="{{ c.icon }}"></path></svg>{{ c.label }}
+            </button>
+          </sc-for>
+          <sc-if value="{{ hasCatFilter }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ clearCats }}" style="padding:4px 8px;cursor:pointer;border:none;background:none;color:#8C2A1B;font-family:'IBM Plex Sans',sans-serif;font-size:13px;text-decoration:underline">limpar filtros</button>
+          </sc-if>
+        </div>
+      </div>
+
+      <sc-for list="{{ erasView }}" as="er" hint-placeholder-count="2">
+        <section id="{{ er.domId }}" style="margin-top:72px">
+          <div style="display:flex;align-items:center;gap:18px">
+            <span style="flex:0 0 auto;width:60px;height:60px;border-radius:50%;background:#1E1710;color:#F4EEE1;display:flex;align-items:center;justify-content:center;font-family:'IM Fell English',serif;font-size:26px">{{ er.numeral }}</span>
+            <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+              <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#8C2A1B">Era {{ er.numeral }} · {{ er.span }}</span>
+              <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(28px,3.6vw,40px);line-height:1.05;margin:0;color:#1E1710">{{ er.name }}</h2>
+            </div>
+          </div>
+          <p style="max-width:760px;font-size:19px;line-height:1.6;color:#33281C;margin:18px 0 0;text-wrap:pretty"><sc-for list="{{ er.segs }}" as="sg" hint-placeholder-count="0"><span onMouseEnter="{{ sg.enter }}" onMouseLeave="{{ sg.leave }}" onClick="{{ sg.click }}" style="border-bottom:{{ sg.ul }};cursor:{{ sg.cur }}">{{ sg.t }}</span></sc-for></p>
+          <sc-if value="{{ er.hasPresentes }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;max-width:920px">
+              <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#4F4231;margin-right:4px">Entram em cena:</span>
+              <sc-for list="{{ er.presentes }}" as="pr" hint-placeholder-count="0">
+                <button onClick="{{ pr.open }}" style="display:flex;align-items:center;gap:5px;padding:3px 9px 3px 7px;cursor:pointer;background:transparent;border:1px solid #DCCFB3;border-radius:999px;color:#1E1710;font-size:15px" style-hover="border-color:#8C2A1B">
+                  <svg viewBox="0 0 16 16" width="12" height="12" style="fill:none;stroke:{{ pr.color }};stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><path d="{{ pr.icon }}"></path></svg>{{ pr.label }}
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+          <ol style="list-style:none;margin:28px 0 0;padding:0;display:flex;flex-direction:column;gap:14px">
+            <sc-for list="{{ er.events }}" as="ev" hint-placeholder-count="3">
+              <li id="{{ ev.domId }}" style="display:grid;grid-template-columns:{{ ev.cols }};column-gap:14px">
+                <div style="position:relative;display:flex;justify-content:center">
+                  <span style="position:absolute;top:0;bottom:-14px;width:1px;background:#D6C8AA"></span>
+                  <span style="position:relative;margin-top:18px;width:30px;height:30px;border-radius:50%;background:#FBF8F1;border:1.5px solid {{ ev.dot }};color:{{ ev.dot }};display:flex;align-items:center;justify-content:center">
+                    <svg viewBox="0 0 16 16" width="15" height="15" style="fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round"><path d="{{ ev.icon }}"></path></svg>
+                  </span>
+                </div>
+                <div style="min-width:0;background:{{ ev.bg }};border:1px solid #DCCFB3;border-radius:10px;padding:16px clamp(14px,2.4vw,22px) 16px;display:flex;flex-direction:column;gap:8px;transition:background .6s">
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px">
+                    <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px">
+                      <span style="font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:600;color:#8C2A1B">{{ ev.date }}</span>
+                      <sc-if value="{{ ev.hasRel }}" hint-placeholder-val="{{ false }}"><span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#6B5C46">{{ ev.rel }}</span></sc-if>
+                    </div>
+                    <span style="display:flex;align-items:center;gap:5px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:{{ ev.srcBg }};color:{{ ev.srcFg }};border:1px solid {{ ev.srcBd }}">
+                      <svg viewBox="0 0 16 16" width="12" height="12" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><path d="{{ ev.srcIcon }}"></path></svg>{{ ev.src }}
+                    </span>
+                  </div>
+                  <h3 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(22px,2.4vw,26px);line-height:1.15;margin:0;color:#1E1710;text-wrap:pretty">{{ ev.title }}</h3>
+                  <div style="display:flex;flex-wrap:wrap;gap:3px 12px">
+                    <sc-for list="{{ ev.tags }}" as="tg" hint-placeholder-count="1">
+                      <span style="display:flex;align-items:center;gap:4px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:500;color:{{ tg.color }}">
+                        <svg viewBox="0 0 16 16" width="12" height="12" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><path d="{{ tg.icon }}"></path></svg>{{ tg.label }}
+                      </span>
+                    </sc-for>
+                  </div>
+                  <p style="margin:2px 0 0;font-size:19px;line-height:1.55;color:#1E1710;max-width:740px;text-wrap:pretty"><sc-for list="{{ ev.sum }}" as="sg" hint-placeholder-count="0"><span onMouseEnter="{{ sg.enter }}" onMouseLeave="{{ sg.leave }}" onClick="{{ sg.click }}" style="border-bottom:{{ sg.ul }};cursor:{{ sg.cur }}">{{ sg.t }}</span></sc-for></p>
+                  <sc-if value="{{ ev.hasAges }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+                      <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#6B5C46">Idades:</span>
+                      <sc-for list="{{ ev.ages }}" as="ag" hint-placeholder-count="0">
+                        <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;padding:2px 8px;border-radius:999px;background:#F1E4E6;color:#7A2442">{{ ag.n }} <b style="font-weight:600">{{ ag.a }}</b></span>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ ev.isOpen }}" hint-placeholder-val="{{ false }}">
+                    <sc-if value="{{ ev.hasRest }}" hint-placeholder-val="{{ false }}">
+                      <p style="margin:0;font-size:18px;line-height:1.6;color:#33281C;max-width:740px;text-wrap:pretty"><sc-for list="{{ ev.rest }}" as="sg" hint-placeholder-count="0"><span onMouseEnter="{{ sg.enter }}" onMouseLeave="{{ sg.leave }}" onClick="{{ sg.click }}" style="border-bottom:{{ sg.ul }};cursor:{{ sg.cur }}">{{ sg.t }}</span></sc-for></p>
+                    </sc-if>
+                    <sc-if value="{{ ev.hasChips }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;padding-top:10px;border-top:1px solid #ECE3D0">
+                        <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#4F4231">Verbetes ligados</span>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px">
+                          <sc-for list="{{ ev.chips }}" as="ch" hint-placeholder-count="0">
+                            <button onClick="{{ ch.open }}" style="display:flex;align-items:center;gap:5px;padding:4px 10px 4px 8px;cursor:pointer;background:#F4EEE1;border:1px solid #DCCFB3;border-radius:999px;font-size:15px;color:#1E1710" style-hover="border-color:#8C2A1B">
+                              <svg viewBox="0 0 16 16" width="12" height="12" style="fill:none;stroke:{{ ch.color }};stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><path d="{{ ch.icon }}"></path></svg>{{ ch.label }}
+                            </button>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </sc-if>
+                  </sc-if>
+                  <sc-if value="{{ ev.canOpen }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ ev.toggle }}" style="align-self:flex-start;background:none;border:none;padding:2px 0;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;color:#8C2A1B">{{ ev.toggleLabel }}</button>
+                  </sc-if>
+                </div>
+              </li>
+            </sc-for>
+          </ol>
+          <sc-if value="{{ er.empty }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:20px 0 0;font-style:italic;color:#4F4231">Nenhum evento desta era com os filtros atuais.</p>
+          </sc-if>
+        </section>
+      </sc-for>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ isComp }}" hint-placeholder-val="{{ false }}">
+    <main style="max-width:1180px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
+      <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Compêndio</div>
+      <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 24px;color:#1E1710">Verbetes do Continente</h1>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <sc-for list="{{ compTabs }}" as="t" hint-placeholder-count="11">
+          <button onClick="{{ t.select }}" style="display:flex;align-items:center;gap:6px;padding:5px 12px 5px 10px;cursor:pointer;border:1px solid {{ t.border }};background:{{ t.bg }};color:{{ t.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:13px;border-radius:999px">
+            <svg viewBox="0 0 16 16" width="13" height="13" style="fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round"><path d="{{ t.icon }}"></path></svg>{{ t.label }} <span style="opacity:.7">{{ t.count }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:24px">
+        <sc-for list="{{ compCards }}" as="e" hint-placeholder-count="9">
+          <button onClick="{{ e.open }}" style="background:#FBF8F1;border:1px solid #DCCFB3;border-radius:10px;text-align:left;padding:16px 18px 18px;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:150px" style-hover="border-color:#8C2A1B">
+            <span style="display:flex;align-items:center;gap:5px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:500;color:{{ e.color }}">
+              <svg viewBox="0 0 16 16" width="13" height="13" style="fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round"><path d="{{ e.icon }}"></path></svg>{{ e.cat }}
+            </span>
+            <span style="font-family:'IM Fell English',serif;font-size:24px;line-height:1.1;color:#1E1710">{{ e.title }}</span>
+            <span style="font-size:15px;font-style:italic;color:#4F4231;line-height:1.3">{{ e.ep }}</span>
+            <span style="font-size:16px;color:#33281C;line-height:1.45;margin-top:2px;text-wrap:pretty">{{ e.s }}</span>
+            <span style="margin-top:auto;padding-top:6px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B5C46">{{ e.src }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ isMapa }}" hint-placeholder-val="{{ false }}">
+    <main style="max-width:1180px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
+      <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Mapa</div>
+      <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 10px;color:#1E1710">O Continente</h1>
+      <p style="max-width:640px;font-size:18px;line-height:1.5;color:#4F4231;margin:0 0 26px">Esquema aproximado das posições de reinos, cidades e regiões. Toque em um nome para ver o que aconteceu ali.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start">
+        <div style="flex:1 1 520px;min-width:0;max-width:760px;position:relative;aspect-ratio:5/6;background:#FBF8F1;border:1px solid #CDBE9C;border-radius:10px;overflow:hidden">
+          <div style="position:absolute;left:0;right:0;top:66%;border-top:1px dashed #BFAE8A"></div>
+          <div style="position:absolute;right:16px;top:14px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#4F4231;text-align:center;line-height:1.1">N<br>↑</div>
+          <sc-for list="{{ places }}" as="p" hint-placeholder-count="0">
+            <button onClick="{{ p.select }}" style="position:absolute;left:{{ p.left }};top:{{ p.top }};transform:translate(-50%,-50%);background:{{ p.bg }};border:none;border-radius:4px;padding:2px 5px;cursor:{{ p.cursor }};display:flex;align-items:center;gap:5px;white-space:nowrap;font-family:{{ p.ff }};font-size:{{ p.fs }};font-weight:{{ p.fw }};letter-spacing:{{ p.ls }};color:{{ p.color }};font-style:{{ p.fst }}">
+              <sc-if value="{{ p.dot }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;border-radius:50%;background:currentColor"></span></sc-if>{{ p.n }}
+            </button>
+          </sc-for>
+        </div>
+        <aside style="flex:1 1 280px;min-width:0;max-width:420px;display:flex;flex-direction:column;gap:12px">
+          <sc-if value="{{ hasPlace }}" hint-placeholder-val="{{ false }}">
+            <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8C2A1B">{{ place.kind }}</span>
+            <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:34px;line-height:1.05;margin:0">{{ place.n }}</h2>
+            <p style="margin:0;font-size:18px;line-height:1.5;color:#33281C">{{ place.d }}</p>
+            <sc-if value="{{ place.hasEntry }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ place.open }}" style="align-self:flex-start;padding:7px 14px;cursor:pointer;background:#1E1710;color:#F4EEE1;border:none;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">Abrir verbete</button>
+            </sc-if>
+            <sc-if value="{{ place.hasEvents }}" hint-placeholder-val="{{ false }}">
+              <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#4F4231;margin-top:10px">Na história do mundo</span>
+              <sc-for list="{{ place.events }}" as="pe" hint-placeholder-count="0">
+                <button onClick="{{ pe.go }}" style="display:flex;flex-direction:column;gap:1px;text-align:left;background:none;border:none;border-top:1px solid #E1D5BB;padding:8px 0;cursor:pointer">
+                  <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#8C2A1B">{{ pe.date }}</span>
+                  <span style="font-size:17px;color:#1E1710">{{ pe.title }}</span>
+                </button>
+              </sc-for>
+            </sc-if>
+          </sc-if>
+          <sc-if value="{{ noPlace }}" hint-placeholder-val="{{ true }}">
+            <p style="margin:0;font-size:18px;font-style:italic;color:#4F4231">Escolha um lugar no mapa.</p>
+          </sc-if>
+        </aside>
+      </div>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ isLinhagem }}" hint-placeholder-val="{{ false }}">
+    <main style="max-width:980px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
+      <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Linhagem · Hen Ichaer</div>
+      <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 10px;color:#1E1710">A linhagem do Sangue Antigo</h1>
+      <p style="max-width:640px;font-size:19px;line-height:1.55;color:#33281C;margin:0 0 34px">Oito gerações, de Lara Dorren a Ciri. O gene élfico atravessa Redania, Temeria e Cintra até se manifestar por inteiro.</p>
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ tree }}" as="g" hint-placeholder-count="8">
+          <div style="display:grid;grid-template-columns:52px minmax(0,1fr);column-gap:14px">
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="margin-top:14px;width:34px;height:34px;border-radius:50%;background:#1E1710;color:#F4EEE1;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600">{{ g.gen }}</span>
+              <sc-if value="{{ g.notLast }}" hint-placeholder-val="{{ true }}"><span style="flex:1;width:1px;background:#BFAE8A;min-height:24px"></span></sc-if>
+            </div>
+            <div style="padding:10px 0 22px;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;flex-wrap:wrap;align-items:stretch;gap:8px">
+                <button onClick="{{ g.p.open }}" style="flex:1 1 220px;text-align:left;padding:12px 16px;background:{{ g.p.bg }};border:1px solid {{ g.p.border }};border-radius:10px;cursor:{{ g.p.cursor }};display:flex;flex-direction:column;gap:2px">
+                  <span style="font-family:'IM Fell English',serif;font-size:{{ g.p.fs }};line-height:1.1;color:{{ g.p.fg }}">{{ g.p.n }}</span>
+                  <span style="font-size:15px;font-style:italic;color:{{ g.p.sub }}">{{ g.p.r }}</span>
+                </button>
+                <sc-if value="{{ g.hasSp }}" hint-placeholder-val="{{ true }}">
+                  <span style="align-self:center;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#6B5C46">casou com</span>
+                  <button onClick="{{ g.sp.open }}" style="flex:1 1 200px;text-align:left;padding:12px 16px;background:transparent;border:1px dashed #CDBE9C;border-radius:10px;cursor:{{ g.sp.cursor }};display:flex;flex-direction:column;gap:2px">
+                    <span style="font-family:'IM Fell English',serif;font-size:20px;line-height:1.1;color:#1E1710">{{ g.sp.n }}</span>
+                    <span style="font-size:15px;font-style:italic;color:#4F4231">{{ g.sp.r }}</span>
+                  </button>
+                </sc-if>
+              </div>
+              <sc-if value="{{ g.hasNote }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:17px;line-height:1.45;color:#33281C">{{ g.note }}</p></sc-if>
+              <sc-if value="{{ g.hasSide }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:15px;line-height:1.45;color:#4F4231;font-style:italic">{{ g.side }}</p></sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ isRel }}" hint-placeholder-val="{{ false }}">
+    <main style="max-width:1180px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
+      <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Relações</div>
+      <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 12px;color:#1E1710">Quem é quem</h1>
+      <div style="display:flex;flex-wrap:wrap;gap:6px 16px;margin:0 0 22px">
+        <sc-for list="{{ relLegend }}" as="lg" hint-placeholder-count="6">
+          <span style="display:flex;align-items:center;gap:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#33281C"><span style="width:18px;height:3px;border-radius:2px;background:{{ lg.color }}"></span>{{ lg.label }}</span>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start">
+        <div style="flex:1 1 560px;min-width:0;position:relative;aspect-ratio:{{ relAspect }};background:#FBF8F1;border:1px solid #DCCFB3;border-radius:10px">
+          <svg width="100%" height="100%" style="position:absolute;inset:0;overflow:visible">
+            <sc-for list="{{ relEdges }}" as="ed" hint-placeholder-count="0">
+              <line x1="{{ ed.x1 }}" y1="{{ ed.y1 }}" x2="{{ ed.x2 }}" y2="{{ ed.y2 }}" style="stroke:{{ ed.color }};stroke-width:{{ ed.w }};stroke-opacity:{{ ed.op }}"></line>
+            </sc-for>
+          </svg>
+          <sc-for list="{{ relNodes }}" as="nd" hint-placeholder-count="0">
+            <button onClick="{{ nd.select }}" style="position:absolute;left:{{ nd.left }};top:{{ nd.top }};transform:translate(-50%,-50%);padding:5px 11px;cursor:pointer;background:{{ nd.bg }};color:{{ nd.fg }};border:1px solid {{ nd.border }};border-radius:999px;font-family:'IM Fell English',serif;font-size:{{ nd.fs }};white-space:nowrap;opacity:{{ nd.op }}">{{ nd.n }}</button>
+          </sc-for>
+        </div>
+        <aside style="flex:1 1 280px;min-width:0;max-width:400px;display:flex;flex-direction:column;gap:6px">
+          <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8C2A1B">Laços de</span>
+          <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:34px;line-height:1.05;margin:0 0 4px">{{ relSel.n }}</h2>
+          <button onClick="{{ relSel.open }}" style="align-self:flex-start;padding:7px 14px;cursor:pointer;background:#1E1710;color:#F4EEE1;border:none;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;margin-bottom:10px">Abrir verbete</button>
+          <sc-for list="{{ relSel.list }}" as="rl" hint-placeholder-count="0">
+            <button onClick="{{ rl.select }}" style="display:flex;flex-direction:column;gap:3px;text-align:left;background:none;border:none;border-top:1px solid #E1D5BB;padding:10px 0;cursor:pointer">
+              <span style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:3px;border-radius:2px;background:{{ rl.color }}"></span><span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:{{ rl.color }}">{{ rl.type }}</span><span style="font-family:'IM Fell English',serif;font-size:19px;color:#1E1710">{{ rl.other }}</span></span>
+              <span style="font-size:16px;color:#33281C;line-height:1.4">{{ rl.label }}</span>
+            </button>
+          </sc-for>
+        </aside>
+      </div>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ isFontes }}" hint-placeholder-val="{{ false }}">
+    <main style="max-width:880px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
+      <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Fontes</div>
+      <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 26px;color:#1E1710">De onde vem cada verbete</h1>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <sc-for list="{{ fontes }}" as="fo" hint-placeholder-count="3">
+          <div style="padding:18px 20px;background:#FBF8F1;border:1px solid #DCCFB3;border-radius:10px;display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px">
+              <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:26px;margin:0">{{ fo.n }}</h2>
+              <span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:{{ fo.bg }};color:{{ fo.color }}">{{ fo.status }}</span>
+            </div>
+            <p style="margin:0;font-size:17px;line-height:1.5;color:#33281C">{{ fo.d }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ hasEntry }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeEntry }}" style="position:fixed;inset:0;background:rgba(30,23,16,.34);z-index:60"></div>
+    <aside ref="{{ asideRef }}" style="position:fixed;top:0;right:0;bottom:0;width:min(620px,100vw);background:#FBF8F1;z-index:61;overflow-y:auto;box-shadow:-20px 0 44px rgba(30,23,16,.2)">
+      <div style="position:sticky;top:0;background:#FBF8F1;border-bottom:1px solid #E1D5BB;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;z-index:1">
+        <span style="display:flex;align-items:center;gap:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;color:{{ entry.color }}">
+          <svg viewBox="0 0 16 16" width="14" height="14" style="fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round"><path d="{{ entry.icon }}"></path></svg>{{ entry.cat }}
+        </span>
+        <div style="display:flex;gap:6px">
+          <sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ back }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">← voltar</button></sc-if>
+          <button onClick="{{ closeEntry }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">fechar ✕</button>
+        </div>
+      </div>
+      <article style="padding:28px clamp(20px,5vw,44px) 80px">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+          <sc-for list="{{ entry.srcs }}" as="sb" hint-placeholder-count="0">
+            <span style="display:flex;align-items:center;gap:5px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:{{ sb.bg }};color:{{ sb.fg }};border:1px solid {{ sb.bd }}">
+              <svg viewBox="0 0 16 16" width="12" height="12" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><path d="{{ sb.icon }}"></path></svg>{{ sb.label }}
+            </span>
+          </sc-for>
+        </div>
+        <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(34px,5vw,46px);line-height:1.04;margin:0;color:#1E1710;text-wrap:balance">{{ entry.title }}</h1>
+        <p style="margin:8px 0 0;font-size:19px;font-style:italic;color:#4F4231">{{ entry.ep }}</p>
+        <p style="margin:18px 0 0;font-size:19px;line-height:1.5;color:#1E1710;background:#F2EBDC;border-radius:8px;padding:12px 16px">{{ entry.s }}</p>
+        <sc-if value="{{ entry.hasFacts }}" hint-placeholder-val="{{ false }}">
+          <dl style="margin:18px 0 0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 18px">
+            <sc-for list="{{ entry.facts }}" as="f" hint-placeholder-count="0">
+              <dt style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;color:#6B5C46;padding-top:2px">{{ f.k }}</dt>
+              <dd style="margin:0;font-size:17px;color:#1E1710">{{ f.v }}</dd>
+            </sc-for>
+          </dl>
+        </sc-if>
+        <div style="margin-top:24px;display:flex;flex-direction:column;gap:14px">
+          <sc-for list="{{ entry.paras }}" as="pa" hint-placeholder-count="0">
+            <p style="margin:0;font-size:19px;line-height:1.65;color:#1E1710;text-wrap:pretty"><sc-for list="{{ pa.segs }}" as="sg" hint-placeholder-count="0"><span onMouseEnter="{{ sg.enter }}" onMouseLeave="{{ sg.leave }}" onClick="{{ sg.click }}" style="border-bottom:{{ sg.ul }};cursor:{{ sg.cur }}">{{ sg.t }}</span></sc-for></p>
+          </sc-for>
+        </div>
+        <sc-if value="{{ entry.hasEvents }}" hint-placeholder-val="{{ false }}">
+          <h2 style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#8C2A1B;margin:36px 0 8px">Na história do mundo</h2>
+          <sc-for list="{{ entry.events }}" as="ee" hint-placeholder-count="0">
+            <button onClick="{{ ee.go }}" style="display:grid;grid-template-columns:minmax(96px,auto) minmax(0,1fr);gap:4px 14px;width:100%;text-align:left;background:none;border:none;border-top:1px solid #E1D5BB;padding:10px 0;cursor:pointer" style-hover="background:#F2EBDC">
+              <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#8C2A1B;line-height:1.4">{{ ee.date }}</span>
+              <span style="display:flex;flex-direction:column"><span style="font-size:17px;color:#1E1710;line-height:1.3">{{ ee.title }}</span><span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#6B5C46">Era {{ ee.era }}</span></span>
+            </button>
+          </sc-for>
+        </sc-if>
+        <sc-if value="{{ entry.hasLinks }}" hint-placeholder-val="{{ false }}">
+          <h2 style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#8C2A1B;margin:32px 0 10px">Ver também</h2>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <sc-for list="{{ entry.links }}" as="lk" hint-placeholder-count="0">
+              <button onClick="{{ lk.open }}" style="display:flex;align-items:center;gap:5px;padding:4px 11px 4px 9px;cursor:pointer;background:#F4EEE1;border:1px solid #DCCFB3;border-radius:999px;font-size:16px" style-hover="border-color:#8C2A1B">
+                <svg viewBox="0 0 16 16" width="12" height="12" style="fill:none;stroke:{{ lk.color }};stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><path d="{{ lk.icon }}"></path></svg>{{ lk.label }}
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </article>
+    </aside>
+  </sc-if>
+
+  <sc-if value="{{ hasTip }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:{{ tip.x }};top:{{ tip.y }};transform:{{ tip.tf }};width:300px;max-width:calc(100vw - 16px);background:#1E1710;color:#F4EEE1;border-radius:8px;padding:12px 14px;z-index:80;pointer-events:none;box-shadow:0 10px 28px rgba(30,23,16,.3);display:flex;flex-direction:column;gap:4px">
+      <span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:{{ tip.color }}">{{ tip.cat }}</span>
+      <span style="font-family:'IM Fell English',serif;font-size:20px;line-height:1.1">{{ tip.title }}</span>
+      <span style="font-size:16px;line-height:1.4;color:#E9DFCB">{{ tip.d }}</span>
+      <sc-if value="{{ tip.hasEntry }}" hint-placeholder-val="{{ false }}"><span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#C9B892;margin-top:2px">Clique para abrir o verbete</span></sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;glossario&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Leitura&quot;},&quot;idades&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Leitura&quot;},&quot;expandido&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Leitura&quot;}}">
+const ICONS = {
+  cosmo: "M8 1.5 9.4 6.6 14.5 8 9.4 9.4 8 14.5 6.6 9.4 1.5 8 6.6 6.6Z",
+  raca: "M3 13C3 6.5 7 2.5 13.5 2.5 13.5 9 9.5 13 3 13ZM3 13 9 7",
+  divino: "M8 5.2a2.8 2.8 0 1 0 .01 0ZM8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9 13 13M3 13l1.1-1.1M11.9 4.1 13 3",
+  profecia: "M1 8C3.5 3.8 12.5 3.8 15 8 12.5 12.2 3.5 12.2 1 8ZM8 6a2 2 0 1 0 .01 0Z",
+  lenda: "M3.5 2h7l2 2v10h-7l-2-2ZM6 6h4.5M6 9h4.5",
+  politica: "M2 12.5 3 5l3 3 2-5 2 5 3-3 1 7.5Z",
+  personagem: "M8 2a2.8 2.8 0 1 0 .01 0M2.8 14.5c0-3 2.3-5 5.2-5s5.2 2 5.2 5",
+  magia: "M8 1.5c1 3 4.2 4 4.2 8a4.2 4.2 0 0 1-8.4 0c0-2 1-3.2 2-4 0 2 1 3 2 3 0-3-.8-4.2.2-7Z",
+  bruxo: "M2.5 2.5 12 12M13.5 2.5 4 12M10 13.5l3.5-3.5M2.5 10 6 13.5",
+  besta: "M3 13.5C4 8.5 5 5 4 2M7.5 13.5c1-5 2-8.5 1-11.5M12 13.5c1-5 2-8.5 1-11.5"
+};
+const BOOK = "M2 3.5c2-1 4-1 6 .5 2-1.5 4-1.5 6-.5v9.5c-2-1-4-1-6 .5-2-1.5-4-1.5-6-.5ZM8 4v9.5";
+const PAD = "M4.5 5h7a3 3 0 0 1 3 3v1.5a2.5 2.5 0 0 1-4.6 1.3L9 9.5H7l-.9 1.3A2.5 2.5 0 0 1 1.5 9.5V8a3 3 0 0 1 3-3ZM5 7v2M4 8h2M11 7.5h.01M12 9h.01";
+
+class Component extends DCLogic {
+  state = { ready: false, view: 'tempo', cats: [], src: 'all', q: '', searchOpen: false, stack: [], compCat: 'all', place: null, node: 'ciri', w: 0, flash: null, open: {}, expandAll: null, curEv: null, tip: null };
+
+  componentDidMount() {
+    this.onResize = () => { const w = document.documentElement.clientWidth || window.innerWidth; if (w !== this.state.w) this.setState({ w }); };
+    this.onKey = (e) => { if (e.key === 'Escape') this.setState({ stack: [], searchOpen: false, tip: null }); };
+    this.onScroll = () => {
+      if (this.st) return;
+      this.st = setTimeout(() => { this.st = null; this.trackScroll(); }, 60);
+    };
+    window.addEventListener('resize', this.onResize);
+    window.addEventListener('keydown', this.onKey);
+    window.addEventListener('scroll', this.onScroll, { passive: true });
+    this.ro = new ResizeObserver(this.onResize);
+    this.ro.observe(document.documentElement);
+    this.onResize();
+    const check = () => {
+      if (window.WITCHER_TEMPO && window.WITCHER_VERBETES && window.WITCHER_GLOSSARIO) this.setState({ ready: true }, () => { setTimeout(() => { this.onResize(); this.trackScroll(); }, 150); setTimeout(() => { this.onResize(); this.trackScroll(); }, 600); });
+      else this.t = setTimeout(check, 60);
+    };
+    check();
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('keydown', this.onKey);
+    window.removeEventListener('scroll', this.onScroll);
+    if (this.ro) this.ro.disconnect();
+    clearTimeout(this.t); clearTimeout(this.ft); clearTimeout(this.st);
+  }
+  componentDidUpdate(pp, ps) {
+    const a = ps.stack[ps.stack.length - 1], b = this.state.stack[this.state.stack.length - 1];
+    if (a !== b && this.aside) this.aside.scrollTop = 0;
+  }
+
+  hh() { return this.header ? this.header.getBoundingClientRect().bottom : 0; }
+  trackScroll() {
+    if (this.state.tip) this.setState({ tip: null });
+    if (this.state.view !== 'tempo' || !this._evIds) return;
+    const lim = this.hh() + 40;
+    let cur = this._evIds[0] || null;
+    for (const id of this._evIds) {
+      const el = document.getElementById('ev-' + id);
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      if (r.height === 0) continue;
+      if (r.top < lim) cur = id; else break;
+    }
+    if (cur !== this.state.curEv) this.setState({ curEv: cur });
+  }
+  scrollToEl(el) { if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - this.hh() - 16, behavior: 'smooth' }); }
+
+  norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+  open(id) { this.setState(s => ({ stack: [...s.stack, id], searchOpen: false, tip: null })); }
+  goEvent(ev) {
+    this.setState(s => ({ view: 'tempo', stack: [], flash: ev.id, searchOpen: false, cats: [], src: 'all', open: { ...s.open, [ev.id]: true } }), () => {
+      setTimeout(() => this.scrollToEl(document.getElementById('ev-' + ev.id)), 60);
+      clearTimeout(this.ft); this.ft = setTimeout(() => this.setState({ flash: null }), 2200);
+    });
+  }
+  go(view) { this.setState({ view, searchOpen: false, tip: null }); window.scrollTo({ top: 0 }); }
+
+  buildGloss(em, catMap) {
+    if (this.gl) return this.gl;
+    const items = window.WITCHER_GLOSSARIO.map(g => {
+      const e = g.e && em[g.e];
+      return e ? { e: g.e, title: e.t, d: e.s, cat: catMap[e.c].label, color: catMap[e.c].color, k: g.k }
+               : { e: null, title: g.t, d: g.d, cat: 'Glossário', color: '#C9B892', k: g.k };
+    }).filter(x => x.d);
+    const tm = {};
+    items.forEach((it, i) => it.k.forEach(k => { if (!(k in tm)) tm[k] = i; }));
+    const terms = Object.keys(tm).sort((a, b) => b.length - a.length).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const re = new RegExp('(?<![\\p{L}\\p{N}])(' + terms.join('|') + ')(?![\\p{L}\\p{N}])', 'gu');
+    this.gl = { items, tm, re };
+    return this.gl;
+  }
+  segs(text, used, exclude, on) {
+    const plain = (t) => ({ t, ul: 'none', cur: 'inherit' });
+    if (!on || !this.gl) return [plain(text)];
+    const { items, tm, re } = this.gl;
+    const out = []; let last = 0; re.lastIndex = 0; let m;
+    while ((m = re.exec(text))) {
+      const gi = tm[m[1]], it = items[gi];
+      if (used.has(gi) || (it.e && exclude.has(it.e))) continue;
+      used.add(gi);
+      if (m.index > last) out.push(plain(text.slice(last, m.index)));
+      out.push({
+        t: m[1], ul: '1.5px dotted #8C2A1B', cur: it.e ? 'pointer' : 'help',
+        enter: (ev) => this.showTip(gi, ev.currentTarget),
+        leave: () => this.setState({ tip: null }),
+        click: (ev) => { if (it.e) this.open(it.e); else this.showTip(gi, ev.currentTarget); }
+      });
+      last = m.index + m[1].length;
+    }
+    if (last < text.length) out.push(plain(text.slice(last)));
+    return out;
+  }
+  showTip(gi, el) {
+    const r = el.getBoundingClientRect(), W = 300;
+    const x = Math.min(Math.max(8, r.left), window.innerWidth - W - 8);
+    const above = r.bottom > window.innerHeight - 200;
+    this.setState({ tip: { gi, x: x + 'px', y: (above ? r.top - 8 : r.bottom + 8) + 'px', tf: above ? 'translateY(-100%)' : 'none' } });
+  }
+  split(x) {
+    const m = x.match(/^(.+?[.!?])\s+(?=[A-ZÁÉÍÓÚÂÊÔÃÕÇ“"])/);
+    return m ? [m[1], x.slice(m[0].length)] : [x, ''];
+  }
+
+  renderVals() {
+    const s = this.state, p = this.props;
+    const tabs = { tabTempo: 'transparent', tabComp: 'transparent', tabMapa: 'transparent', tabLinhagem: 'transparent', tabRel: 'transparent', tabFontes: 'transparent' };
+    tabs[{ tempo: 'tabTempo', comp: 'tabComp', mapa: 'tabMapa', linhagem: 'tabLinhagem', rel: 'tabRel', fontes: 'tabFontes' }[s.view]] = '#8C2A1B';
+    const base = {
+      ...tabs, q: s.q, loading: !s.ready,
+      headerRef: (el) => { this.header = el; },
+      goTempo: () => this.go('tempo'), goComp: () => this.go('comp'), goMapa: () => this.go('mapa'),
+      goLinhagem: () => this.go('linhagem'), goRel: () => this.go('rel'), goFontes: () => this.go('fontes'),
+      onQ: (e) => this.setState({ q: e.target.value, searchOpen: true }),
+      openSearch: () => this.setState({ searchOpen: true }),
+      closeSearch: () => setTimeout(() => this.setState({ searchOpen: false }), 250),
+      isTempo: false, isComp: false, isMapa: false, isLinhagem: false, isRel: false, isFontes: false,
+      hasEntry: false, showResults: false, hasTip: false, cur: {}, mini: []
+    };
+    if (!s.ready) return base;
+
+    const D = window.WITCHER_TEMPO, E = window.WITCHER_VERBETES, F = window.WITCHER_FONTES || [], NASC = window.WITCHER_NASC || {};
+    const catMap = Object.fromEntries(D.cats.map(c => [c.id, c]));
+    const catOrder = Object.fromEntries(D.cats.map((c, i) => [c.id, i]));
+    const em = Object.fromEntries(E.map(e => [e.id, e]));
+    const eraMap = Object.fromEntries(D.eras.map(e => [e.id, e]));
+    const mobile = s.w > 0 && s.w < 760;
+    const glossOn = p.glossario ?? true, agesOn = p.idades ?? true;
+    this.buildGloss(em, catMap);
+    const chip = (id) => { const e = em[id]; if (!e) return null; const c = catMap[e.c]; return { label: e.t, color: c.color, icon: ICONS[e.c], open: () => this.open(id) }; };
+    const srcBadge = (game) => game
+      ? { src: 'Jogo', srcBg: '#3A4150', srcFg: '#F4EEE1', srcBd: '#3A4150', srcIcon: PAD }
+      : { src: 'Livro', srcBg: 'transparent', srcFg: '#1E1710', srcBd: '#9C8B6A', srcIcon: BOOK };
+
+    const evAll = D.events.slice().sort((a, b) => a.s - b.s);
+    const evF = evAll.filter(e => (s.src === 'all' || (s.src === 'jogos' ? e.g : !e.g)) && (!s.cats.length || e.c.some(c => s.cats.includes(c))));
+    this._evIds = evF.map(e => e.id);
+    const defOpen = s.expandAll ?? (p.expandido ?? false);
+    const excl = new Set(['geralt', 'ciri', 'yennefer']);
+    const cols = mobile ? '30px minmax(0,1fr)' : '40px minmax(0,1fr)';
+
+    const erasView = D.eras.map(er => {
+      const events = evF.filter(e => e.era === er.id).map(e => {
+        const [a, b] = this.split(e.x);
+        const used = new Set();
+        const isOpen = s.open[e.id] ?? defOpen;
+        const chips = (e.l || []).map(chip).filter(Boolean);
+        let rel = '';
+        if (e.era !== 'fim' && /\d/.test(e.d) && e.s < 1230) rel = '≈ ' + Math.round(1263 - e.s).toLocaleString('pt-BR') + ' anos antes da saga';
+        const yr = Math.floor(e.s);
+        const ages = agesOn && e.era !== 'fim' && /\d/.test(e.d) ? (e.l || []).filter(id => NASC[id] && yr > NASC[id].y && yr - NASC[id].y < 500).map(id => ({ n: em[id] ? em[id].t.split(' ')[0] : id, a: (NASC[id].a ? '≈ ' : '') + (yr - NASC[id].y) + ' anos' })) : [];
+        return {
+          id: e.id, domId: 'ev-' + e.id, date: e.d, title: e.t, rel, hasRel: !!rel, cols,
+          ...srcBadge(!!e.g), icon: ICONS[e.c[0]], dot: catMap[e.c[0]].color,
+          bg: s.flash === e.id ? '#F1E2BE' : '#FBF8F1',
+          tags: e.c.map(c => ({ label: catMap[c].label, color: catMap[c].color, icon: ICONS[c] })),
+          sum: this.segs(a, used, excl, glossOn), rest: b ? this.segs(b, used, excl, glossOn) : [], hasRest: !!b,
+          ages, hasAges: ages.length > 0,
+          chips, hasChips: chips.length > 0, isOpen, canOpen: !!b || chips.length > 0,
+          toggleLabel: isOpen ? 'Recolher ▴' : (b ? 'Ler mais ▾' : 'Ver verbetes ligados ▾'),
+          toggle: () => this.setState(st => ({ open: { ...st.open, [e.id]: !isOpen } }))
+        };
+      });
+      const ids = [...new Set(evAll.filter(e => e.era === er.id).flatMap(e => e.l || []))].filter(id => em[id]);
+      ids.sort((a, b) => catOrder[em[a].c] - catOrder[em[b].c]);
+      const presentes = ids.map(chip);
+      return { ...er, domId: 'era-' + er.id, segs: this.segs(er.summary, new Set(), new Set(), glossOn), events, empty: events.length === 0, presentes, hasPresentes: presentes.length > 0 };
+    });
+
+    const curE = evAll.find(e => e.id === s.curEv) || evF[0] || evAll[0];
+    const curEra = eraMap[curE.era];
+    const curIdx = D.eras.findIndex(e => e.id === curE.era);
+    const cur = { numeral: curEra.numeral, name: curEra.name, span: curEra.span, date: curE.d, title: mobile ? '' : '· ' + curE.t };
+    const mini = D.eras.map((er, i) => {
+      const n = evF.filter(e => e.era === er.id).length;
+      return { numeral: er.numeral, name: er.name, flex: Math.max(1, n),
+        bg: i === curIdx ? '#8C2A1B' : i < curIdx ? '#D9BFA9' : '#FBF8F1', fg: i === curIdx ? '#FBF8F1' : '#33281C',
+        go: () => this.scrollToEl(document.getElementById('era-' + er.id)) };
+    });
+    const ruler = [
+      { y: 'c. 2700 a.R.', t: 'Gnomos e anões no Continente' },
+      { y: 'c. 2230 a.R.', t: 'Chegam os elfos' },
+      { y: 'c. 230 a.R.', t: 'Conjunção das Esferas' },
+      { y: 'Ano 0', t: 'A Ressurreição' },
+      { y: '1253', t: 'Nasce Ciri' },
+      { y: '1263 – 1268', t: 'A saga dos livros', hi: true },
+      { y: '1270 – 1276', t: 'Os jogos', hi: true }
+    ].map((r, i, arr) => ({ ...r, dot: r.hi ? '#8C2A1B' : '#1E1710', col: r.hi ? '#8C2A1B' : '#1E1710', line: i === arr.length - 1 ? 'transparent' : '#CDBE9C' }));
+    const srcOpts = [['all', 'Tudo'], ['livros', 'Só livros'], ['jogos', 'Só jogos']].map(([id, label]) => ({ label, bg: s.src === id ? '#1E1710' : 'transparent', fg: s.src === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ src: id }) }));
+    const catChips = D.cats.map(c => {
+      const on = s.cats.includes(c.id);
+      return { label: c.label, icon: ICONS[c.id], border: on ? c.color : '#DCCFB3', bg: on ? c.color : '#FBF8F1', fg: on ? '#FBF8F1' : c.color,
+        toggle: () => this.setState(st => ({ cats: on ? st.cats.filter(x => x !== c.id) : [...st.cats, c.id] })) };
+    });
+
+    const counts = {}; E.forEach(e => counts[e.c] = (counts[e.c] || 0) + 1);
+    const srcName = (e) => (e.fo || ['livros']).map(x => x === 'livros' ? 'Livros' : x === 'jogos' ? 'Jogos' : 'Material próprio').join(' + ');
+    const compTabs = [{ id: 'all', label: 'Todos', color: '#1E1710', count: E.length, icon: ICONS.lenda }, ...D.cats.map(c => ({ id: c.id, label: c.label, color: c.color, count: counts[c.id] || 0, icon: ICONS[c.id] }))]
+      .filter(t => t.count).map(t => { const on = s.compCat === t.id; return { ...t, border: on ? t.color : '#DCCFB3', bg: on ? t.color : '#FBF8F1', fg: on ? '#FBF8F1' : t.color, select: () => this.setState({ compCat: t.id }) }; });
+    const compCards = E.filter(e => s.compCat === 'all' || e.c === s.compCat)
+      .slice().sort((a, b) => s.compCat === 'all' ? (catOrder[a.c] - catOrder[b.c]) : 0)
+      .map(e => ({ title: e.t, ep: e.ep, s: e.s, cat: catMap[e.c].label, color: catMap[e.c].color, icon: ICONS[e.c], src: srcName(e), open: () => this.open(e.id) }));
+
+    let results = [];
+    const qn = this.norm(s.q).trim();
+    if (qn.length >= 2) {
+      const hit = (e) => this.norm(e.t + ' ' + e.ep).includes(qn);
+      const er = E.filter(hit).concat(E.filter(e => !hit(e) && this.norm(e.s + ' ' + e.b.join(' ')).includes(qn)));
+      results = er.slice(0, 10).map(e => ({ kind: catMap[e.c].label, color: catMap[e.c].color, label: e.t, sub: e.ep, open: () => this.setState({ q: '' }, () => this.open(e.id)) }));
+      const evr = evAll.filter(e => this.norm(e.t + ' ' + e.x).includes(qn)).slice(0, 6);
+      results = results.concat(evr.map(e => ({ kind: 'Evento · ' + e.d, color: '#8C2A1B', label: e.t, sub: 'Era ' + eraMap[e.era].numeral + ' · ' + eraMap[e.era].name, open: () => { this.setState({ q: '' }); this.goEvent(e); } })));
+    }
+
+    const kindLabel = { reino: 'Reino', cidade: 'Lugar', natural: 'Geografia', regiao: 'Região' };
+    const places = D.places.map(pl => {
+      const sel = s.place === pl.id, k = pl.k;
+      return {
+        n: pl.n, left: pl.x + '%', top: pl.y + '%',
+        ff: k === 'reino' || k === 'regiao' ? "'IBM Plex Sans',sans-serif" : "'EB Garamond',serif",
+        fw: k === 'reino' ? '600' : k === 'regiao' ? '500' : '400',
+        fs: k === 'regiao' ? (mobile ? '10px' : '12px') : k === 'reino' ? (mobile ? '11px' : '13px') : (mobile ? '12px' : '15px'),
+        ls: k === 'regiao' ? '.28em' : '0',
+        color: sel ? '#FBF8F1' : k === 'regiao' ? '#8A7656' : k === 'natural' ? '#26476B' : '#1E1710',
+        bg: sel ? '#8C2A1B' : 'transparent',
+        fst: k === 'natural' ? 'italic' : 'normal', dot: k === 'cidade',
+        cursor: k === 'regiao' ? 'default' : 'pointer',
+        select: () => { if (k !== 'regiao') this.setState({ place: pl.id }); }
+      };
+    });
+    let place = {}, hasPlace = false;
+    const plSel = D.places.find(x => x.id === s.place);
+    if (plSel) {
+      hasPlace = true;
+      const key = plSel.e;
+      const evs = key ? evAll.filter(e => (e.l || []).includes(key)) : [];
+      place = { n: plSel.n, d: plSel.d, kind: kindLabel[plSel.k], hasEntry: !!(key && em[key]), open: () => this.open(key),
+        hasEvents: evs.length > 0, events: evs.map(e => ({ date: e.d, title: e.t, go: () => this.goEvent(e) })) };
+    }
+
+    const tree = D.tree.map((g, i) => {
+      const last = i === D.tree.length - 1, pp = g.p, has = pp.id && em[pp.id];
+      return {
+        gen: g.gen, notLast: !last, note: g.note, hasNote: !!g.note, side: g.side, hasSide: !!g.side, hasSp: !!g.sp,
+        p: { n: pp.n, r: pp.r, fs: last ? '28px' : '22px', bg: last ? '#8C2A1B' : '#FBF8F1', fg: last ? '#FBF8F1' : '#1E1710', sub: last ? '#F3DED3' : '#4F4231', border: last ? '#8C2A1B' : '#DCCFB3', cursor: has ? 'pointer' : 'default', open: () => { if (has) this.open(pp.id); } },
+        sp: g.sp ? { n: g.sp.n, r: g.sp.r, cursor: g.sp.id ? 'pointer' : 'default', open: () => { if (g.sp.id && em[g.sp.id]) this.open(g.sp.id); } } : {}
+      };
+    });
+
+    const R = D.rels, nm = Object.fromEntries(R.nodes.map(n => [n.id, n]));
+    const linked = new Set([s.node]);
+    R.edges.forEach(([a, b]) => { if (a === s.node) linked.add(b); if (b === s.node) linked.add(a); });
+    const relEdges = R.edges.map(([a, b, t]) => {
+      const on = a === s.node || b === s.node;
+      return { x1: nm[a].x + '%', y1: nm[a].y + '%', x2: nm[b].x + '%', y2: nm[b].y + '%', color: R.types[t].color, w: on ? 2.5 : 1, op: on ? 1 : 0.2 };
+    });
+    const relNodes = R.nodes.map(n => {
+      const sel = n.id === s.node, near = linked.has(n.id);
+      return { n: n.n, left: n.x + '%', top: n.y + '%', bg: sel ? '#1E1710' : '#FBF8F1', fg: sel ? '#FBF8F1' : '#1E1710', border: sel ? '#1E1710' : near ? '#8C2A1B' : '#DCCFB3', op: near ? 1 : 0.55, fs: mobile ? '13px' : (sel ? '19px' : '16px'), select: () => this.setState({ node: n.id }) };
+    });
+    const relSel = {
+      n: nm[s.node].n, open: () => this.open(s.node),
+      list: R.edges.filter(([a, b]) => a === s.node || b === s.node).map(([a, b, t, l]) => {
+        const o = a === s.node ? b : a;
+        return { other: nm[o].n, type: R.types[t].label, color: R.types[t].color, label: l, select: () => this.setState({ node: o }) };
+      })
+    };
+
+    const fontes = F.map(f => ({ n: f.n, d: f.d, status: f.pend ? 'Pendente' : E.filter(e => (e.fo || ['livros']).includes(f.id)).length + ' verbetes', color: f.pend ? '#7A520C' : '#2F4A1F', bg: f.pend ? '#F3E6C6' : '#E3EAD6' }));
+
+    const curId = s.stack[s.stack.length - 1];
+    const ce = curId && em[curId];
+    let entry = {};
+    if (ce) {
+      const c = catMap[ce.c];
+      const evs = evAll.filter(e => (e.l || []).includes(ce.id));
+      const used = new Set();
+      entry = {
+        title: ce.t, ep: ce.ep, s: ce.s, cat: c.label, color: c.color, icon: ICONS[ce.c],
+        srcs: (ce.fo || ['livros']).map(x => x === 'jogos' ? { label: 'Jogos', bg: '#3A4150', fg: '#F4EEE1', bd: '#3A4150', icon: PAD } : x === 'livros' ? { label: 'Livros', bg: 'transparent', fg: '#1E1710', bd: '#9C8B6A', icon: BOOK } : { label: 'Material próprio', bg: '#F3E6C6', fg: '#7A520C', bd: '#E0C88E', icon: ICONS.lenda }),
+        facts: (ce.f || []).map(([k, v]) => ({ k, v })), hasFacts: (ce.f || []).length > 0,
+        paras: (ce.b || []).map(t => ({ segs: this.segs(t, used, new Set([ce.id]), glossOn) })),
+        events: evs.map(e => ({ date: e.d, title: e.t, era: eraMap[e.era].numeral + ' · ' + eraMap[e.era].name, go: () => this.goEvent(e) })), hasEvents: evs.length > 0,
+        links: (ce.l || []).map(chip).filter(Boolean), hasLinks: (ce.l || []).some(id => em[id])
+      };
+    }
+
+    let tip = {};
+    if (s.tip && this.gl.items[s.tip.gi]) {
+      const it = this.gl.items[s.tip.gi];
+      tip = { x: s.tip.x, y: s.tip.y, tf: s.tip.tf, title: it.title, d: it.d, cat: it.cat, color: it.color === '#2B2B22' ? '#C9B892' : '#E7C7A0', hasEntry: !!it.e };
+    }
+
+    return {
+      ...base,
+      isTempo: s.view === 'tempo', isComp: s.view === 'comp', isMapa: s.view === 'mapa', isLinhagem: s.view === 'linhagem', isRel: s.view === 'rel', isFontes: s.view === 'fontes',
+      erasView, cur, mini, ruler, srcOpts, catChips, evCount: evF.length,
+      hasCatFilter: s.cats.length > 0 || s.src !== 'all', clearCats: () => this.setState({ cats: [], src: 'all' }),
+      toggleAllLabel: defOpen ? 'Recolher tudo' : 'Expandir tudo',
+      toggleAll: () => this.setState({ expandAll: !defOpen, open: {} }),
+      compTabs, compCards,
+      results, showResults: s.searchOpen && qn.length >= 2, noResults: results.length === 0,
+      places, place, hasPlace, noPlace: !hasPlace,
+      tree, relEdges, relNodes, relSel, relLegend: Object.values(R.types), relAspect: mobile ? '3 / 4' : '16 / 11',
+      fontes,
+      hasEntry: !!ce, entry, canBack: s.stack.length > 1,
+      back: () => this.setState(st => ({ stack: st.stack.slice(0, -1) })),
+      closeEntry: () => this.setState({ stack: [] }),
+      asideRef: (el) => { this.aside = el; },
+      hasTip: !!s.tip, tip
+    };
+  }
+}
+</script>
+</body>
+</html>
