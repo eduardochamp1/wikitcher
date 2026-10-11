@@ -24,9 +24,21 @@
     return { on: false, lidos: [] };
   }
 
+  // Preferências do leitor (tema, tamanho de letra, favoritos, vistos recentemente), guardadas no navegador.
+  const PREF_KEY = 'witcher-prefs';
+  const LETRAS = [0.9, 1, 1.12, 1.25];
+  function lerPrefs() {
+    const p = { tema: 'sistema', letra: 1, favs: [], recentes: [] };
+    try { Object.assign(p, JSON.parse(localStorage.getItem(PREF_KEY) || '{}')); } catch (e) {}
+    if (!LETRAS.includes(p.letra)) p.letra = 1;
+    if (!Array.isArray(p.favs)) p.favs = [];
+    if (!Array.isArray(p.recentes)) p.recentes = [];
+    return p;
+  }
+
   class WitcherApp {
     static estadoInicial() {
-      return { ready: false, view: 'tempo', cats: [], src: 'all', q: '', qf: 'all', searchOpen: false, stack: [], compCat: 'all', compSrc: 'all', place: null, node: 'ciri', w: 0, flash: null, open: {}, expandAll: null, curEv: null, tip: null,
+      return { prefs: lerPrefs(), ajuda: false, ready: false, view: 'tempo', cats: [], src: 'all', q: '', qf: 'all', searchOpen: false, stack: [], compCat: 'all', compSrc: 'all', place: null, node: 'ciri', w: 0, flash: null, open: {}, expandAll: null, curEv: null, tip: null,
         evLink: null, copied: false, leitura: lerLeitura(), conA: null, conB: null, conQa: '', conQb: '', escala: null, escSel: null, reveal: {}, person: null, rota: null, ano: null, arvore: 'sangue', relMode: 'curado', contraste: 'all', quiz: null };
     }
 
@@ -51,6 +63,31 @@
         return { view: h.view, stack, evLink: null };
       });
     }
+    savePrefs(mudar) {
+      this.setState(s => {
+        const prefs = { ...s.prefs, ...mudar(s.prefs) };
+        try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (e) {}
+        return { prefs };
+      });
+    }
+    // Atalhos: / busca, j/k eventos, 1–9 abas, f favorito, ? ajuda, Esc fecha.
+    teclas(e) {
+      const alvo = e.target, digitando = alvo && (/^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName) || alvo.isContentEditable);
+      if (e.key === 'Escape') { this.setState({ stack: [], searchOpen: false, tip: null, ajuda: false }); if (digitando) alvo.blur(); return; }
+      if (digitando || e.ctrlKey || e.metaKey || e.altKey || !this.state.ready) return;
+      const s = this.state, top = s.stack[s.stack.length - 1];
+      if (e.key === '/') { e.preventDefault(); const i = this.header && this.header.querySelector('input'); if (i) i.focus(); return; }
+      if (e.key === '?') { this.setState({ ajuda: !s.ajuda }); return; }
+      if ((e.key === 'f' || e.key === 'F') && top) { this.toggleFav(top); return; }
+      if (/^[1-9]$/.test(e.key) && VIEWS[+e.key - 1]) { this.go(VIEWS[+e.key - 1][0]); return; }
+      if ((e.key === 'j' || e.key === 'k') && s.view === 'tempo' && !top && this._evIds && this._evIds.length) {
+        const i = this._evIds.indexOf(s.curEv), n = e.key === 'j' ? Math.min(this._evIds.length - 1, i + 1) : Math.max(0, i - 1);
+        const id = this._evIds[i < 0 ? 0 : n];
+        this.scrollToEl(document.getElementById('ev-' + id));
+        this.setState({ curEv: id });
+      }
+    }
+    toggleFav(id) { this.savePrefs(p => ({ favs: p.favs.includes(id) ? p.favs.filter(x => x !== id) : [id, ...p.favs] })); }
     saveLeitura(l) {
       try { localStorage.setItem(LS_KEY, JSON.stringify(l)); } catch (e) {}
       this.setState({ leitura: l });
@@ -58,7 +95,7 @@
 
     componentDidMount() {
       this.onResize = () => { const w = document.documentElement.clientWidth || window.innerWidth; if (w !== this.state.w) this.setState({ w }); };
-      this.onKey = (e) => { if (e.key === 'Escape') this.setState({ stack: [], searchOpen: false, tip: null }); };
+      this.onKey = (e) => this.teclas(e);
       this.onScroll = () => {
         if (this.st) return;
         this.st = setTimeout(() => { this.st = null; this.trackScroll(); }, 60);
@@ -90,7 +127,16 @@
     }
     componentDidUpdate() {
       const b = this.state.stack[this.state.stack.length - 1];
-      if (b !== this.topId) { this.topId = b; if (this.aside) this.aside.scrollTop = 0; }
+      if (b !== this.topId) {
+        this.topId = b; if (this.aside) this.aside.scrollTop = 0;
+        // Todo verbete aberto (por clique, link ou histórico) entra em "vistos recentemente".
+        if (b && this.state.prefs && this.state.prefs.recentes[0] !== b) this.savePrefs(p => ({ recentes: [b, ...p.recentes.filter(x => x !== b)].slice(0, 10) }));
+      }
+      // Aparência: o tema vai no atributo do <html> (o CSS faz o resto) e o tamanho de letra é um zoom no <body>.
+      const pr = this.state.prefs, html = document.documentElement;
+      if (pr && html.dataset.tema !== pr.tema) html.dataset.tema = pr.tema;
+      const z = pr && pr.letra !== 1 ? String(pr.letra) : '';
+      if (document.body.style.zoom !== z) document.body.style.zoom = z;
       if (!this.state.ready || !this.hashReady) return;
       // Cada navegação vira um passo do histórico; o que veio do próprio histórico só substitui.
       const want = this.hashFor(this.state);
@@ -391,7 +437,14 @@
       const navTabs = VIEWS.map(([id, label]) => ({ label, bd: s.view === id ? '#8C2A1B' : 'transparent', go: () => this.go(id) }));
       const keep = (e) => e.preventDefault();
       const qFilters = [['all', 'Tudo'], ['verbetes', 'Verbetes'], ['eventos', 'Eventos']].map(([id, label]) => ({ label, keep, bg: s.qf === id ? '#1E1710' : 'transparent', fg: s.qf === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ qf: id }) }));
+      const pr = s.prefs, TEMAS = { sistema: ['◐', 'Sistema'], claro: ['☀', 'Claro'], escuro: ['☾', 'Escuro'] };
+      const passoLetra = (d) => this.savePrefs(p => ({ letra: LETRAS[Math.max(0, Math.min(LETRAS.length - 1, LETRAS.indexOf(p.letra) + d))] }));
       const base = {
+        temaIcone: TEMAS[pr.tema][0], temaLabel: TEMAS[pr.tema][1],
+        temaCiclar: () => this.savePrefs(p => ({ tema: { sistema: 'claro', claro: 'escuro', escuro: 'sistema' }[p.tema] })),
+        letraMenos: () => passoLetra(-1), letraMais: () => passoLetra(1),
+        ajudaOn: s.ajuda, ajudaAbrir: () => this.setState({ ajuda: true }), ajudaFechar: () => this.setState({ ajuda: false }),
+        atalhos: [['/', 'Ir para a busca'], ['Esc', 'Fechar verbete, busca ou esta janela'], ['j / k', 'Próximo e anterior evento na Linha do Tempo'], ['1 – 9', 'Trocar de aba (na ordem do menu)'], ['f', 'Favoritar o verbete aberto'], ['?', 'Mostrar ou esconder estes atalhos']].map(([k, d]) => ({ k, d })),
         navTabs, qFilters, q: s.q, loading: !s.ready,
         headerRef: (el) => { this.header = el; },
         goTempo: () => this.go('tempo'), goLeitura: () => this.go('leitura'),
@@ -822,6 +875,11 @@
         hasPerson: !!(s.person && em[s.person]), personName: s.person && em[s.person] ? em[s.person].t : '',
         personAge: s.person && NASC[s.person] ? ' · nascimento ' + (NASC[s.person].a ? 'c. ' : '') + NASC[s.person].y : '',
         clearPerson: () => this.setState({ person: null }),
+        compListas: [['Favoritos', pr.favs, 'favs'], ['Vistos recentemente', pr.recentes, 'recentes']].map(([titulo, ids, campo]) => ({
+          titulo, itens: ids.map(chip).filter(Boolean).slice(0, 10), limpar: () => this.savePrefs(() => ({ [campo]: [] }))
+        })).filter(l => l.itens.length),
+        favToggle: () => { if (curId) this.toggleFav(curId); }, favStr: pr.favs.includes(curId) ? 'true' : 'false',
+        favLabel: pr.favs.includes(curId) ? '★ favorito' : '☆ favoritar', favBg: pr.favs.includes(curId) ? '#8A5E10' : 'transparent', favFg: pr.favs.includes(curId) ? '#FBF8F1' : '#1E1710',
         copyLabel: s.copied === 'verbete' ? 'link copiado ✓' : 'copiar link',
         copyLink: () => this.copyText(location.href, 'verbete'),
         printEntry: () => window.print(),

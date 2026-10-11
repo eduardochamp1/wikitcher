@@ -17,7 +17,12 @@ a:hover{color:#1E1710}
 *{box-sizing:border-box}
 button{font:inherit;color:inherit}
 input::placeholder{color:#7A6B55}
+/* Modo escuro: inverte as cores e devolve os matizes, porque as cores do template são fixas nos elementos. */
+html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg);background:#0d0b09}
+@media (prefers-color-scheme: dark){html:not([data-tema="claro"]){filter:invert(.92) hue-rotate(180deg);background:#0d0b09}}
+:focus-visible{outline:2px solid #8C2A1B;outline-offset:2px}
 @media print{
+  html{filter:none!important}
   body *{visibility:hidden}
   #verbete,#verbete *{visibility:visible}
   #verbete{position:absolute!important;inset:0 auto auto 0!important;width:100%!important;overflow:visible!important;box-shadow:none!important}
@@ -44,6 +49,12 @@ input::placeholder{color:#7A6B55}
           <button onClick="{{ nt.go }}" style="background:none;border:none;border-bottom:2px solid {{ nt.bd }};padding:8px 0 5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710">{{ nt.label }}</button>
         </sc-for>
       </nav>
+      <div style="display:flex;gap:4px;align-items:center">
+        <button onClick="{{ temaCiclar }}" title="Tema: {{ temaLabel }}" aria-label="Tema: {{ temaLabel }}" style="padding:4px 9px;cursor:pointer;background:#FBF8F1;border:1px solid #D6C8AA;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#1E1710">{{ temaIcone }} {{ temaLabel }}</button>
+        <button onClick="{{ letraMenos }}" title="Letra menor" aria-label="Letra menor" style="padding:4px 8px;cursor:pointer;background:#FBF8F1;border:1px solid #D6C8AA;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#1E1710">A−</button>
+        <button onClick="{{ letraMais }}" title="Letra maior" aria-label="Letra maior" style="padding:4px 8px;cursor:pointer;background:#FBF8F1;border:1px solid #D6C8AA;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:#1E1710">A+</button>
+        <button onClick="{{ ajudaAbrir }}" title="Atalhos de teclado (?)" aria-label="Atalhos de teclado" style="padding:4px 9px;cursor:pointer;background:#FBF8F1;border:1px solid #D6C8AA;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#1E1710">?</button>
+      </div>
       <sc-if value="{{ spoilerBadge }}" hint-placeholder-val="{{ false }}">
         <button onClick="{{ goLeitura }}" title="Modo sem spoilers ligado" style="display:flex;align-items:center;gap:6px;padding:4px 10px;cursor:pointer;background:#F1E4E6;border:1px solid #D9B5BF;border-radius:999px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:500;color:#7A2442">Sem spoilers · {{ spoilerAte }}</button>
       </sc-if>
@@ -282,6 +293,17 @@ input::placeholder{color:#7A6B55}
     <main style="max-width:1180px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
       <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Compêndio</div>
       <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 24px;color:#1E1710">Verbetes do Continente</h1>
+      <sc-for list="{{ compListas }}" as="cl" hint-placeholder-count="0">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:12px">
+          <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#4F4231;margin-right:4px">{{ cl.titulo }}</span>
+          <sc-for list="{{ cl.itens }}" as="ci" hint-placeholder-count="0">
+            <button onClick="{{ ci.open }}" style="display:flex;align-items:center;gap:5px;padding:3px 10px 3px 8px;cursor:pointer;background:#FBF8F1;border:1px solid #DCCFB3;border-radius:999px;font-size:15px;color:#1E1710" style-hover="border-color:#8C2A1B">
+              <svg viewBox="0 0 16 16" width="12" height="12" style="fill:none;stroke:{{ ci.color }};stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><path d="{{ ci.icon }}"></path></svg>{{ ci.label }}
+            </button>
+          </sc-for>
+          <button onClick="{{ cl.limpar }}" style="background:none;border:none;padding:0 4px;cursor:pointer;color:#8C2A1B;text-decoration:underline;font-family:'IBM Plex Sans',sans-serif;font-size:12px">limpar</button>
+        </div>
+      </sc-for>
       <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:stretch;margin-bottom:22px">
         <button onClick="{{ compDay.open }}" style="flex:1 1 380px;min-width:0;text-align:left;background:#1E1710;color:#F4EEE1;border:none;border-radius:10px;padding:16px 20px;cursor:pointer;display:flex;flex-direction:column;gap:4px" style-hover="background:#33281C">
           <span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#E7C7A0">Verbete do dia · {{ compDay.cat }}</span>
@@ -719,6 +741,7 @@ input::placeholder{color:#7A6B55}
           <svg viewBox="0 0 16 16" width="14" height="14" style="fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round"><path d="{{ entry.icon }}"></path></svg>{{ entry.cat }}
         </span>
         <div data-noprint="1" style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px">
+          <button onClick="{{ favToggle }}" aria-pressed="{{ favStr }}" title="Favoritar (F)" style="background:{{ favBg }};color:{{ favFg }};border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">{{ favLabel }}</button>
           <button onClick="{{ copyLink }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">{{ copyLabel }}</button>
           <button onClick="{{ printEntry }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">imprimir</button>
           <sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ back }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">← voltar</button></sc-if>
@@ -779,6 +802,22 @@ input::placeholder{color:#7A6B55}
         </sc-if>
       </article>
     </aside>
+  </sc-if>
+
+  <sc-if value="{{ ajudaOn }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ ajudaFechar }}" style="position:fixed;inset:0;background:rgba(30,23,16,.4);z-index:90"></div>
+    <div role="dialog" aria-label="Atalhos de teclado" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(440px,calc(100vw - 32px));background:#FBF8F1;border-radius:12px;padding:20px 24px;z-index:91;box-shadow:0 20px 50px rgba(30,23,16,.3)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:28px;margin:0">Atalhos de teclado</h2>
+        <button onClick="{{ ajudaFechar }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px">fechar ✕</button>
+      </div>
+      <dl style="margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 16px;align-items:baseline">
+        <sc-for list="{{ atalhos }}" as="at" hint-placeholder-count="0">
+          <dt><kbd style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:2px 8px;border:1px solid #CDBE9C;border-bottom-width:2px;border-radius:5px;background:#F4EEE1">{{ at.k }}</kbd></dt>
+          <dd style="margin:0;font-size:17px;color:#1E1710">{{ at.d }}</dd>
+        </sc-for>
+      </dl>
+    </div>
   </sc-if>
 
   <sc-if value="{{ hasTip }}" hint-placeholder-val="{{ false }}">
