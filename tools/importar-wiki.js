@@ -225,15 +225,24 @@ for (const [nome, antiga] of [['Glossário de Termos', false], ['Glossário da L
   }
 }
 
+// 5) Livros × Jogos: avisos [!jogos] e [!divergencia] de todas as notas, ligados ao verbete da nota.
+const contrastes = [];
+for (const n of notas) {
+  const e = destino.get(n.nome) || LINK[n.nome];
+  if (!e) continue;
+  for (const b of converter(n).blocos) if (b.co && /^(jogos|divergencia)$/.test(b.co) && b.t) contrastes.push({ e, t: n.nome, co: b.co, x: b.t });
+}
+
 const linhas = a => a.map(x => JSON.stringify(x)).join(',\n');
 fs.writeFileSync(OUT, '// GERADO por tools/importar-wiki.js a partir de witcher-wiki/ — não edite à mão.\n' +
-  'window.WITCHER_WIKI = {\nverbetes: [\n' + linhas(verbetes) + '\n],\nglossario: [\n' + linhas(gloss) + '\n]\n};\n');
+  'window.WITCHER_WIKI = {\nverbetes: [\n' + linhas(verbetes) + '\n],\nglossario: [\n' + linhas(gloss) + '\n],\ncontrastes: [\n' + linhas(contrastes) + '\n]\n};\n');
 
 const porCat = {}; verbetes.forEach(v => porCat[v.c] = (porCat[v.c] || 0) + 1);
 console.log('Notas lidas: ' + notas.length);
 console.log('Verbetes novos: ' + verbetes.length + ' ' + JSON.stringify(porCat));
 console.log('Já existiam no app (não importadas): ' + iguais.length);
 iguais.forEach(([n, id]) => console.log('   ' + n.nome + ' -> ' + id));
+console.log('Livros × Jogos: ' + contrastes.length + ' avisos (' + contrastes.filter(c => c.co === 'divergencia').length + ' divergências)');
 console.log('Bestiário, criaturas novas: ' + bestas.join(', '));
 console.log('Glossário, termos novos: ' + termos.join(', '));
 const USADAS = new Set(['Bestiário', 'Glossário de Termos', 'Glossário da Língua Antiga', 'Índice de Obras', ...Object.keys(LINK)]);

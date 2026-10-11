@@ -279,6 +279,7 @@ input::placeholder{color:#7A6B55}
             </span>
             <span style="font-family:'IM Fell English',serif;font-size:24px;line-height:1.1;color:#1E1710">{{ e.title }}</span>
             <span style="font-size:15px;font-style:italic;color:#4F4231;line-height:1.3">{{ e.ep }}</span>
+            <sc-if value="{{ e.hasFicha }}" hint-placeholder-val="{{ false }}"><span style="align-self:flex-start;font-family:'IBM Plex Sans',sans-serif;font-size:12px;padding:2px 8px;border-radius:999px;background:#E6E3D6;color:#2B2B22">{{ e.ficha }}</span></sc-if>
             <span style="font-size:16px;color:#33281C;line-height:1.45;margin-top:2px;text-wrap:pretty">{{ e.s }}</span>
             <span style="margin-top:auto;padding-top:6px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B5C46">{{ e.src }}</span>
           </button>
@@ -390,9 +391,14 @@ input::placeholder{color:#7A6B55}
 
   <sc-if value="{{ isLinhagem }}" hint-placeholder-val="{{ false }}">
     <main style="max-width:980px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
-      <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Linhagem · Hen Ichaer</div>
-      <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 10px;color:#1E1710">A linhagem do Sangue Antigo</h1>
-      <p style="max-width:640px;font-size:19px;line-height:1.55;color:#33281C;margin:0 0 34px">Oito gerações, de Lara Dorren a Ciri. O gene élfico atravessa Redania, Temeria e Cintra até se manifestar por inteiro.</p>
+      <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Linhagem</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 4px">
+        <sc-for list="{{ arvoreOpts }}" as="ao" hint-placeholder-count="3">
+          <button onClick="{{ ao.select }}" style="padding:5px 12px;cursor:pointer;border:1px solid {{ ao.bd }};background:{{ ao.bg }};color:{{ ao.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:13px;border-radius:999px">{{ ao.n }}</button>
+        </sc-for>
+      </div>
+      <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 10px;color:#1E1710">{{ arvoreTitulo }}</h1>
+      <p style="max-width:640px;font-size:19px;line-height:1.55;color:#33281C;margin:0 0 34px">{{ arvoreSub }}</p>
       <div style="display:flex;flex-direction:column">
         <sc-for list="{{ tree }}" as="g" hint-placeholder-count="8">
           <div style="display:grid;grid-template-columns:52px minmax(0,1fr);column-gap:14px">
@@ -454,6 +460,37 @@ input::placeholder{color:#7A6B55}
             </button>
           </sc-for>
         </aside>
+      </div>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ isContraste }}" hint-placeholder-val="{{ false }}">
+    <main style="max-width:980px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
+      <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Livros × Jogos</div>
+      <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 12px;color:#1E1710">Onde as histórias se separam</h1>
+      <p style="max-width:700px;font-size:19px;line-height:1.55;color:#33281C;margin:0 0 22px">Os jogos continuam a saga, mas Sapkowski nunca os tratou como cânone. Aqui estão, reunidos das notas da wiki, os pontos que só existem nos jogos e as divergências entre as duas versões.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px">
+        <sc-for list="{{ contrasteTabs }}" as="ct" hint-placeholder-count="3">
+          <button onClick="{{ ct.select }}" style="padding:5px 12px;cursor:pointer;border:1px solid {{ ct.bd }};background:{{ ct.bg }};color:{{ ct.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:13px;border-radius:999px">{{ ct.label }} <span style="opacity:.7">{{ ct.count }}</span></button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ contrasteAviso }}" hint-placeholder-val="{{ false }}">
+        <p style="margin:0 0 18px;padding:10px 14px;background:#F1E4E6;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#7A2442">O modo sem spoilers está ligado: os textos ficam recolhidos até você clicar em cada um.</p>
+      </sc-if>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:12px">
+        <sc-for list="{{ contrasteGrupos }}" as="cg" hint-placeholder-count="4">
+          <div style="background:#FBF8F1;border:1px solid #DCCFB3;border-radius:10px;padding:14px 18px 16px;display:flex;flex-direction:column;gap:10px">
+            <button onClick="{{ cg.open }}" style="align-self:flex-start;display:flex;align-items:center;gap:6px;background:none;border:none;padding:0;cursor:pointer;font-family:'IM Fell English',serif;font-size:24px;line-height:1.1;color:#1E1710" style-hover="color:#8C2A1B">
+              <svg viewBox="0 0 16 16" width="14" height="14" style="fill:none;stroke:{{ cg.color }};stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round"><path d="{{ cg.icon }}"></path></svg>{{ cg.title }}
+            </button>
+            <sc-for list="{{ cg.itens }}" as="ci" hint-placeholder-count="1">
+              <div onClick="{{ ci.click }}" style="padding:9px 12px;background:{{ ci.bg }};border-left:3px solid {{ ci.cor }};border-radius:0 8px 8px 0;cursor:{{ ci.cur }}">
+                <span style="display:block;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:{{ ci.cor }};margin-bottom:2px">{{ ci.tag }}</span>
+                <span style="font-size:17px;line-height:1.5;color:#1E1710">{{ ci.x }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
       </div>
     </main>
   </sc-if>
@@ -953,7 +990,27 @@ class Component extends DCLogic {
       .filter(t => t.count).map(t => { const on = s.compCat === t.id; return { ...t, border: on ? t.color : '#DCCFB3', bg: on ? t.color : '#FBF8F1', fg: on ? '#FBF8F1' : t.color, select: () => this.setState({ compCat: t.id }) }; });
     const compCards = Ev.filter(e => (s.compCat === 'all' || e.c === s.compCat) && (s.compSrc === 'all' || (e.fo || ['livros']).includes(s.compSrc)))
       .slice().sort((a, b) => s.compCat === 'all' ? (catOrder[a.c] - catOrder[b.c]) : 0)
-      .map(e => ({ title: e.t, ep: e.ep, s: e.s, cat: catMap[e.c].label, color: catMap[e.c].color, icon: ICONS[e.c], src: srcName(e), open: () => this.open(e.id) }));
+      .map(e => {
+        const fc = (X.fichas[e.id] || [])[0];
+        return { title: e.t, ep: e.ep, s: e.s, cat: catMap[e.c].label, color: catMap[e.c].color, icon: ICONS[e.c], src: srcName(e), open: () => this.open(e.id), hasFicha: !!fc, ficha: fc ? fc[1] : '' };
+      });
+
+    // Livros × Jogos, agrupado por verbete.
+    const CT = window.WITCHER_WIKI.contrastes.filter(c => em[c.e] && !hidden.has(c.e));
+    const ctCount = { all: CT.length, divergencia: CT.filter(c => c.co === 'divergencia').length, jogos: CT.filter(c => c.co === 'jogos').length };
+    const contrasteTabs = [['all', 'Tudo'], ['divergencia', 'Divergências'], ['jogos', 'Só nos jogos']].map(([id, label]) => { const on = s.contraste === id; return { label, count: ctCount[id], bd: on ? '#1E1710' : '#DCCFB3', bg: on ? '#1E1710' : '#FBF8F1', fg: on ? '#F4EEE1' : '#1E1710', select: () => this.setState({ contraste: id }) }; });
+    const ctGrupos = {};
+    CT.forEach((c, i) => { if (s.contraste === 'all' || c.co === s.contraste) (ctGrupos[c.e] = ctGrupos[c.e] || []).push([c, i]); });
+    const contrasteGrupos = Object.keys(ctGrupos).sort((a, b) => (ctGrupos[b].some(x => x[0].co === 'divergencia') - ctGrupos[a].some(x => x[0].co === 'divergencia')) || catOrder[em[a].c] - catOrder[em[b].c]).map(id => ({
+      title: em[id].t, color: catMap[em[id].c].color, icon: ICONS[em[id].c], open: () => this.open(id),
+      itens: ctGrupos[id].map(([c, i]) => {
+        const key = 'c:' + i, fechado = spOn && !s.reveal[key];
+        const dv = c.co === 'divergencia';
+        return { tag: dv ? 'Divergência' : 'Nos jogos', cor: dv ? '#7A520C' : '#3A4150', bg: dv ? '#F3E6C6' : '#E9EAEE',
+          x: fechado ? 'Recolhido pelo modo sem spoilers. Clique para ler.' : c.x, cur: fechado ? 'pointer' : 'default',
+          click: () => { if (fechado) this.setState(st => ({ reveal: { ...st.reveal, [key]: true } })); } };
+      })
+    }));
 
     let results = [];
     const qn = this.norm(s.q).trim();
@@ -1029,12 +1086,15 @@ class Component extends DCLogic {
     const rotaPts = rotaStops.map(r => r.x + ',' + r.y).join(' ');
     const domAtivos = ano == null ? [] : X.dominios.map(d => ({ d, f: domDe(d.p) })).filter(x => x.f).map(({ d, f }) => ({ n: (D.places.find(pl => pl.id === d.p) || {}).n || d.p, txt: f.txt.charAt(0).toLowerCase() + f.txt.slice(1), cor: f.cor }));
 
-    const tree = D.tree.map((g, i) => {
-      const last = i === D.tree.length - 1, pp = g.p, has = pp.id && em[pp.id];
+    const arv = X.arvores.find(a => a.id === s.arvore) || X.arvores[0];
+    const geracoes = arv.geracoes || D.tree;
+    const arvoreOpts = X.arvores.map(a => { const on = a.id === arv.id; return { n: a.n, bd: on ? '#1E1710' : '#DCCFB3', bg: on ? '#1E1710' : '#FBF8F1', fg: on ? '#F4EEE1' : '#1E1710', select: () => this.setState({ arvore: a.id }) }; });
+    const tree = geracoes.map((g, i) => {
+      const last = i === geracoes.length - 1, pp = g.p, has = pp.id && em[pp.id];
       return {
         gen: g.gen, notLast: !last, note: g.note, hasNote: !!g.note, side: g.side, hasSide: !!g.side, hasSp: !!g.sp,
         p: { n: pp.n, r: pp.r, fs: last ? '28px' : '22px', bg: last ? '#8C2A1B' : '#FBF8F1', fg: last ? '#FBF8F1' : '#1E1710', sub: last ? '#F3DED3' : '#4F4231', border: last ? '#8C2A1B' : '#DCCFB3', cursor: has ? 'pointer' : 'default', open: () => { if (has) this.open(pp.id); } },
-        sp: g.sp ? { n: g.sp.n, r: g.sp.r, cursor: g.sp.id ? 'pointer' : 'default', open: () => { if (g.sp.id && em[g.sp.id]) this.open(g.sp.id); } } : {}
+        sp: g.sp ? { n: g.sp.n, r: g.sp.r, cursor: g.sp.id && em[g.sp.id] ? 'pointer' : 'default', open: () => { if (g.sp.id && em[g.sp.id]) this.open(g.sp.id); } } : {}
       };
     });
 
@@ -1150,6 +1210,8 @@ class Component extends DCLogic {
       showAnoPanel: ano != null && !hasPlace && !rotaSel, domAtivos, hasDomAtivos: domAtivos.length > 0,
       anoEventos: anoEvs.map(e => ({ date: e.d, title: e.t, go: () => this.goEvent(e) })),
       anoEvTitulo: anoEvs.length ? 'Neste ano' : 'Nenhum evento registrado neste ano',
+      contrasteTabs, contrasteGrupos, contrasteAviso: spOn,
+      arvoreOpts, arvoreTitulo: arv.titulo, arvoreSub: arv.sub,
       tree, relEdges, relNodes, relSel, relLegend: Object.values(R.types), relAspect: mobile ? '3 / 4' : '16 / 11',
       fontes,
       hasEntry: !!ce, entry, canBack: s.stack.length > 1,
