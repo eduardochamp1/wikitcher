@@ -21,9 +21,11 @@ a:hover{color:#1E1710}
 *{box-sizing:border-box}
 button{font:inherit;color:inherit}
 input::placeholder{color:#7A6B55}
-/* Modo escuro: inverte as cores e devolve os matizes, porque as cores do template são fixas nos elementos. */
-html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg);background:#0d0b09}
-@media (prefers-color-scheme: dark){html:not([data-tema="claro"]){filter:invert(.92) hue-rotate(180deg);background:#0d0b09}}
+/* Modo escuro: inverte as cores e devolve os matizes, porque as cores do template são fixas nos elementos.
+   O fundo do <html> fica em pergaminho, como o do <body>: o filtro inverte os dois juntos. Um fundo escuro
+   aqui viraria claro e apareceria onde o conteúdo passa da altura da tela. */
+html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
+@media (prefers-color-scheme: dark){html:not([data-tema="claro"]){filter:invert(.92) hue-rotate(180deg)}}
 :focus-visible{outline:2px solid #8C2A1B;outline-offset:2px}
 @media print{
   html{filter:none!important}

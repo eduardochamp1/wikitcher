@@ -124,6 +124,13 @@ const TESTES = [
     W.dispatchEvent(new W.KeyboardEvent('keydown', { key: '?' })); await sleep(200);
     confere(doc.querySelector('[role=dialog]'), 'janela de atalhos não abriu');
   }],
+  ['O modo escuro inverte a página inteira', async () => {
+    await abrir('#/tempo', ls => ls.setItem('witcher-prefs', JSON.stringify({ tema: 'escuro' })));
+    const h = doc.documentElement, cs = frame.contentWindow.getComputedStyle(h);
+    confere(h.dataset.tema === 'escuro' && /invert/.test(cs.filter), 'o filtro do modo escuro não foi aplicado');
+    // O <body> tem altura zero; quem pinta o fundo é o <html>, que precisa ser claro para virar escuro.
+    confere(cs.backgroundColor === 'rgb(244, 238, 225)', 'o fundo do <html> não é o pergaminho (' + cs.backgroundColor + ')');
+  }],
   ['Nenhuma aba quebra no celular', async () => {
     frame && frame.remove();
     await abrir('#/tempo');
