@@ -3,7 +3,7 @@ tipo: personagem
 fonte: livros
 aliases: [Codringher, Fenn]
 raca: humano e anão
-morte: 1265
+morte: 1267
 tags: [personagem]
 ---
 # Codringher e Fenn

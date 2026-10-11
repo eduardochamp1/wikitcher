@@ -1,7 +1,7 @@
 ---
 tipo: evento
 fonte: livros
-data: verão de 1265
+data: 1º de julho de 1267
 certeza: ●
 aliases: [Thanedd Coup, Rebelião de Thanedd]
 tags: [magia, traição]
@@ -10,7 +10,7 @@ tags: [magia, traição]
 
 | | |
 |---|---|
-| **Data** | verão de 1265 |
+| **Data** | 1º de julho de 1267 |
 | **Local** | Ilha de [[Thanedd]] — palácio de Garstang e Aretusa |
 | **Participantes** | Capítulo dos magos; Vilgefortz e magos pró-Nilfgaard; agentes de Dijkstra e Filippa; Scoia'tael |
 | **Resultado** | Capítulo destruído; início da Segunda Guerra Nórdica; Ciri desaparece |

@@ -6,7 +6,7 @@ tags: [magia, politica]
 ---
 # Loja das Feiticeiras
 
-Sociedade secreta fundada em 1265 por [[Filippa Eilhart]], depois do [[Golpe de Thanedd]], para que a magia — e não os reis — guie o destino do Norte. Reúne-se em Montecalvo. Inclui feiticeiras nilfgaardianas e élficas.
+Sociedade secreta fundada em 1267 por [[Filippa Eilhart]], depois do [[Golpe de Thanedd]], para que a magia — e não os reis — guie o destino do Norte. Reúne-se em Montecalvo. Inclui feiticeiras nilfgaardianas e élficas.
 
 | Membro | Origem |
 |---|---|

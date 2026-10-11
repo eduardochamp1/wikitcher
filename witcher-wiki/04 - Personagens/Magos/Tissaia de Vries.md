@@ -3,7 +3,7 @@ tipo: personagem
 fonte: livros
 aliases: []
 raca: humana
-morte: 1265
+morte: 1267
 tags: [personagem, feiticeira]
 ---
 # Tissaia de Vries

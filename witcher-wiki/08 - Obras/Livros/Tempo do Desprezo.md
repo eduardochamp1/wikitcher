@@ -2,7 +2,7 @@
 tipo: obra
 fonte: livros
 ano: 1995
-periodo: 1265
+periodo: 1267
 tags: [obra, livro, saga]
 ---
 # Tempo do Desprezo

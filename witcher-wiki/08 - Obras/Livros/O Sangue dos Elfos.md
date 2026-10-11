@@ -2,7 +2,7 @@
 tipo: obra
 fonte: livros
 ano: 1994
-periodo: 1263–1264
+periodo: 1263–1267
 tags: [obra, livro, saga]
 ---
 # O Sangue dos Elfos

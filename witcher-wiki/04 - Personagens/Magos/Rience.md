@@ -3,7 +3,7 @@ tipo: personagem
 fonte: livros
 aliases: []
 raca: humano
-morte: 1265
+morte: 1267
 tags: [personagem, antagonista]
 ---
 # Rience

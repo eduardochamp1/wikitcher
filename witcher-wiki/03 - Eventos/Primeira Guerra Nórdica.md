@@ -1,7 +1,7 @@
 ---
 tipo: evento
 fonte: livros
-data: 1262–1263
+data: 1263
 certeza: ●
 aliases: [First Northern War, Primeira Guerra contra Nilfgaard]
 tags: [guerra]

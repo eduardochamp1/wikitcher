@@ -12,8 +12,8 @@ tags: [indice, eventos]
 ## Saga
 - [[Massacre de Cintra]] (1263)
 - [[Batalhas de Sodden]] (1263)
-- [[Golpe de Thanedd]] (1265)
-- [[Segunda Guerra Nórdica]] (1265–1268)
+- [[Golpe de Thanedd]] (1267)
+- [[Segunda Guerra Nórdica]] (1267–1268)
 - [[Batalha de Stygga]] (1268)
 - [[Batalha de Brenna]] (1268)
 - [[Paz de Cintra]] (1268)

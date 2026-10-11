@@ -1,7 +1,7 @@
 ---
 tipo: evento
 fonte: livros
-data: c. 1165–1168
+data: c. 1158–1159
 certeza: ◐
 aliases: [Falka's Rebellion]
 tags: [historia, sangue-antigo]

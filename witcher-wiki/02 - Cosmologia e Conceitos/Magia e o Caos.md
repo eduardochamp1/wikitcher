@@ -16,7 +16,7 @@ A magia é a manipulação do **Caos**, a energia bruta que permeia o mundo depo
 
 ## Ensino e instituições
 - Escolas: [[Aretusa]] (mulheres, em [[Thanedd]]) e Ban Ard (homens, em Kaedwen); Gweison Haul em Nilfgaard.
-- Governo: o [[Capítulo e Conselho dos Magos]]; depois de 1265, a [[Loja das Feiticeiras]].
+- Governo: o [[Capítulo e Conselho dos Magos]]; depois de 1267, a [[Loja das Feiticeiras]].
 - Muitas feiticeiras alteram a aparência e se tornam estéreis em consequência do treino — tema importante para [[Yennefer de Vengerberg]].
 
 ## Tipos de magia

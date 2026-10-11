@@ -2,7 +2,7 @@
 tipo: obra
 fonte: livros
 ano: 1996
-periodo: 1265
+periodo: 1267
 tags: [obra, livro, saga]
 ---
 # Batismo de Fogo
