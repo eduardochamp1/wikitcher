@@ -80,19 +80,19 @@ function converter(n) {
   blocos.forEach(x => { if (x && x.co) delete x.titulo; });
   const b = blocos.filter((x, i) => !(x.h && (i === blocos.length - 1 || blocos[i + 1].h)) && !(x.co && !x.t));
 
-  // Resumo: o primeiro parágrafo; se for longo, só a primeira frase (e o parágrafo fica no corpo).
-  // Se ele já está dentro de uma seção, fica onde está.
+  // Resumo (usado na busca, no quiz e nas dicas; o verbete mostra o texto inteiro): o primeiro parágrafo,
+  // ou só a primeira frase se ele for longo. O parágrafo continua no corpo.
   let resumo = '';
   const i = b.findIndex(x => typeof x === 'string');
   const res = fatos.find(f => f[0] === 'Resultado');
   if (res && (i < 0 || b.slice(0, i).some(x => x.h))) resumo = res[1].replace(/[.;]?$/, '.');
   else if (i >= 0) {
     const fr = /^(.+?[.!?])(\s|$)/.exec(b[i]);
-    if (b[i].length <= 230 && !b.slice(0, i).some(x => x.h)) { resumo = b[i]; b.splice(i, 1); }
+    if (b[i].length <= 230 && !b.slice(0, i).some(x => x.h)) resumo = b[i];
     else resumo = fr && fr[1].length <= 230 ? fr[1] : b[i].slice(0, 200).replace(/\s\S*$/, '') + '…';
   }
   // Nota que é só um aviso "[!jogos]": o texto do aviso vira o resumo.
-  if (!resumo && b.length && b[0].co && b[0].co !== 'spoiler') resumo = b.shift().t;
+  if (!resumo && b.length && b[0].co && b[0].co !== 'spoiler') resumo = b[0].t;
   if (!resumo) resumo = ep || (b.find(x => x.li) || {}).li || '';
   return { ep, resumo, fatos, blocos: b, links };
 }
@@ -243,9 +243,17 @@ for (const n of notas) {
   for (const b of converter(n).blocos) if (b.co && /^(jogos|divergencia)$/.test(b.co) && b.t) contrastes.push({ e, t: n.nome, co: b.co, x: b.t });
 }
 
+// 6) Eras: o texto completo de cada era da Linha do Tempo vem das notas "tipo: era" (01 - Linha do Tempo/Eras).
+const eras = {};
+for (const n of notas.filter(n => n.tipo === 'era' && n.fm.era)) {
+  const c = converter(n);
+  eras[n.fm.era] = { ep: c.ep, b: c.blocos };
+}
+
 const linhas = a => a.map(x => JSON.stringify(x)).join(',\n');
 const saida = '// GERADO por tools/importar-wiki.js a partir de witcher-wiki/ — não edite à mão.\n' +
   'window.WITCHER_WIKI = {\nverbetes: [\n' + linhas(verbetes) + '\n],\nglossario: [\n' + linhas(gloss) + '\n],\ncontrastes: [\n' + linhas(contrastes) + '\n],\n' +
+  'eras: ' + JSON.stringify(eras) + ',\n' +
   // Nome (ou apelido) normalizado de cada nota -> id do verbete; usado por tools/verificar.js e tools/diferencas.js.
   'notas: ' + JSON.stringify(Object.fromEntries(alvo)) + '\n};\n';
 // --conferir: não grava; só diz se o arquivo gerado está em dia com a wiki (usado no pre-commit).

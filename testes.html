@@ -76,10 +76,11 @@ const TESTES = [
     await abrir('#/tempo');
     await esperar(() => texto().includes('Da Conjunção das Esferas'), 6000, 'título não apareceu');
     confere(doc.querySelectorAll('[id^="ev-"]').length >= 90, 'menos de 90 eventos na tela');
-    const era7 = doc.getElementById('era-guerras');
-    confere(!/pogrom/i.test(era7.querySelector('p').innerText), 'a abertura da era VII revela o fim com os spoilers recolhidos');
-    [...era7.querySelectorAll('p span')].find(s => /Continua com spoiler/.test(s.textContent)).click(); await sleep(250);
-    confere(/pogrom de Rívia/.test(doc.getElementById('era-guerras').querySelector('p').innerText), 'o clique não mostrou o resto da abertura');
+    // O texto da era (antes da lista de eventos) não revela o fim da saga com os spoilers recolhidos.
+    const textoEra = () => { const s = doc.getElementById('era-guerras'); return (s.querySelector('.era-texto') || s.querySelector('p')).innerText; };
+    confere(!/pogrom/i.test(textoEra()), 'o texto da era VII revela o fim com os spoilers recolhidos');
+    await clicar('Spoilers recolhidos');
+    confere(/pogrom/i.test(textoEra()), 'com os spoilers visíveis, o texto da era VII não conta o fim');
     confere(!doc.querySelector('.sc-logic-error'), 'erro de lógica do componente');
   }],
   ['Endereço de verbete abre o verbete', async () => {

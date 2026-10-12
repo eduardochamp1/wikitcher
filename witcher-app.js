@@ -20,18 +20,6 @@
   const PAD = "M4.5 5h7a3 3 0 0 1 3 3v1.5a2.5 2.5 0 0 1-4.6 1.3L9 9.5H7l-.9 1.3A2.5 2.5 0 0 1 1.5 9.5V8a3 3 0 0 1 3-3ZM5 7v2M4 8h2M11 7.5h.01M12 9h.01";
 
   const VIEWS = [['inicio', 'Início'], ['tempo', 'Linha do Tempo'], ['comp', 'Compêndio'], ['mapa', 'Mapa'], ['linhagem', 'Linhagem'], ['rel', 'Relações'], ['contraste', 'Livros × Jogos'], ['leitura', 'Leitura'], ['quiz', 'Quiz'], ['fontes', 'Fontes']];
-  // Uma linha por era, para a página inicial (sem spoilers).
-  const ERA_LINHA = {
-    antiga: 'Gnomos, anões e depois os elfos dividem o Continente.',
-    conjuncao: 'Mundos colidem e deixam aqui monstros, magia e, dizem, os humanos.',
-    chegada: 'Os humanos chegam pelo mar e empurram os elfos para as montanhas.',
-    magos: 'Os feiticeiros organizam a magia e criam os bruxos para caçar monstros.',
-    lara: 'Um amor entre uma elfa e um humano marca a linhagem do Sangue Antigo.',
-    bruxo: 'Os anos de Geralt como caçador de monstros: o tempo dos contos.',
-    guerras: 'O Império de Nilfgaard invade o Norte: o tempo dos cinco romances.',
-    depois: 'Os jogos da CD Projekt Red continuam a história.',
-    fim: 'Séculos depois, tudo vira lenda.'
-  };
   const LS_KEY = 'witcher-leitura';
   function lerLeitura() {
     // "on" = spoilers recolhidos. É o padrão para todo leitor; "recolher" (versão nova) substitui o antigo modo sem spoilers.
@@ -725,7 +713,6 @@
 
       const erasView = D.eras.map(er => {
         const events = evF.filter(e => e.era === er.id).map(e => {
-          const [a, b] = this.split(e.x);
           const used = new Set();
           const ob = this.obraDe(e);
           // Evento-spoiler ainda não revelado: aparece no lugar certo, mas só com a obra que o conta.
@@ -751,14 +738,15 @@
             ...srcBadge(!!e.g), icon: ICONS[e.c[0]], dot: catMap[e.c[0]].color,
             bg: s.flash === e.id ? '#F1E2BE' : '#FBF8F1',
             tags: e.c.map(c => ({ label: catMap[c].label, color: catMap[c].color, icon: ICONS[c] })),
-            sum: this.segs(a, used, excl, glossOn), rest: b ? this.segs(b, used, excl, glossOn) : [], hasRest: !!b,
+            // Texto inteiro do evento, sem cortar na primeira frase; abrir mostra só os verbetes ligados.
+            sum: this.segs(e.x, used, excl, glossOn), rest: [], hasRest: false,
             ages, hasAges: ages.length > 0,
-            chips, hasChips: chips.length > 0, isOpen, canOpen: !!b || chips.length > 0,
+            chips, hasChips: chips.length > 0, isOpen, canOpen: chips.length > 0,
             hasObra: !!ob, obra: ob ? ob.n : '', obraIcon: ob && ob.tipo === 'jogo' ? PAD : BOOK,
             openObra: () => { if (ob && em[ob.id]) this.open(ob.id); },
             copy: () => this.copyText(location.href.split('#')[0] + '#/tempo/@' + e.id, e.id),
             copyLabel: s.copied === e.id ? 'link copiado ✓' : 'copiar link',
-            toggleLabel: isOpen ? 'Recolher ▴' : (b ? 'Ler mais ▾' : 'Ver verbetes ligados ▾'),
+            toggleLabel: isOpen ? 'Recolher ▴' : 'Ver verbetes ligados ▾',
             toggle: () => this.setState(st => ({ open: { ...st.open, [e.id]: !isOpen } }))
           };
         });
@@ -771,7 +759,17 @@
         if (er.sp) segsEra.push(...(spOn && !s.reveal[chaveEra] && !(fechouSaga && jogouAlgo)
           ? [{ t: ' ' }, { t: 'Continua com spoiler: clique para ler.', ul: '1.5px dotted #8C2A1B', cur: 'pointer', click: () => this.setState(st => ({ reveal: { ...st.reveal, [chaveEra]: true } })) }]
           : [{ t: ' ' }, ...this.segs(er.sp, new Set(), new Set(), glossOn)]));
-        return { ...er, domId: 'era-' + er.id, segs: segsEra, events, empty: events.length === 0, presentes, hasPresentes: presentes.length > 0,
+        // Texto completo da era, da nota "tipo: era" da wiki (seções, avisos e blocos de spoiler recolhidos).
+        const notaEra = ((window.WITCHER_WIKI || {}).eras || {})[er.id], usedEra = new Set();
+        const corpo = notaEra ? notaEra.b.map((t, i) => {
+          const bl = this.block(t, usedEra, new Set(), glossOn), key = 'era:' + er.id + ':' + i;
+          // Seções da era com título de verdade (o estilo de verbete é pequeno demais para um texto longo).
+          if (t && t.h) Object.assign(bl, { ff: "'IM Fell English',serif", fs: '26px', fw: '400', col: '#1E1710', m: '22px 0 0' });
+          if (spOn && t && t.co === 'spoiler' && !s.reveal[key] && !(fechouSaga && jogouAlgo))
+            bl.segs = [{ t: 'Spoiler recolhido. Clique para mostrar.', ul: '1.5px dotted #8C2A1B', cur: 'pointer', click: () => this.setState(st => ({ reveal: { ...st.reveal, [key]: true } })) }];
+          return bl;
+        }) : [];
+        return { ...er, domId: 'era-' + er.id, segs: segsEra, corpo, temCorpo: corpo.length > 0, semCorpo: !corpo.length, events, empty: events.length === 0, presentes, hasPresentes: presentes.length > 0,
           maisPresentes: ids.length > 10, presLabel: todosP ? 'ver menos' : 'ver todos os ' + ids.length,
           presToggle: () => this.setState(st => ({ presTodos: { ...(st.presTodos || {}), [er.id]: !todosP } })) };
       });
@@ -936,7 +934,7 @@
       const hoje = new Date(), diaN = hoje.getFullYear() * 400 + hoje.getMonth() * 31 + hoje.getDate();
       // Só verbetes com um resumo de verdade (e sem o bestiário técnico), para o verbete do dia servir de porta de entrada.
       const poolDia = EvCentral.filter(e => (e.s || '').length >= 50 && e.c !== 'besta'), ed = (poolDia.length ? poolDia : EvCentral)[(diaN * 7919) % (poolDia.length || EvCentral.length)];
-      const compDay = { title: ed.t, s: ed.s, cat: catMap[ed.c].label, open: () => this.open(ed.id) };
+      const compDay = { title: ed.t, s: ed.s, ep: ed.ep, cat: catMap[ed.c].label, open: () => this.open(ed.id) };
       const compRandom = () => this.open(EvCentral[Math.floor(Math.random() * EvCentral.length)].id);
       const compSrcOpts = fonteOpts;
 
@@ -1165,7 +1163,8 @@
         const used = new Set();
         const facts = (ce.f || []).concat(X.fichas[ce.id] || []).map(([k, v]) => ({ k, v }));
         // Avisos de spoiler e de conteúdo dos jogos ficam recolhidos até o leitor chegar lá (ou clicar).
-        const paras = (ce.b || []).map((t, i) => {
+        // O verbete mostra o texto inteiro, sem caixa de resumo; só um verbete sem corpo usa o resumo como texto.
+        const paras = ((ce.b && ce.b.length) ? ce.b : (ce.s ? [ce.s] : [])).map((t, i) => {
           const bl = this.block(t, used, new Set([ce.id]), glossOn), key = 'b:' + ce.id + ':' + i;
           // Só os blocos de spoiler recolhem (conteúdo dos jogos não é spoiler por si só); quem fechou a saga
           // e marcou algum jogo como jogado já os vê abertos.
@@ -1298,8 +1297,12 @@
         const fato = (k) => ((ve && ve.f) || []).find(f => f[0] === k);
         const original = fato('Título original'), feitas = new Set(partesLidas[o.id] || []);
         const ficha = [original ? original[1] : '', o.ano ? String(o.ano) : '', o.editora || ''].filter(Boolean).join(' · ');
+        // Sinopse completa: os parágrafos da nota da obra antes da primeira seção (expansões e cortes usam o texto próprio).
+        const corpo = [];
+        if (ve && !o.expansao && !o.extra) for (const b of ve.b || []) { if (b && b.h) break; if (typeof b === 'string') corpo.push(b); }
+        const sinopse = corpo.length ? corpo : [o.sinopse || o.nota || (has ? ve.ep : '')].filter(Boolean);
         return {
-          n: o.n, num, tipo: o.tipo === 'jogo' ? 'Jogo' : 'Livro', sub: o.sinopse || o.nota || (has ? ve.ep : ''), nota: o.sinopse && o.nota ? o.nota : '', temNota: !!(o.sinopse && o.nota),
+          sinopse: sinopse.map(t => ({ t })), n: o.n, num, tipo: o.tipo === 'jogo' ? 'Jogo' : 'Livro', sub: o.sinopse || o.nota || (has ? ve.ep : ''), nota: o.sinopse && o.nota ? o.nota : '', temNota: !!(o.sinopse && o.nota),
           ficha, temFicha: !!ficha, libera: on ? 'Já lido' : libera(o),
           aqui: i === ultimaPos, prox: proxima === o, selo: i === ultimaPos ? 'Você está aqui' : proxima === o ? 'Próxima leitura' : '', temSelo: i === ultimaPos || proxima === o,
           seloBg: i === ultimaPos ? '#8C2A1B' : '#3F5E2A',
@@ -1342,7 +1345,9 @@
         isContraste: s.view === 'contraste', isLeitura: s.view === 'leitura', isQuiz: s.view === 'quiz',
         // Início: a mesma porta para todo leitor. Seis verbetes para começar e a história em nove eras, em uma linha cada.
         inicioEssenciais: ['geralt', 'ciri', 'yennefer', 'bruxos', 'conjuncao', 'nilfgaard'].filter(id => em[id]).map(id => ({ t: em[id].t, ep: em[id].ep, s: em[id].s, color: catMap[em[id].c].color, icon: ICONS[em[id].c], open: () => this.open(id) })),
-        inicioEras: D.eras.map(er => ({ numeral: er.numeral, name: er.name, span: er.span, linha: ERA_LINHA[er.id] || '',
+        // Índice das eras: nome, período e as seções do texto de cada era (sem resumo).
+        inicioEras: D.eras.map(er => ({ numeral: er.numeral, name: er.name, span: er.span,
+          linha: ((((window.WITCHER_WIKI || {}).eras || {})[er.id] || {}).b || []).filter(b => b && b.h).map(b => b.h).join(' · '),
           ir: () => { this.go('tempo'); setTimeout(() => this.scrollToEl(document.getElementById('era-' + er.id)), 120); } })),
         inicioSpoilerTxt: spOn ? 'Revelações de enredo (mortes, identidades secretas, finais) aparecem recolhidas em todo o site. Clique numa delas para ler.' : 'Os spoilers estão visíveis em todo o site.',
         inicioSpoilerBotao: spOn ? 'Já conheço a história: mostrar todos' : 'Recolher os spoilers de novo',

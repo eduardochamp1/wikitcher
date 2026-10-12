@@ -133,11 +133,10 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
           <button onClick="{{ ie.open }}" style="text-align:left;background:#FBF8F1;border:1px solid #DCCFB3;border-radius:10px;padding:14px 16px;cursor:pointer;display:flex;flex-direction:column;gap:4px" style-hover="border-color:#8C2A1B">
             <span style="display:flex;align-items:center;gap:7px;font-family:'IM Fell English',serif;font-size:24px;line-height:1.1;color:#1E1710"><svg viewBox="0 0 16 16" width="15" height="15" style="flex:0 0 auto;fill:none;stroke:{{ ie.color }};stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><path d="{{ ie.icon }}"></path></svg>{{ ie.t }}</span>
             <span style="font-size:15px;font-style:italic;color:#6B5C46">{{ ie.ep }}</span>
-            <span style="font-size:17px;line-height:1.45;color:#33281C">{{ ie.s }}</span>
-          </button>
+         </button>
         </sc-for>
       </div>
-      <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:28px;margin:40px 0 12px;color:#1E1710">A história em nove eras</h2>
+      <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:28px;margin:40px 0 12px;color:#1E1710">As nove eras da história</h2>
       <ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;max-width:820px">
         <sc-for list="{{ inicioEras }}" as="ir" hint-placeholder-count="9">
           <li><button onClick="{{ ir.ir }}" style="width:100%;display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:baseline;text-align:left;background:none;border:none;border-top:1px solid #E1D5BB;padding:10px 0;cursor:pointer" style-hover="background:#F2EBDC">
@@ -164,7 +163,7 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
     <main style="max-width:1180px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
       <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">A história do mundo</div>
       <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,68px);line-height:1.02;margin:10px 0 16px;color:#1E1710;text-wrap:balance;max-width:880px">Da Conjunção das Esferas ao Frio Branco</h1>
-      <p style="max-width:680px;font-size:20px;line-height:1.55;color:#33281C;margin:0;text-wrap:pretty">Uma crônica única do mundo de The Witcher, em nove eras. Cada evento mostra o essencial em uma frase; abra-o para ler mais. Palavras sublinhadas têm explicação ao passar o mouse.</p>
+      <p style="max-width:680px;font-size:20px;line-height:1.55;color:#33281C;margin:0;text-wrap:pretty">A história do mundo de The Witcher em nove eras, cada uma com seu texto e seus acontecimentos em ordem. Palavras sublinhadas têm explicação ao passar o mouse.</p>
 
       <div style="margin-top:32px;background:#FBF8F1;border:1px solid #DCCFB3;border-radius:10px;padding:18px 20px 20px;display:flex;flex-direction:column;gap:14px">
         <div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px">
@@ -265,7 +264,16 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
               <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(28px,3.6vw,40px);line-height:1.05;margin:0;color:#1E1710">{{ er.name }}</h2>
             </div>
           </div>
+          <sc-if value="{{ er.semCorpo }}" hint-placeholder-val="{{ true }}">
           <p style="max-width:760px;font-size:19px;line-height:1.6;color:#33281C;margin:18px 0 0;text-wrap:pretty"><sc-for list="{{ er.segs }}" as="sg" hint-placeholder-count="0"><span onMouseEnter="{{ sg.enter }}" onMouseLeave="{{ sg.leave }}" onClick="{{ sg.click }}" style="border-bottom:{{ sg.ul }};cursor:{{ sg.cur }}">{{ sg.t }}</span></sc-for></p>
+          </sc-if>
+          <sc-if value="{{ er.temCorpo }}" hint-placeholder-val="{{ false }}">
+          <div class="era-texto" style="max-width:780px;margin-top:18px;display:flex;flex-direction:column;gap:14px">
+            <sc-for list="{{ er.corpo }}" as="pa" hint-placeholder-count="0">
+              <p style="margin:{{ pa.m }};font-size:{{ pa.fs }};font-family:{{ pa.ff }};font-weight:{{ pa.fw }};line-height:1.6;color:{{ pa.col }};padding:{{ pa.pad }};background:{{ pa.bg }};border-left:{{ pa.bl }};border-radius:{{ pa.br }};text-wrap:pretty"><sc-if value="{{ pa.hasTag }}" hint-placeholder-val="{{ false }}"><span style="font-family:'IBM Plex Sans',sans-serif;font-weight:600;margin-right:8px;color:{{ pa.tagCol }};font-size:{{ pa.tagFs }};letter-spacing:{{ pa.tagLs }};text-transform:{{ pa.tagTt }}">{{ pa.tag }}</span></sc-if><sc-for list="{{ pa.segs }}" as="sg" hint-placeholder-count="0"><span onMouseEnter="{{ sg.enter }}" onMouseLeave="{{ sg.leave }}" onClick="{{ sg.click }}" style="border-bottom:{{ sg.ul }};cursor:{{ sg.cur }}">{{ sg.t }}</span></sc-for></p>
+            </sc-for>
+          </div>
+          </sc-if>
           <sc-if value="{{ er.hasPresentes }}" hint-placeholder-val="{{ false }}">
             <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;max-width:920px">
               <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#4F4231;margin-right:4px">Entram em cena:</span>
@@ -374,7 +382,7 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
         <button onClick="{{ compDay.open }}" style="flex:1 1 380px;min-width:0;text-align:left;background:#1E1710;color:#F4EEE1;border:none;border-radius:10px;padding:16px 20px;cursor:pointer;display:flex;flex-direction:column;gap:4px" style-hover="background:#33281C">
           <span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#E7C7A0">Verbete do dia · {{ compDay.cat }}</span>
           <span style="font-family:'IM Fell English',serif;font-size:28px;line-height:1.1">{{ compDay.title }}</span>
-          <span style="font-size:16px;line-height:1.4;color:#E9DFCB">{{ compDay.s }}</span>
+          <span style="font-size:16px;line-height:1.4;color:#E9DFCB;font-style:italic">{{ compDay.ep }}</span>
         </button>
         <div style="flex:0 1 260px;display:flex;flex-direction:column;gap:8px;justify-content:center">
           <button onClick="{{ compRandom }}" style="padding:10px 14px;cursor:pointer;background:#FBF8F1;border:1px solid #CDBE9C;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710" style-hover="border-color:#8C2A1B">Sortear um verbete</button>
@@ -408,8 +416,7 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
             <span style="font-family:'IM Fell English',serif;font-size:24px;line-height:1.1;color:#1E1710">{{ e.title }}</span>
             <span style="font-size:15px;font-style:italic;color:#4F4231;line-height:1.3">{{ e.ep }}</span>
             <sc-if value="{{ e.hasFicha }}" hint-placeholder-val="{{ false }}"><span style="align-self:flex-start;font-family:'IBM Plex Sans',sans-serif;font-size:12px;padding:2px 8px;border-radius:999px;background:#E6E3D6;color:#2B2B22">{{ e.ficha }}</span></sc-if>
-            <span style="font-size:16px;color:#33281C;line-height:1.45;margin-top:2px;text-wrap:pretty">{{ e.s }}</span>
-            <span style="margin-top:auto;padding-top:6px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B5C46">{{ e.src }}</span>
+           <span style="margin-top:auto;padding-top:6px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B5C46">{{ e.src }}</span>
           </button>
         </sc-for>
       </div>
@@ -949,7 +956,7 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
                 <sc-if value="{{ li.temSelo }}" hint-placeholder-val="{{ false }}"><span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:{{ li.seloBg }};color:#FBF8F1">{{ li.selo }}</span></sc-if>
               </span>
               <sc-if value="{{ li.temFicha }}" hint-placeholder-val="{{ false }}"><span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#6B5C46">{{ li.ficha }}</span></sc-if>
-              <span style="font-size:16px;color:#33281C;line-height:1.4">{{ li.sub }}</span>
+              <sc-for list="{{ li.sinopse }}" as="sp" hint-placeholder-count="1"><p style="margin:2px 0 4px;font-size:16px;color:#33281C;line-height:1.5;max-width:640px">{{ sp.t }}</p></sc-for>
               <sc-if value="{{ li.temNota }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#4F4231;font-style:italic">{{ li.nota }}</span></sc-if>
               <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#7A2442">{{ li.libera }}</span>
               <sc-if value="{{ li.temPartes }}" hint-placeholder-val="{{ false }}">
@@ -1029,8 +1036,7 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
         </div>
         <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(34px,5vw,46px);line-height:1.04;margin:0;color:#1E1710;text-wrap:balance">{{ entry.title }}</h1>
         <p style="margin:8px 0 0;font-size:19px;font-style:italic;color:#4F4231">{{ entry.ep }}</p>
-        <p style="margin:18px 0 0;font-size:19px;line-height:1.5;color:#1E1710;background:#F2EBDC;border-radius:8px;padding:12px 16px">{{ entry.s }}</p>
-        <sc-if value="{{ entry.oculto }}" hint-placeholder-val="{{ false }}">
+       <sc-if value="{{ entry.oculto }}" hint-placeholder-val="{{ false }}">
           <div data-noprint="1" style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px">
             <button onClick="{{ entry.reveal }}" style="padding:7px 14px;cursor:pointer;background:#7A2442;color:#FBF8F1;border:none;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">Mostrar mesmo assim</button>
             <button onClick="{{ goLeitura }}" style="padding:7px 14px;cursor:pointer;background:none;border:1px solid #CDBE9C;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px">Ajustar a leitura</button>
