@@ -279,9 +279,6 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
               </sc-if>
             </div>
           </sc-if>
-          <sc-if value="{{ er.recolhida }}" hint-placeholder-val="{{ false }}">
-            <button onClick="{{ er.abrirEra }}" style="margin-top:18px;padding:8px 14px;cursor:pointer;background:#FBF8F1;border:1px solid #CDBE9C;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;color:#1E1710" style-hover="border-color:#8C2A1B">{{ er.abrirLabel }} ▾</button>
-          </sc-if>
           <ol style="list-style:none;margin:28px 0 0;padding:0;display:flex;flex-direction:column;gap:14px">
             <sc-for list="{{ er.events }}" as="ev" hint-placeholder-count="3">
               <li id="{{ ev.domId }}" style="display:grid;grid-template-columns:{{ ev.cols }};column-gap:14px">

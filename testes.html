@@ -72,14 +72,14 @@ const TESTES = [
     await digitar(doc.querySelector('header input'), 'Beliefs of Skellige');
     await esperar(() => [...doc.querySelectorAll('header button')].some(b => /Crenças de Skellige/.test(b.innerText)), 3000, 'o título original não encontrou o escrito');
   }],
-  ['A linha do tempo abre no tempo de Geralt e mostra as eras antigas com um clique', async () => {
+  ['A linha do tempo mostra todas as eras com seus eventos', async () => {
     await abrir('#/tempo');
     await esperar(() => texto().includes('Da Conjunção das Esferas'), 6000, 'título não apareceu');
-    const n = () => doc.querySelectorAll('[id^="ev-"]').length;
-    confere(n() >= 60 && !doc.getElementById('ev-lara-dorren'), 'as eras antigas não começaram recolhidas (' + n() + ' eventos)');
-    const b = [...doc.querySelectorAll('#era-lara button')].find(x => /Mostrar os \d+ eventos/.test(x.innerText));
-    b.click(); await sleep(250);
-    confere(doc.getElementById('ev-lara-dorren'), 'o botão não mostrou os eventos da era V');
+    confere(doc.querySelectorAll('[id^="ev-"]').length >= 90, 'menos de 90 eventos na tela');
+    const era7 = doc.getElementById('era-guerras');
+    confere(!/pogrom/i.test(era7.querySelector('p').innerText), 'a abertura da era VII revela o fim com os spoilers recolhidos');
+    [...era7.querySelectorAll('p span')].find(s => /Continua com spoiler/.test(s.textContent)).click(); await sleep(250);
+    confere(/pogrom de Rívia/.test(doc.getElementById('era-guerras').querySelector('p').innerText), 'o clique não mostrou o resto da abertura');
     confere(!doc.querySelector('.sc-logic-error'), 'erro de lógica do componente');
   }],
   ['Endereço de verbete abre o verbete', async () => {
@@ -111,7 +111,7 @@ const TESTES = [
     confere(/Spoiler de/.test(ev.innerText) && !ev.innerText.includes('O Pogrom de Rívia'), 'o Pogrom de Rívia aparece sem máscara');
     [...ev.querySelectorAll('span')].find(s => /Clique para mostrar/.test(s.textContent)).click(); await sleep(250);
     confere(doc.getElementById('ev-pogrom').innerText.includes('O Pogrom de Rívia'), 'o clique não revelou o evento');
-    confere(doc.querySelectorAll('[id^="ev-"]').length >= 60, 'eventos sumiram da linha do tempo');
+    confere(doc.querySelectorAll('[id^="ev-"]').length >= 90, 'eventos sumiram da linha do tempo');
     await clicar('Spoilers recolhidos');
     confere(JSON.parse(frame.contentWindow.localStorage.getItem('witcher-leitura')).recolher === false, 'o botão do cabeçalho não mostrou os spoilers');
     confere(!/Spoiler de/.test(texto()), 'ainda há eventos mascarados com os spoilers visíveis');

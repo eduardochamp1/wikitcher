@@ -198,7 +198,7 @@
     goEvent(ev) {
       // Ir a um evento volta o filtro de fonte da Linha do Tempo para "Tudo", para ele aparecer.
       // Quem pede um evento pelo link quer vê-lo: um evento-spoiler já chega revelado.
-      this.setState(s => ({ fonteAba: { ...(s.fonteAba || {}), tempo: 'tudo' }, reveal: { ...s.reveal, ['ev:' + ev.id]: true }, erasAbertas: { ...(s.erasAbertas || {}), [ev.era]: true }, view: 'tempo', stack: [], flash: ev.id, evLink: ev.id, person: null, searchOpen: false, cats: [], open: { ...s.open, [ev.id]: true } }), () => {
+      this.setState(s => ({ fonteAba: { ...(s.fonteAba || {}), tempo: 'tudo' }, reveal: { ...s.reveal, ['ev:' + ev.id]: true }, view: 'tempo', stack: [], flash: ev.id, evLink: ev.id, person: null, searchOpen: false, cats: [], open: { ...s.open, [ev.id]: true } }), () => {
         setTimeout(() => this.scrollToEl(document.getElementById('ev-' + ev.id)), 60);
         clearTimeout(this.ft); this.ft = setTimeout(() => this.setState({ flash: null }), 2200);
       });
@@ -718,18 +718,13 @@
       const evAll = D.events.slice().sort((a, b) => a.s - b.s);
       const evOk = evAll.filter(evVisivel);
       const evF = evAll.filter(e => evFonteOk(e) && (!s.cats.length || e.c.some(c => s.cats.includes(c))) && (!s.person || (e.l || []).includes(s.person)));
-      this._evIds = evF.filter(e => !(['antiga', 'conjuncao', 'chegada', 'magos', 'lara'].includes(e.era) && !(s.erasAbertas || {})[e.era] && !s.person && !s.cats.length)).map(e => e.id);
+      this._evIds = evF.map(e => e.id);
       const defOpen = s.expandAll ?? (p.expandido ?? false);
       const excl = new Set(['geralt', 'ciri', 'yennefer']);
       const cols = mobile ? '30px minmax(0,1fr)' : '40px minmax(0,1fr)';
 
-      // As cinco eras antigas começam recolhidas (a linha do tempo abre leve, no tempo de Geralt); um clique mostra os eventos.
-      // Filtros, pessoa e escala real mostram tudo.
-      const ANTIGAS = new Set(['antiga', 'conjuncao', 'chegada', 'magos', 'lara']);
-      const eraRecolhida = (id) => ANTIGAS.has(id) && !(s.erasAbertas || {})[id] && !s.person && !s.cats.length;
       const erasView = D.eras.map(er => {
-        const doEra = evF.filter(e => e.era === er.id), recolhida = eraRecolhida(er.id) && doEra.length > 0;
-        const events = (recolhida ? [] : doEra).map(e => {
+        const events = evF.filter(e => e.era === er.id).map(e => {
           const [a, b] = this.split(e.x);
           const used = new Set();
           const ob = this.obraDe(e);
@@ -771,9 +766,12 @@
         ids.sort((a, b) => catOrder[em[a].c] - catOrder[em[b].c]);
         // "Entram em cena": os 10 primeiros, com opção de ver todos.
         const todosP = !!(s.presTodos || {})[er.id], presentes = (todosP ? ids : ids.slice(0, 10)).map(chip);
-        return { ...er, domId: 'era-' + er.id, segs: this.segs(er.summary, new Set(), new Set(), glossOn), events, empty: events.length === 0 && !recolhida, presentes, hasPresentes: presentes.length > 0,
-          recolhida, abrirLabel: 'Mostrar os ' + doEra.length + ' eventos desta era',
-          abrirEra: () => this.setState(st => ({ erasAbertas: { ...(st.erasAbertas || {}), [er.id]: true } })),
+        // A abertura da era continua com o trecho que conta o desfecho (sp), recolhido enquanto os spoilers estiverem recolhidos.
+        const segsEra = this.segs(er.summary, new Set(), new Set(), glossOn), chaveEra = 'era:' + er.id;
+        if (er.sp) segsEra.push(...(spOn && !s.reveal[chaveEra] && !(fechouSaga && jogouAlgo)
+          ? [{ t: ' ' }, { t: 'Continua com spoiler: clique para ler.', ul: '1.5px dotted #8C2A1B', cur: 'pointer', click: () => this.setState(st => ({ reveal: { ...st.reveal, [chaveEra]: true } })) }]
+          : [{ t: ' ' }, ...this.segs(er.sp, new Set(), new Set(), glossOn)]));
+        return { ...er, domId: 'era-' + er.id, segs: segsEra, events, empty: events.length === 0, presentes, hasPresentes: presentes.length > 0,
           maisPresentes: ids.length > 10, presLabel: todosP ? 'ver menos' : 'ver todos os ' + ids.length,
           presToggle: () => this.setState(st => ({ presTodos: { ...(st.presTodos || {}), [er.id]: !todosP } })) };
       });
