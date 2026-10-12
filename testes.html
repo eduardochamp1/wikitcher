@@ -59,6 +59,16 @@ const TESTES = [
     const l = JSON.parse(frame.contentWindow.localStorage.getItem('witcher-leitura'));
     confere(l.on && l.lidos.includes('a-senhora-do-lago') && !l.lidos.includes('the-witcher-3'), 'o caminho "Li os livros" não configurou a leitura');
   }],
+  ['O filtro global de fonte vale no Compêndio e na Linha do Tempo', async () => {
+    await abrir('#/comp', ls => ls.setItem('witcher-prefs', JSON.stringify({ visitou: true, fonte: 'livros' })));
+    const todos = () => ([...doc.querySelectorAll('main button')].map(b => b.innerText).find(t => /^Todos\s*\d/.test(t)) || '').replace(/\D/g, '');
+    const comLivros = +todos();
+    frame.contentWindow.localStorage.setItem('witcher-prefs', JSON.stringify({ visitou: true, fonte: 'tudo' }));
+    await abrir('#/comp', ls => ls.setItem('witcher-prefs', JSON.stringify({ visitou: true, fonte: 'tudo' })));
+    confere(+todos() > comLivros, 'o filtro "Livros" não reduziu o Compêndio (' + comLivros + ' × ' + todos() + ')');
+    await abrir('#/tempo', ls => ls.setItem('witcher-prefs', JSON.stringify({ visitou: true, fonte: 'livros' })));
+    confere(!doc.getElementById('ev-tw3'), 'evento de jogo aparece com o filtro "Livros"');
+  }],
   ['A busca encontra pelo nome original', async () => {
     await abrir('#/tempo');
     await digitar(doc.querySelector('header input'), 'Beliefs of Skellige');
@@ -190,8 +200,8 @@ const TESTES = [
     frame && frame.remove();
     await abrir('#/tempo');
     frame.style.width = '375px'; await sleep(300);
-    for (const aba of ['Mapa', 'Leitura', 'Livros × Jogos', 'Quiz', 'Relações', 'Compêndio']) {
-      await clicar(aba);
+    for (const aba of ['inicio', 'mapa', 'leitura', 'contraste', 'quiz', 'rel', 'comp', 'linhagem']) {
+      frame.contentWindow.location.hash = '#/' + aba; await sleep(350);
       const sobra = doc.documentElement.scrollWidth - doc.documentElement.clientWidth;
       confere(sobra <= 1, 'a aba ' + aba + ' rola de lado (' + sobra + 'px)');
     }

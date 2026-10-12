@@ -182,7 +182,10 @@
     norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
     open(id) { this.setState(s => ({ stack: [...s.stack, id], searchOpen: false, tip: null })); }
     goEvent(ev) {
-      this.setState(s => ({ view: 'tempo', stack: [], flash: ev.id, evLink: ev.id, person: null, searchOpen: false, cats: [], src: 'all', open: { ...s.open, [ev.id]: true } }), () => {
+      // Um evento fora do filtro de fonte (ex.: de jogo com "Livros" escolhido) volta o filtro para "Tudo", para aparecer.
+      const fo = (this.state.prefs && this.state.prefs.fonte) || 'tudo';
+      if ((fo === 'livros' && ev.g) || (fo === 'jogos' && !ev.g)) this.savePrefs(() => ({ fonte: 'tudo' }));
+      this.setState(s => ({ view: 'tempo', stack: [], flash: ev.id, evLink: ev.id, person: null, searchOpen: false, cats: [], open: { ...s.open, [ev.id]: true } }), () => {
         setTimeout(() => this.scrollToEl(document.getElementById('ev-' + ev.id)), 60);
         clearTimeout(this.ft); this.ft = setTimeout(() => this.setState({ flash: null }), 2200);
       });
@@ -196,12 +199,13 @@
       const LE = window.WITCHER_EXTRAS.leitura;
       const livros = LE.filter(o => o.tipo === 'livro').map(o => o.id);
       const conf = {
-        novato: { on: true, lidos: [], partes: {}, ir: 'leitura' },
-        livros: { on: true, lidos: livros, partes: {}, ir: 'tempo' },
-        tudo: { on: false, lidos: LE.map(o => o.id), partes: {}, ir: 'tempo' },
+        novato: { on: true, lidos: [], partes: {}, ir: 'leitura', fonte: 'tudo' },
+        livros: { on: true, lidos: livros, partes: {}, ir: 'tempo', fonte: 'livros' },
+        tudo: { on: false, lidos: LE.map(o => o.id), partes: {}, ir: 'tempo', fonte: 'tudo' },
         escolher: { on: true, lidos: this.state.leitura.lidos, partes: this.state.leitura.partes || {}, ir: 'leitura' }
       }[tipo];
       this.saveLeitura({ on: conf.on, lidos: conf.lidos, partes: conf.partes });
+      if (conf.fonte) this.savePrefs(() => ({ fonte: conf.fonte }));
       this.go(conf.ir);
     }
 
@@ -615,9 +619,27 @@
 
     renderVals() {
       const s = this.state, p = this.props;
-      const navTabs = VIEWS.map(([id, label]) => ({ label, bd: s.view === id ? '#8C2A1B' : 'transparent', go: () => this.go(id) }));
+      // Cabeçalho em grupos; o grupo ativo mostra suas sub-abas numa faixa logo abaixo.
+      const escritosAtivo = s.view === 'comp' && s.compCat === 'escrito';
+      const GRUPOS = [
+        ['inicio', 'Início', [['inicio', 'Início']]],
+        ['historia', 'História', [['tempo', 'Linha do Tempo'], ['mapa', 'Mapa'], ['linhagem', 'Linhagem'], ['rel', 'Relações']]],
+        ['compendio', 'Compêndio', [['comp', 'Verbetes'], ['escritos', 'Escritos do jogo'], ['contraste', 'Livros × Jogos'], ['fontes', 'Fontes']]],
+        ['ler', 'Leitura e quiz', [['leitura', 'Guia de leitura'], ['quiz', 'Quiz']]]
+      ];
+      const subAtiva = escritosAtivo ? 'escritos' : s.view;
+      const grupoAtivo = (GRUPOS.find(g => g[2].some(([id]) => id === subAtiva)) || GRUPOS[1])[0];
+      const irSub = (id) => id === 'escritos' ? (this.go('comp'), this.setState({ compCat: 'escrito' })) : (this.go(id), id === 'comp' && s.compCat === 'escrito' && this.setState({ compCat: 'all' }));
+      const navTabs = GRUPOS.map(([gid, label, subs]) => ({ label, bd: grupoAtivo === gid ? '#8C2A1B' : 'transparent', go: () => irSub(subs[0][0]) }));
+      const navSub = (GRUPOS.find(g => g[0] === grupoAtivo) || GRUPOS[1])[2].map(([id, label]) => ({ label, bg: subAtiva === id ? '#1E1710' : 'transparent', fg: subAtiva === id ? '#F4EEE1' : '#1E1710', go: () => irSub(id) }));
       const keep = (e) => e.preventDefault();
       const qFilters = [['all', 'Tudo'], ['verbetes', 'Verbetes'], ['eventos', 'Eventos']].map(([id, label]) => ({ label, keep, bg: s.qf === id ? '#1E1710' : 'transparent', fg: s.qf === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ qf: id }) }));
+      // Filtro global de fonte (Tudo, Livros, Jogos), escolhido no cabeçalho ou no caminho de boas-vindas.
+      const fonte = (s.prefs && s.prefs.fonte) || 'tudo', SRC = { tudo: 'all', livros: 'livros', jogos: 'jogos' }[fonte];
+      const fonteOk = (e) => fonte === 'tudo' || (e.fo || ['livros']).includes(fonte);
+      const evFonteOk = (e) => SRC === 'all' || (SRC === 'jogos' ? !!e.g : !e.g);
+      const setFonte = (id) => this.savePrefs(() => ({ fonte: { all: 'tudo', tudo: 'tudo', livros: 'livros', jogos: 'jogos' }[id] }));
+      const fonteOpts = [['tudo', 'Tudo'], ['livros', 'Livros'], ['jogos', 'Jogos']].map(([id, label]) => ({ label, bg: fonte === id ? '#1E1710' : 'transparent', fg: fonte === id ? '#F4EEE1' : '#1E1710', select: () => setFonte(id) }));
       const pr = s.prefs, TEMAS = { sistema: ['◐', 'Sistema'], claro: ['☀', 'Claro'], escuro: ['☾', 'Escuro'] };
       const passoLetra = (d) => this.savePrefs(p => ({ letra: LETRAS[Math.max(0, Math.min(LETRAS.length - 1, LETRAS.indexOf(p.letra) + d))] }));
       const base = {
@@ -626,7 +648,7 @@
         letraMenos: () => passoLetra(-1), letraMais: () => passoLetra(1),
         ajudaOn: s.ajuda, ajudaAbrir: () => this.setState({ ajuda: true }), ajudaFechar: () => this.setState({ ajuda: false }),
         atalhos: [['/', 'Ir para a busca'], ['Esc', 'Fechar verbete, busca ou esta janela'], ['j / k', 'Próximo e anterior evento na Linha do Tempo'], ['1 – 9', 'Trocar de aba (na ordem do menu)'], ['f', 'Favoritar o verbete aberto'], ['?', 'Mostrar ou esconder estes atalhos']].map(([k, d]) => ({ k, d })),
-        navTabs, qFilters, q: s.q, loading: !s.ready,
+        navTabs, navSub, temNavSub: navSub.length > 1, fonteOpts, qFilters, q: s.q, loading: !s.ready,
         headerRef: (el) => { this.header = el; },
         goTempo: () => this.go('tempo'), goLeitura: () => this.go('leitura'), goInicio: () => this.go('inicio'), isInicio: s.view === 'inicio',
         onQ: (e) => this.setState({ q: e.target.value, searchOpen: true }),
@@ -688,7 +710,7 @@
 
       const evAll = D.events.slice().sort((a, b) => a.s - b.s);
       const evOk = evAll.filter(evVisivel);
-      const evF = evOk.filter(e => (s.src === 'all' || (s.src === 'jogos' ? e.g : !e.g)) && (!s.cats.length || e.c.some(c => s.cats.includes(c))) && (!s.person || (e.l || []).includes(s.person)));
+      const evF = evOk.filter(e => evFonteOk(e) && (!s.cats.length || e.c.some(c => s.cats.includes(c))) && (!s.person || (e.l || []).includes(s.person)));
       this._evIds = evF.map(e => e.id);
       const defOpen = s.expandAll ?? (p.expandido ?? false);
       const excl = new Set(['geralt', 'ciri', 'yennefer']);
@@ -779,7 +801,7 @@
       const escE = s.escSel && evAll.find(e => e.id === s.escSel);
       const escSel = escE ? { d: escE.d, t: escE.t, go: () => this.goEvent(escE) } : {};
 
-      const srcOpts = [['all', 'Tudo'], ['livros', 'Só livros'], ['jogos', 'Só jogos']].map(([id, label]) => ({ label, bg: s.src === id ? '#1E1710' : 'transparent', fg: s.src === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ src: id }) }));
+      const srcOpts = fonteOpts;
       const evCats = new Set(evAll.flatMap(e => e.c));
       const catChips = D.cats.filter(c => evCats.has(c.id)).map(c => {
         const on = s.cats.includes(c.id);
@@ -787,9 +809,11 @@
           toggle: () => this.setState(st => ({ cats: on ? st.cats.filter(x => x !== c.id) : [...st.cats, c.id] })) };
       });
 
-      const counts = {}; Ev.forEach(e => counts[e.c] = (counts[e.c] || 0) + 1);
+      // Compêndio: só o que bate com a fonte escolhida; em "Todos", os escritos do jogo ficam de fora (têm categoria própria).
+      const EvF = Ev.filter(fonteOk), EvCentral = EvF.filter(e => e.c !== 'escrito');
+      const counts = {}; EvF.forEach(e => counts[e.c] = (counts[e.c] || 0) + 1);
       const srcName = (e) => (e.fo || ['livros']).map(x => x === 'livros' ? 'Livros' : x === 'jogos' ? 'Jogos' : x === 'fandom' ? 'Witcher Wiki' : 'Material próprio').join(' + ');
-      const compTabs = [{ id: 'all', label: 'Todos', color: '#1E1710', count: Ev.length, icon: ICONS.lenda }, ...D.cats.map(c => ({ id: c.id, label: c.label, color: c.color, count: counts[c.id] || 0, icon: ICONS[c.id] }))]
+      const compTabs = [{ id: 'all', label: 'Todos', color: '#1E1710', count: EvCentral.length, icon: ICONS.lenda }, ...D.cats.map(c => ({ id: c.id, label: c.label, color: c.color, count: counts[c.id] || 0, icon: ICONS[c.id] }))]
         .filter(t => t.count).map(t => { const on = s.compCat === t.id; return { ...t, border: on ? t.color : '#DCCFB3', bg: on ? t.color : '#FBF8F1', fg: on ? '#FBF8F1' : t.color, select: () => this.setState({ compCat: t.id }) }; });
       // Escritos do Mundo: filtro extra por tema (história, mitologia, lendas...).
       const TEMAS_ESC = { historia: 'História', mitologia: 'Mitologia', lendas: 'Lendas', profecias: 'Profecias', bestiario: 'Bestiário', povos: 'Povos', magia: 'Magia', lugares: 'Lugares', personagens: 'Personagens', bruxos: 'Bruxos', cotidiano: 'Cotidiano' };
@@ -799,7 +823,7 @@
         const on = (s.compTema || 'all') === id;
         return { label, count, bd: on ? '#6E4A63' : '#DCCFB3', bg: on ? '#6E4A63' : '#FBF8F1', fg: on ? '#FBF8F1' : '#6E4A63', select: () => this.setState({ compTema: id }) };
       }) : [];
-      const compCards = Ev.filter(e => (s.compCat === 'all' || e.c === s.compCat) && (s.compSrc === 'all' || (e.fo || ['livros']).includes(s.compSrc)) && (s.compCat !== 'escrito' || !s.compTema || s.compTema === 'all' || e.tm === s.compTema))
+      const compCards = EvF.filter(e => (s.compCat === 'all' ? e.c !== 'escrito' : e.c === s.compCat) && (s.compCat !== 'escrito' || !s.compTema || s.compTema === 'all' || e.tm === s.compTema))
         .slice().sort((a, b) => s.compCat === 'all' ? (catOrder[a.c] - catOrder[b.c]) : 0)
         .map(e => {
           const fc = (X.fichas[e.id] || [])[0];
@@ -862,24 +886,24 @@
           // Também pelos outros nomes: apelidos das notas (nomes em inglês dos jogos) e título original dos escritos.
           // Escritos do jogo valem um pouco menos, para não passar à frente dos verbetes centrais.
           const outros = this.outrosNomes(E);
-          const er = rank(Ev, e => {
+          const er = rank(EvF, e => {
             const sc = Math.max(this.score(qn, e.t), 0.6 * this.score(qn, e.ep), ...(outros[e.id] || []).map(n => 0.9 * this.score(qn, n))) || (this.norm(e.s + ' ' + e.b.map(this.blockText).join(' ')).includes(qn) ? 10 : 0);
             return e.c === 'escrito' ? sc * 0.7 : sc;
           });
           results = er.slice(0, s.qf === 'verbetes' ? 16 : 10).map(e => ({ kind: catMap[e.c].label, color: catMap[e.c].color, label: e.t, sub: e.ep, open: () => this.setState({ q: '' }, () => this.open(e.id)) }));
         }
         if (s.qf !== 'verbetes') {
-          const evr = rank(evOk, e => this.score(qn, e.t) || (this.norm(e.x).includes(qn) ? 10 : 0)).slice(0, s.qf === 'eventos' ? 16 : 6);
+          const evr = rank(evOk.filter(evFonteOk), e => this.score(qn, e.t) || (this.norm(e.x).includes(qn) ? 10 : 0)).slice(0, s.qf === 'eventos' ? 16 : 6);
           results = results.concat(evr.map(e => ({ kind: 'Evento · ' + e.d, color: '#8C2A1B', label: e.t, sub: 'Era ' + eraMap[e.era].numeral + ' · ' + eraMap[e.era].name, open: () => { this.setState({ q: '' }); this.goEvent(e); } })));
         }
       }
 
       // Verbete do dia: muda a cada data, sempre o mesmo para o dia inteiro.
       const hoje = new Date(), diaN = hoje.getFullYear() * 400 + hoje.getMonth() * 31 + hoje.getDate();
-      const ed = Ev[(diaN * 7919) % Ev.length];
+      const ed = EvCentral[(diaN * 7919) % EvCentral.length];
       const compDay = { title: ed.t, s: ed.s, cat: catMap[ed.c].label, open: () => this.open(ed.id) };
-      const compRandom = () => this.open(Ev[Math.floor(Math.random() * Ev.length)].id);
-      const compSrcOpts = [['all', 'Tudo'], ['livros', 'Livros'], ['jogos', 'Jogos']].map(([id, label]) => ({ label, bg: s.compSrc === id ? '#1E1710' : 'transparent', fg: s.compSrc === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ compSrc: id }) }));
+      const compRandom = () => this.open(EvCentral[Math.floor(Math.random() * EvCentral.length)].id);
+      const compSrcOpts = fonteOpts;
 
       const kindLabel = { reino: 'Reino', cidade: 'Lugar', natural: 'Geografia', regiao: 'Região' };
       // Mapa no tempo: domínio de cada lugar no ano escolhido e lugares citados por eventos daquele ano.
@@ -955,7 +979,7 @@
       // Jornadas: pontos com evento escondido pelo modo sem spoilers ficam de fora.
       const rotaSel = skel ? null : X.rotas.find(r => r.id === s.rota);
       const evById = Object.fromEntries(evAll.map(e => [e.id, e]));
-      const rotaOpts = [{ id: null, n: 'Nenhuma', cor: 'transparent' }, ...X.rotas].map(r => {
+      const rotaOpts = [{ id: null, n: 'Nenhuma', cor: 'transparent' }, ...X.rotas.filter(r => r.jogo ? fonte !== 'livros' : fonte !== 'jogos')].map(r => {
         const on = (s.rota || null) === r.id;
         return { n: r.n, cor: r.cor, bd: on ? '#1E1710' : '#DCCFB3', bg: on ? '#1E1710' : '#FBF8F1', fg: on ? '#F4EEE1' : '#1E1710', select: () => this.setState({ rota: r.id, place: null }) };
       });
@@ -1013,7 +1037,9 @@
       // Relações: laços principais (witcher-extras.js) ou a rede montada a partir dos verbetes e eventos.
       // Filtros: tipos de laço escondidos e um grupo (Hansa, Kaer Morhen...) que restringe as pessoas.
       const auto = s.relMode === 'auto', RLx = X.relacoes;
-      const R = auto ? this.rede(E, evOk, hidden) : this.curado(E, hidden);
+      // Pessoas de fora da fonte escolhida saem das relações como se estivessem escondidas.
+      const hiddenR = fonte === 'tudo' ? hidden : new Set([...hidden, ...E.filter(e => !fonteOk(e)).map(e => e.id)]);
+      const R = auto ? this.rede(E, evOk.filter(evFonteOk), hiddenR) : this.curado(E, hiddenR);
       const tiposOff = new Set(s.relTiposOff || []), grupo = s.relGrupo && RLx.grupos[s.relGrupo];
       const noGrupo = (id) => !grupo || grupo.membros.includes(id);
       const arestas = R.edges.filter(([a, b, t]) => !tiposOff.has(t) && noGrupo(a) && noGrupo(b));
@@ -1056,7 +1082,7 @@
       const lado = (qKey, idKey, label, ph) => {
         const q = s[qKey], sel = s[idKey] && em[s[idKey]];
         const qn2 = this.norm(q).trim();
-        const sug = qn2.length >= 2 && !(sel && sel.t === q) ? Ev.map(e => [e, Math.max(this.score(qn2, e.t), 0.6 * this.score(qn2, e.ep))]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([e]) => ({
+        const sug = qn2.length >= 2 && !(sel && sel.t === q) ? EvF.map(e => [e, Math.max(this.score(qn2, e.t), 0.6 * this.score(qn2, e.ep))]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([e]) => ({
           t: e.t, cat: catMap[e.c].label, color: catMap[e.c].color, pick: () => this.setState({ [idKey]: e.id, [qKey]: e.t })
         })) : [];
         return { label, ph, q, hasSug: sug.length > 0, sug, onQ: (ev) => this.setState({ [qKey]: ev.target.value }) };
@@ -1065,7 +1091,7 @@
       let conex = { tem: false, vazio: true, vazioTxt: 'Escolha dois verbetes para ver como eles se ligam.' };
       const cA = s.conA && em[s.conA] && !hidden.has(s.conA) ? s.conA : null, cB = s.conB && em[s.conB] && !hidden.has(s.conB) ? s.conB : null;
       if (conexOn && cA && cB) {
-        const G = this.grafo(Ev, evOk, hidden), caminho = this.caminho(G, cA, cB);
+        const G = this.grafo(EvF, evOk.filter(evFonteOk), hiddenR), caminho = this.caminho(G, cA, cB);
         const juntos = evOk.filter(e => (e.l || []).includes(cA) && (e.l || []).includes(cB));
         const ligs = [...new Set((em[cA].l || []).filter(x => (em[cB].l || []).includes(x)))].filter(x => x !== cA && x !== cB).map(chip).filter(Boolean);
         const info = (id) => {
@@ -1124,15 +1150,15 @@
             return { date: e.d, title: e.t, era: eraMap[e.era].numeral + ' · ' + eraMap[e.era].name, age, hasAge: !!age, go: () => this.goEvent(e) };
           }), hasEvents: !oculto && evs.length > 0,
           canPerson: !oculto && ce.c !== 'obra' && evs.length >= 2,
-          personGo: () => { this.setState({ view: 'tempo', stack: [], person: ce.id, cats: [], src: 'all', evLink: null }); window.scrollTo({ top: 0 }); },
+          personGo: () => { this.setState({ view: 'tempo', stack: [], person: ce.id, cats: [], evLink: null }); window.scrollTo({ top: 0 }); },
           links: oculto ? [] : (ce.l || []).map(chip).filter(Boolean), hasLinks: !oculto && (ce.l || []).some(id => em[id] && !hidden.has(id))
         };
       }
 
       // Quiz: dados de cada tipo de pergunta, só com o que está visível no modo sem spoilers.
-      const pessoasQ = Ev.filter(e => e.c === 'personagem' && e.ep && !/^(Personagem|Humano|Humana|Elfo|Elfa)\b/.test(e.ep) && !this.norm(e.ep).includes(this.norm(e.t.split(' ')[0])));
+      const pessoasQ = EvF.filter(e => e.c === 'personagem' && e.ep && !/^(Personagem|Humano|Humana|Elfo|Elfa)\b/.test(e.ep) && !this.norm(e.ep).includes(this.norm(e.t.split(' ')[0])));
       const porCat = {};
-      Ev.filter(e => !['escrito', 'obra'].includes(e.c)).forEach(e => (porCat[e.c] = porCat[e.c] || []).push(e));
+      EvF.filter(e => !['escrito', 'obra'].includes(e.c)).forEach(e => (porCat[e.c] = porCat[e.c] || []).push(e));
       const nomeP = (id) => (em[id] ? this.nomeCurto(id, E) : id);
       const filhosQ = [];
       X.arvores.filter(a => !(spOn && a.revela && !lidos.has(a.revela))).forEach(a => {
@@ -1144,15 +1170,15 @@
         });
       });
       this.qdata = {
-        pessoas: pessoasQ, bestas: Ev.filter(e => e.c === 'besta'), fichas: X.fichas,
-        datas: evOk.filter(e => /\b\d{3,4}\b/.test(e.d) && e.era !== 'fim' && !/incerta/i.test(e.d)),
+        pessoas: pessoasQ, bestas: EvF.filter(e => e.c === 'besta'), fichas: X.fichas,
+        datas: evOk.filter(e => evFonteOk(e) && /\b\d{3,4}\b/.test(e.d) && e.era !== 'fim' && !/incerta/i.test(e.d)),
         gloss: this.gl.items.filter(it => !it.e && it.d && it.d.length < 140),
         porCat, catNome: Object.fromEntries(D.cats.map(c => [c.id, c.label])),
         divs: spOn && !(fechouSaga && jogouAlgo) ? [] : (X.divergencias || []),
         lugares: D.places.filter(pl => pl.e && pl.d && em[pl.e] && !hidden.has(pl.e)),
-        comObra: evOk.filter(e => this.obraDe(e)), obras: LE.filter(o => !o.extra),
+        comObra: evOk.filter(e => evFonteOk(e) && this.obraDe(e)), obras: LE.filter(o => !o.extra),
         lacos: X.relacoes.lacos.filter(([a, b]) => em[a] && em[b] && !hidden.has(a) && !hidden.has(b)).map(([a, b, , label]) => ({ a: nomeP(a), b: nomeP(b), ida: a, label })),
-        escritos: Ev.filter(e => e.c === 'escrito' && e.s && e.s.length > 40),
+        escritos: EvF.filter(e => e.c === 'escrito' && e.s && e.s.length > 40),
         filhos: filhosQ
       };
       const qz = s.quiz, qq = qz && qz.q, qst = { recorde: {}, seq: 0, melhorSeq: 0, ...(pr.quizStats || {}) };
@@ -1268,7 +1294,7 @@
         inicioPessoas: ['geralt', 'yennefer', 'ciri', 'jaskier', 'triss', 'vesemir'].map(chip).filter(Boolean),
         erasView, cur, mini, ruler, srcOpts, catChips, evCount: evF.length,
         escOpts, escOn: !!escR, escBandas, escTicks, escPontos, escAltura, escNota, escSel, escTemSel: !!escE,
-        hasCatFilter: s.cats.length > 0 || s.src !== 'all', clearCats: () => this.setState({ cats: [], src: 'all' }),
+        hasCatFilter: s.cats.length > 0, clearCats: () => this.setState({ cats: [] }),
         toggleAllLabel: defOpen ? 'Recolher tudo' : 'Expandir tudo',
         toggleAll: () => this.setState({ expandAll: !defOpen, open: {} }),
         compTabs, compCards, compDay, compRandom, compSrcOpts, compTemas, hasCompTemas: compTemas.length > 0,

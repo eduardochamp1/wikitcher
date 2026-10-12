@@ -55,6 +55,9 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
           <button onClick="{{ nt.go }}" style="background:none;border:none;border-bottom:2px solid {{ nt.bd }};padding:8px 0 5px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500;color:#1E1710">{{ nt.label }}</button>
         </sc-for>
       </nav>
+      <div style="display:flex;border:1px solid #D6C8AA;border-radius:6px;overflow:hidden" title="Mostrar tudo, só o que está nos livros ou só o que está nos jogos">
+        <sc-for list="{{ fonteOpts }}" as="fo2" hint-placeholder-count="3"><button onClick="{{ fo2.select }}" style="background:{{ fo2.bg }};color:{{ fo2.fg }};border:none;padding:4px 9px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:12px">{{ fo2.label }}</button></sc-for>
+      </div>
       <div style="display:flex;gap:4px;align-items:center">
         <button onClick="{{ temaCiclar }}" title="Tema: {{ temaLabel }}" aria-label="Tema: {{ temaLabel }}" style="padding:4px 9px;cursor:pointer;background:#FBF8F1;border:1px solid #D6C8AA;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#1E1710">{{ temaIcone }} {{ temaLabel }}</button>
         <button onClick="{{ letraMenos }}" title="Letra menor" aria-label="Letra menor" style="padding:4px 8px;cursor:pointer;background:#FBF8F1;border:1px solid #D6C8AA;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#1E1710">A−</button>
@@ -87,6 +90,15 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
         </sc-if>
       </div>
     </div>
+    <sc-if value="{{ temNavSub }}" hint-placeholder-val="{{ false }}">
+      <div style="border-top:1px solid #E6DCC6">
+        <div style="max-width:1180px;margin:0 auto;padding:6px clamp(16px,4vw,40px);display:flex;flex-wrap:wrap;gap:4px">
+          <sc-for list="{{ navSub }}" as="ns" hint-placeholder-count="0">
+            <button onClick="{{ ns.go }}" style="background:{{ ns.bg }};color:{{ ns.fg }};border:none;border-radius:999px;padding:4px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">{{ ns.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
     <sc-if value="{{ isTempo }}" hint-placeholder-val="{{ true }}">
       <div style="border-top:1px solid #E6DCC6;background:#EFE7D6">
         <div style="max-width:1180px;margin:0 auto;padding:8px clamp(16px,4vw,40px) 10px;display:flex;flex-direction:column;gap:7px">
