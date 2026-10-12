@@ -687,10 +687,41 @@
           return { title: e.t, ep: e.ep, s: e.s, cat: catMap[e.c].label, color: catMap[e.c].color, icon: ICONS[e.c], src: srcName(e), open: () => this.open(e.id), hasFicha: !!fc, ficha: fc ? fc[1] : '' };
         });
 
-      // Livros × Jogos, agrupado por verbete.
-      const CT = window.WITCHER_WIKI.contrastes.filter(c => em[c.e] && !hidden.has(c.e));
+      // Livros × Jogos: avisos [!jogos] e [!divergencia] de todos os verbetes (do app e da wiki), sem repetir texto.
+      // Cada aviso ganha o jogo de onde vem; os escritos do jogo ficam num filtro à parte.
+      const JOGOS = [['The Witcher (jogo)', /the witcher \(jogo\)|primeiro jogo|salamandra/i], ['The Witcher 2', /the witcher 2|assassins of kings|loc muinne|flotsam|vergen/i],
+        ['Hearts of Stone', /hearts of stone|o'dimm|olgierd/i], ['Blood and Wine', /blood and wine|sangue e vinho|beauclair|corvo branco/i], ['The Witcher 3', /the witcher 3|wild hunt/i]];
+      const jogoDe = (e, x) => {
+        if (e.c === 'escrito') return /Hearts of Stone/.test(e.ep) ? 'Hearts of Stone' : /Blood and Wine/.test(e.ep) ? 'Blood and Wine' : 'The Witcher 3';
+        const j = JOGOS.find(([, re]) => re.test(x)); return j ? j[0] : 'Jogos em geral';
+      };
+      const vistoCt = new Set(), CTall = [];
+      E.forEach(e => (e.b || []).forEach(b => {
+        if (!b || !/^(jogos|divergencia)$/.test(b.co) || !b.t || hidden.has(e.id)) return;
+        const chave = e.id + '|' + this.norm(b.t).slice(0, 60);
+        if (vistoCt.has(chave)) return; vistoCt.add(chave);
+        CTall.push({ e: e.id, co: b.co, x: b.t, jogo: jogoDe(e, b.t), escrito: e.c === 'escrito' });
+      }));
+      const ctOrigem = s.ctOrigem || 'verbetes';
+      const CT = CTall.filter(c => (ctOrigem === 'escritos') === c.escrito && (!s.ctJogo || c.jogo === s.ctJogo));
       const ctCount = { all: CT.length, divergencia: CT.filter(c => c.co === 'divergencia').length, jogos: CT.filter(c => c.co === 'jogos').length };
       const contrasteTabs = [['all', 'Tudo'], ['divergencia', 'Divergências'], ['jogos', 'Só nos jogos']].map(([id, label]) => { const on = s.contraste === id; return { label, count: ctCount[id], bd: on ? '#1E1710' : '#DCCFB3', bg: on ? '#1E1710' : '#FBF8F1', fg: on ? '#F4EEE1' : '#1E1710', select: () => this.setState({ contraste: id }) }; });
+      const contrasteOrigens = [['verbetes', 'Verbetes', CTall.filter(c => !c.escrito).length], ['escritos', 'Escritos do jogo', CTall.filter(c => c.escrito).length]].map(([id, label, count]) => {
+        const on = ctOrigem === id; return { label, count, bg: on ? '#1E1710' : 'transparent', fg: on ? '#F4EEE1' : '#1E1710', select: () => this.setState({ ctOrigem: id, ctJogo: null }) };
+      });
+      const jogosUsados = [...new Set(CTall.filter(c => (ctOrigem === 'escritos') === c.escrito).map(c => c.jogo))];
+      const contrasteJogos = [[null, 'Todos os jogos'], ...JOGOS.map(j => [j[0], j[0]]), ['Jogos em geral', 'Jogos em geral']].filter(([id]) => id === null || jogosUsados.includes(id)).map(([id, label]) => {
+        const on = (s.ctJogo || null) === id; return { label, bd: on ? '#3A4150' : '#DCCFB3', bg: on ? '#3A4150' : '#FBF8F1', fg: on ? '#F4EEE1' : '#3A4150', select: () => this.setState({ ctJogo: id }) };
+      });
+      // As grandes divergências, lado a lado; recolhidas no modo sem spoilers até o fim da saga e de algum jogo.
+      const fechaDv = spOn && !(fechouSaga && jogouAlgo);
+      const grandes = (X.divergencias || []).map(d => {
+        const key = 'dv:' + d.id, fechado = fechaDv && !s.reveal[key];
+        return { tema: d.tema, jogo: d.jogo, fechado, aberto: !fechado, livros: d.livros, jogos: d.jogos,
+          revelar: () => this.setState(st => ({ reveal: { ...st.reveal, [key]: true } })),
+          verbetes: d.verbetes.map(chip).filter(Boolean), eventos: d.eventos.map(id => evOk.find(e => e.id === id)).filter(Boolean).map(e => ({ d: e.d, t: e.t, go: () => this.goEvent(e) })) };
+      });
+      const eventosJogos = evOk.filter(e => e.g).map(e => ({ d: e.d, t: e.t, go: () => this.goEvent(e) }));
       const ctGrupos = {};
       CT.forEach((c, i) => { if (s.contraste === 'all' || c.co === s.contraste) (ctGrupos[c.e] = ctGrupos[c.e] || []).push([c, i]); });
       const contrasteGrupos = Object.keys(ctGrupos).sort((a, b) => (ctGrupos[b].some(x => x[0].co === 'divergencia') - ctGrupos[a].some(x => x[0].co === 'divergencia')) || catOrder[em[a].c] - catOrder[em[b].c]).map(id => ({
@@ -698,7 +729,7 @@
         itens: ctGrupos[id].map(([c, i]) => {
           const key = 'c:' + i, fechado = spOn && !s.reveal[key];
           const dv = c.co === 'divergencia';
-          return { tag: dv ? 'Divergência' : 'Nos jogos', cor: dv ? '#7A520C' : '#3A4150', bg: dv ? '#F3E6C6' : '#E9EAEE',
+          return { tag: (dv ? 'Divergência' : 'Nos jogos') + ' · ' + c.jogo, cor: dv ? '#7A520C' : '#3A4150', bg: dv ? '#F3E6C6' : '#E9EAEE',
             x: fechado ? 'Recolhido pelo modo sem spoilers. Clique para ler.' : c.x, cur: fechado ? 'pointer' : 'default',
             click: () => { if (fechado) this.setState(st => ({ reveal: { ...st.reveal, [key]: true } })); } };
         })
@@ -1057,7 +1088,7 @@
         showAnoPanel: ano != null && !hasPlace && !rotaSel, domAtivos, hasDomAtivos: domAtivos.length > 0,
         anoEventos: anoEvs.map(e => ({ date: e.d, title: e.t, go: () => this.goEvent(e) })),
         anoEvTitulo: anoEvs.length ? 'Neste ano' : 'Nenhum evento registrado neste ano',
-        contrasteTabs, contrasteGrupos, contrasteAviso: spOn,
+        contrasteTabs, contrasteGrupos, contrasteAviso: spOn, contrasteOrigens, contrasteJogos, grandes, eventosJogos, temEventosJogos: eventosJogos.length > 0,
         quiz, quizTem: !!qq, quizVazio: !qq, quizModes, quizStart: () => this.quizIr(qMode, true), quizNext: () => this.quizIr(qMode, false),
         quizPlacar: qz ? qz.acertos + ' acertos em ' + qz.total + (qz.total === 1 ? ' pergunta' : ' perguntas') : '',
         arvoreOpts, arvoreTitulo: arv.titulo, arvoreSub: arv.sub, arvLinhas, arvPessoas, arvLegenda, arvLargura, arvAltura, arvNotas: arv.notas || [],

@@ -34,6 +34,10 @@ X.relacoes.lacos.forEach(([a, b, t]) => {
   verb(a, 'Relação'); verb(b, 'Relação');
   if (!X.relacoes.tipos[t]) erro('Relação ' + a + '–' + b + ' com tipo desconhecido: ' + t);
 });
+(X.divergencias || []).forEach(d => {
+  d.verbetes.forEach(id => verb(id, 'Divergência ' + d.id));
+  d.eventos.forEach(ev => { if (!evIds.has(ev)) erro('Divergência ' + d.id + ' cita evento inexistente: ' + ev); });
+});
 Object.entries(X.relacoes.grupos).forEach(([k, g]) => g.membros.forEach(id => verb(id, 'Grupo ' + k)));
 const paresRel = X.relacoes.lacos.map(([a, b]) => [a, b].sort().join('|'));
 paresRel.forEach((p, i) => { if (paresRel.indexOf(p) !== i) erro('Relação repetida: ' + p); });

@@ -666,6 +666,66 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
       <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Livros × Jogos</div>
       <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 12px;color:#1E1710">Onde as histórias se separam</h1>
       <p style="max-width:700px;font-size:19px;line-height:1.55;color:#33281C;margin:0 0 22px">Os jogos continuam a saga, mas Sapkowski nunca os tratou como cânone. Aqui estão, reunidos das notas da wiki, os pontos que só existem nos jogos e as divergências entre as duas versões.</p>
+      <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:32px;margin:0 0 12px;color:#1E1710">As grandes divergências</h2>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:36px">
+        <sc-for list="{{ grandes }}" as="gd" hint-placeholder-count="0">
+          <section style="background:#FBF8F1;border:1px solid #DCCFB3;border-radius:12px;padding:16px clamp(14px,3vw,22px);display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px">
+              <h3 style="font-family:'IM Fell English',serif;font-weight:400;font-size:24px;margin:0;color:#1E1710">{{ gd.tema }}</h3>
+              <span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#3A4150">{{ gd.jogo }}</span>
+            </div>
+            <sc-if value="{{ gd.fechado }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ gd.revelar }}" style="align-self:flex-start;padding:6px 12px;cursor:pointer;background:#F1E4E6;border:none;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#7A2442">Recolhido pelo modo sem spoilers. Mostrar</button>
+            </sc-if>
+            <sc-if value="{{ gd.aberto }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:10px">
+                <div style="padding:10px 14px;background:#F4EEE1;border-left:3px solid #9C8B6A;border-radius:0 8px 8px 0">
+                  <span style="display:block;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B5C46;margin-bottom:3px">Nos livros</span>
+                  <span style="font-size:17px;line-height:1.5;color:#1E1710">{{ gd.livros }}</span>
+                </div>
+                <div style="padding:10px 14px;background:#E9EAEE;border-left:3px solid #3A4150;border-radius:0 8px 8px 0">
+                  <span style="display:block;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#3A4150;margin-bottom:3px">Nos jogos</span>
+                  <span style="font-size:17px;line-height:1.5;color:#1E1710">{{ gd.jogos }}</span>
+                </div>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+                <sc-for list="{{ gd.verbetes }}" as="gv" hint-placeholder-count="0">
+                  <button onClick="{{ gv.open }}" style="display:flex;align-items:center;gap:5px;padding:3px 10px 3px 8px;cursor:pointer;background:#F4EEE1;border:1px solid #DCCFB3;border-radius:999px;font-size:15px;color:#1E1710" style-hover="border-color:#8C2A1B">
+                    <svg viewBox="0 0 16 16" width="12" height="12" style="fill:none;stroke:{{ gv.color }};stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><path d="{{ gv.icon }}"></path></svg>{{ gv.label }}
+                  </button>
+                </sc-for>
+                <sc-for list="{{ gd.eventos }}" as="ge" hint-placeholder-count="0">
+                  <button onClick="{{ ge.go }}" style="padding:3px 10px;cursor:pointer;background:none;border:1px dashed #CDBE9C;border-radius:999px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#8C2A1B">{{ ge.d }} · {{ ge.t }}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </section>
+        </sc-for>
+      </div>
+      <sc-if value="{{ temEventosJogos }}" hint-placeholder-val="{{ false }}">
+        <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:28px;margin:0 0 10px;color:#1E1710">A história depois dos livros</h2>
+        <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:36px">
+          <sc-for list="{{ eventosJogos }}" as="ej" hint-placeholder-count="0">
+            <button onClick="{{ ej.go }}" style="flex:0 0 200px;display:flex;flex-direction:column;gap:2px;text-align:left;padding:10px 12px;cursor:pointer;background:#3A4150;color:#F4EEE1;border:none;border-radius:10px">
+              <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#C9CFDA">{{ ej.d }}</span>
+              <span style="font-size:16px;line-height:1.3">{{ ej.t }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:28px;margin:0 0 10px;color:#1E1710">Todos os avisos</h2>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-bottom:10px">
+        <div style="display:flex;border:1px solid #CDBE9C;border-radius:6px;overflow:hidden">
+          <sc-for list="{{ contrasteOrigens }}" as="co" hint-placeholder-count="2">
+            <button onClick="{{ co.select }}" style="background:{{ co.bg }};color:{{ co.fg }};border:none;padding:6px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">{{ co.label }} <span style="opacity:.7">{{ co.count }}</span></button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <sc-for list="{{ contrasteJogos }}" as="cj" hint-placeholder-count="0">
+          <button onClick="{{ cj.select }}" style="padding:4px 11px;cursor:pointer;border:1px solid {{ cj.bd }};background:{{ cj.bg }};color:{{ cj.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:12px;border-radius:999px">{{ cj.label }}</button>
+        </sc-for>
+      </div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px">
         <sc-for list="{{ contrasteTabs }}" as="ct" hint-placeholder-count="3">
           <button onClick="{{ ct.select }}" style="padding:5px 12px;cursor:pointer;border:1px solid {{ ct.bd }};background:{{ ct.bg }};color:{{ ct.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:13px;border-radius:999px">{{ ct.label }} <span style="opacity:.7">{{ ct.count }}</span></button>
