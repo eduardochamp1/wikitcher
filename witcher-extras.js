@@ -3,20 +3,43 @@
 window.WITCHER_EXTRAS = {
 
 // Ordem recomendada. "fim" é o ponto da cronologia (campo s dos eventos) até onde a obra conta a história;
-// "eventos" lista eventos que só aquela obra revela, fora da sequência.
+// "eventos" lista eventos que só aquela obra revela, fora da sequência; "partes" são contos que podem ser marcados
+// um a um (cada um com os eventos que conta); "eras" são eras inteiras que só abrem com aquele item.
+// "ano" é o ano de publicação; "cron" a posição na ordem cronológica da história; "verbete" quando o id não é um verbete.
 leitura: [
-  {id:"o-ultimo-desejo", n:"O Último Desejo", tipo:"livro", fim:1253.5},
-  {id:"a-espada-do-destino", n:"A Espada do Destino", tipo:"livro", fim:1263.3},
-  {id:"o-sangue-dos-elfos", n:"O Sangue dos Elfos", tipo:"livro", fim:1267.25},
-  {id:"tempo-do-desprezo", n:"Tempo do Desprezo", tipo:"livro", fim:1267.55},
-  {id:"batismo-de-fogo", n:"Batismo de Fogo", tipo:"livro", fim:1267.67},
-  {id:"a-torre-da-andorinha", n:"A Torre da Andorinha", tipo:"livro", fim:1267.9},
-  {id:"a-senhora-do-lago", n:"A Senhora do Lago", tipo:"livro", fim:1268.99, final:true},
-  {id:"season-of-storms", n:"Season of Storms", tipo:"livro", eventos:["season-storms"], nota:"Pode ser lido a qualquer momento depois dos contos."},
-  {id:"thronebreaker", n:"Thronebreaker", tipo:"jogo", eventos:["thronebreaker"], nota:"Jogo derivado, independente da trilogia."},
-  {id:"the-witcher-jogo", n:"The Witcher", tipo:"jogo", fim:1270.99},
-  {id:"the-witcher-2", n:"The Witcher 2", tipo:"jogo", fim:1271.99},
-  {id:"the-witcher-3", n:"The Witcher 3 e expansões", tipo:"jogo", fim:1276.99, final:true}
+  {id:"o-ultimo-desejo", n:"O Último Desejo", tipo:"livro", fim:1253.5, ano:1993, cron:1, editora:"WMF Martins Fontes",
+    sinopse:"Contos que apresentam Geralt: enquanto se recupera num templo, o bruxo relembra contratos, dilemas e o encontro que mudaria sua vida.",
+    partes:[{n:"O Bruxo", eventos:["estrige"]}, {n:"Um Grão de Verdade", eventos:[]}, {n:"O Mal Menor", eventos:[]}, {n:"Uma Questão de Preço", eventos:["questao-preco"]}, {n:"O Fim do Mundo", eventos:["borda-mundo"]}, {n:"O Último Desejo", eventos:["ultimo-desejo"]}]},
+  {id:"a-espada-do-destino", n:"A Espada do Destino", tipo:"livro", fim:1263.3, ano:1992, cron:3, editora:"WMF Martins Fontes",
+    sinopse:"Mais contos: Geralt e Yennefer se aproximam e se afastam, e o destino insiste em pôr no caminho do bruxo uma menina de Cintra.",
+    partes:[{n:"O Limite do Possível", eventos:["limite-possivel"]}, {n:"Um Fragmento de Gelo", eventos:[]}, {n:"O Fogo Eterno", eventos:[]}, {n:"Um Pouco de Sacrifício", eventos:[]}, {n:"A Espada do Destino", eventos:["brokilon"]}, {n:"Algo Mais", eventos:["algo-mais","marnadal","massacre-cintra"]}]},
+  {id:"o-sangue-dos-elfos", n:"O Sangue dos Elfos", tipo:"livro", fim:1267.25, ano:1994, cron:4, editora:"WMF Martins Fontes",
+    sinopse:"Primeiro romance da saga: depois de uma guerra, Geralt esconde uma menina especial entre bruxos e feiticeiras, enquanto reis e espiões tramam."},
+  {id:"tempo-do-desprezo", n:"Tempo do Desprezo", tipo:"livro", fim:1267.55, ano:1995, cron:5, editora:"WMF Martins Fontes",
+    sinopse:"Uma reunião de magos numa ilha vira ponto de virada para todos, e o Norte entra numa nova guerra."},
+  {id:"batismo-de-fogo", n:"Batismo de Fogo", tipo:"livro", fim:1267.67, ano:1996, cron:7, editora:"WMF Martins Fontes",
+    sinopse:"Ferido, Geralt parte para o sul com companheiros improváveis, atravessando um país em guerra."},
+  {id:"a-torre-da-andorinha", n:"A Torre da Andorinha", tipo:"livro", fim:1267.9, ano:1997, cron:8, editora:"WMF Martins Fontes",
+    sinopse:"Contada em parte por quem a viveu, a história de Ciri ganha um caminho próprio, longe de Geralt."},
+  {id:"a-senhora-do-lago", n:"A Senhora do Lago", tipo:"livro", fim:1268.99, final:true, ano:1999, cron:9, editora:"WMF Martins Fontes",
+    sinopse:"O último livro da saga reúne os fios da história e a conta, séculos depois, como lenda."},
+  {id:"o-fim", n:"O fim e a lenda", tipo:"livro", eras:["fim"], ano:1999, cron:10, verbete:"a-senhora-do-lago", extra:true,
+    sinopse:"Corte opcional: a era IX da Linha do Tempo (o que vem séculos depois), contada no epílogo de A Senhora do Lago.",
+    nota:"Marque quando quiser ver o futuro distante do mundo."},
+  {id:"season-of-storms", n:"Season of Storms", tipo:"livro", eventos:["season-storms"], ano:2013, cron:2, editora:"Sem edição brasileira confirmada",
+    sinopse:"Romance avulso: Geralt perde as espadas num pequeno reino costeiro e se mete em intrigas de magos e da corte.", nota:"Pode ser lido a qualquer momento depois dos contos."},
+  {id:"thronebreaker", n:"Thronebreaker", tipo:"jogo", eventos:["thronebreaker"], ano:2018, cron:6,
+    sinopse:"Jogo derivado: uma rainha do Norte enfrenta a invasão do seu reino.", nota:"Independente da trilogia."},
+  {id:"the-witcher-jogo", n:"The Witcher", tipo:"jogo", fim:1270.99, ano:2007, cron:11,
+    sinopse:"Geralt volta, sem memória, e precisa descobrir quem atacou Kaer Morhen."},
+  {id:"the-witcher-2", n:"The Witcher 2", tipo:"jogo", fim:1271.99, ano:2011, cron:12,
+    sinopse:"Acusado de um crime que não cometeu, Geralt persegue o verdadeiro culpado pelos reinos do Norte."},
+  {id:"the-witcher-3", n:"The Witcher 3: Wild Hunt", tipo:"jogo", fim:1276.99, final:true, ano:2015, cron:13,
+    sinopse:"Geralt procura alguém muito importante para ele, num Norte em guerra e perseguido por uma ameaça de outro mundo."},
+  {id:"hearts-of-stone", n:"Hearts of Stone", tipo:"jogo", eventos:["coracoes"], ano:2015, cron:14, verbete:"the-witcher-3", expansao:true,
+    sinopse:"Expansão: um contrato aparentemente simples prende Geralt a um pacto perigoso."},
+  {id:"blood-and-wine", n:"Blood and Wine", tipo:"jogo", eventos:["sangue-vinho"], ano:2016, cron:15, verbete:"the-witcher-3", expansao:true,
+    sinopse:"Expansão: Geralt é chamado a um ducado de contos de fada para caçar uma fera."}
 ],
 
 // Eventos da era do bruxo que são pano de fundo, sem obra própria.
@@ -109,6 +132,8 @@ skellige: {
 // Árvores da aba Linhagem, desenhadas como diagrama.
 // pessoas: g = geração (linha), x = posição horizontal (0–100), e = verbete.
 // unioes: [a, b, tipo]; filhos: [[pais...], filho, tipo]. Tipos: casamento, segundo, amor, parente, contestado, destino, jogos.
+// Modo sem spoilers: "rOculto" substitui "r" até ler a obra "revela"; "oculta" esconde a pessoa (e suas linhas) até ler a obra;
+// "revela" na árvore inteira a esconde até ler a obra.
 arvores: [
   {id:"sangue", n:"Sangue Antigo", titulo:"A linhagem do Sangue Antigo", sub:"De Lara Dorren a Ciri: o gene élfico atravessa Redania, Temeria e Cintra até se manifestar por inteiro.",
     pessoas:[
@@ -116,7 +141,7 @@ arvores: [
       {id:"cregennan", n:"Cregennan de Lod", r:"mago humano", g:0, x:62},
       {id:"riannon", n:"Riannon", r:"criada pela rainha Cerro", g:1, x:40},
       {id:"goidemar", n:"Goidemar", r:"rei da Temeria", g:1, x:62},
-      {id:"falka", n:"Falka", r:"a rebelde de Redania", g:1, x:86, e:"falka"},
+      {id:"falka", n:"Falka", r:"a rebelde de Redania", g:1, x:86, e:"falka", oculta:"tempo-do-desprezo"},
       {id:"coram", n:"Coram II", r:"rei de Cintra", g:2, x:12},
       {id:"fiona", n:"Fiona", r:"morre em Cleves aos 93 anos", g:2, x:33},
       {id:"adela", n:"Adela", r:"morta na peste de Vizima", g:2, x:55},
@@ -131,7 +156,7 @@ arvores: [
       {id:"calanthe", n:"Calanthe", r:"a Leoa de Cintra", g:5, x:33, e:"calanthe"},
       {id:"eist", n:"Eist Tuirseach", r:"2º marido, de Skellige", g:5, x:55, e:"eist"},
       {id:"pavetta", n:"Pavetta", r:"uma Fonte", g:6, x:33, e:"pavetta"},
-      {id:"duny", n:"Duny", r:"Emhyr var Emreis", g:6, x:55, e:"emhyr"},
+      {id:"duny", n:"Duny", r:"Emhyr var Emreis", rOculto:"o Ouriço de Erlenwald", revela:"a-senhora-do-lago", g:6, x:55, e:"emhyr"},
       {id:"geralt", n:"Geralt de Rívia", r:"pai pelo destino", g:6, x:77, e:"geralt"},
       {id:"yennefer", n:"Yennefer", r:"mãe adotiva", g:6, x:95, e:"yennefer"},
       {id:"ciri", n:"Cirilla (Ciri)", r:"Zireael, a Leãozinha", g:7, x:55, e:"ciri", destaque:true}
@@ -163,7 +188,7 @@ arvores: [
     notas:["Calanthe morre ao se lançar da torre durante o Massacre de Cintra, em 1263; Eist cai na Batalha de Marnadal.",
       "Pavetta é conquistada por Duny pela Lei da Surpresa; o casal desaparece no Abismo de Sedna.",
       "Crach an Craite trata Ciri como sobrinha. Nos jogos, seus filhos Hjalmar e Cerys disputam a coroa de Skellige."]},
-  {id:"nilfgaard", n:"Nilfgaard", titulo:"A casa var Emreis", sub:"Do imperador deposto ao filho que recuperou o trono, e à filha que ele perseguiu.",
+  {id:"nilfgaard", n:"Nilfgaard", titulo:"A casa var Emreis", revela:"a-senhora-do-lago", sub:"Do imperador deposto ao filho que recuperou o trono, e à filha que ele perseguiu.",
     pessoas:[
       {id:"fergus", n:"Fergus var Emreis", r:"imperador deposto pelo Usurpador", g:0, x:45},
       {id:"pavetta", n:"Pavetta", r:"princesa de Cintra", g:1, x:22, e:"pavetta"},

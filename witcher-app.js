@@ -21,8 +21,8 @@
   const VIEWS = [['tempo', 'Linha do Tempo'], ['comp', 'Compêndio'], ['mapa', 'Mapa'], ['linhagem', 'Linhagem'], ['rel', 'Relações'], ['contraste', 'Livros × Jogos'], ['leitura', 'Leitura'], ['quiz', 'Quiz'], ['fontes', 'Fontes']];
   const LS_KEY = 'witcher-leitura';
   function lerLeitura() {
-    try { const v = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (v && Array.isArray(v.lidos)) return { on: !!v.on, lidos: v.lidos }; } catch (e) {}
-    return { on: false, lidos: [] };
+    try { const v = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (v && Array.isArray(v.lidos)) return { on: !!v.on, lidos: v.lidos, partes: v.partes && typeof v.partes === 'object' ? v.partes : {} }; } catch (e) {}
+    return { on: false, lidos: [], partes: {} };
   }
 
   // Preferências do leitor (tema, tamanho de letra, favoritos, vistos recentemente), guardadas no navegador.
@@ -538,25 +538,34 @@
       this.buildGloss(em, catMap);
 
       // Modo sem spoilers: um evento aparece se a obra que o conta já foi lida (ou se é história antiga).
-      const X = window.WITCHER_EXTRAS, LE = X.leitura, lidos = new Set(s.leitura.lidos), spOn = s.leitura.on;
-      const lidasL = LE.filter(o => lidos.has(o.id) && o.fim != null);
-      const limTudo = Math.max(-Infinity, ...lidasL.map(o => o.fim));
-      const limJogo = Math.max(-Infinity, ...lidasL.filter(o => o.tipo === 'jogo').map(o => o.fim));
+      const X = window.WITCHER_EXTRAS, LE = X.leitura, lidos = new Set(s.leitura.lidos), spOn = s.leitura.on, partesLidas = s.leitura.partes || {};
       const PRE = new Set(['antiga', 'conjuncao', 'chegada', 'magos', 'lara']);
-      const evVisivel = (e) => {
-        if (!spOn) return true;
-        const ex = LE.find(o => (o.eventos || []).includes(e.id));
-        if (ex) return lidos.has(ex.id);
-        if (PRE.has(e.era) || (X.semObra || []).includes(e.id) || /anunciado/i.test(e.d) || (e.era === 'bruxo' && e.s < 1245)) return true;
-        if (e.era === 'fim') return limTudo >= 1268.99;
-        return e.s <= (e.g ? limJogo : limTudo);
+      // Regra de visibilidade para um conjunto de obras lidas e de contos lidos (serve também para contar o que cada obra libera).
+      const regra = (lid, partes) => {
+        const L = LE.filter(o => lid.has(o.id) && o.fim != null);
+        const lim = Math.max(-Infinity, ...L.map(o => o.fim)), limJ = Math.max(-Infinity, ...L.filter(o => o.tipo === 'jogo').map(o => o.fim));
+        return (e) => {
+          const ex = LE.find(o => (o.eventos || []).includes(e.id));
+          if (ex) return lid.has(ex.id);
+          const comPartes = LE.find(o => (o.partes || []).some(p => p.eventos.includes(e.id)));
+          if (comPartes) return lid.has(comPartes.id) || (partes[comPartes.id] || []).some(i => comPartes.partes[i] && comPartes.partes[i].eventos.includes(e.id));
+          const daEra = LE.find(o => (o.eras || []).includes(e.era));
+          if (daEra) return lid.has(daEra.id);
+          if (PRE.has(e.era) || (X.semObra || []).includes(e.id) || /anunciado/i.test(e.d) || (e.era === 'bruxo' && e.s < 1245)) return true;
+          return e.s <= (e.g ? limJ : lim);
+        };
       };
+      const visAtual = regra(lidos, partesLidas);
+      const evVisivel = (e) => !spOn || visAtual(e);
+      const limTudo = Math.max(-Infinity, ...LE.filter(o => lidos.has(o.id) && o.fim != null).map(o => o.fim));
+      const limJogo = Math.max(-Infinity, ...LE.filter(o => lidos.has(o.id) && o.fim != null && o.tipo === 'jogo').map(o => o.fim));
       // Um verbete some quando todos os eventos que o citam estão escondidos (obras ficam sempre).
       const citado = {};
       D.events.forEach(e => (e.l || []).forEach(id => (citado[id] = citado[id] || []).push(e)));
-      // Os escritos de The Witcher 3 (e expansões) só aparecem para quem já jogou o jogo.
-      const jogouTW3 = lidos.has('the-witcher-3');
-      const hidden = new Set(spOn ? E.filter(e => e.c !== 'obra' && !s.reveal[e.id] && ((e.c === 'escrito' && !jogouTW3) || (citado[e.id] && !citado[e.id].some(evVisivel)))).map(e => e.id) : []);
+      // Escritos: cada um só aparece para quem já jogou o jogo ou a expansão de onde ele vem.
+      const jogoEscrito = (e) => /Hearts of Stone/.test(e.ep) ? 'hearts-of-stone' : /Blood and Wine/.test(e.ep) ? 'blood-and-wine' : 'the-witcher-3';
+      const escondeVerbete = (e, lid, vis) => e.c !== 'obra' && ((e.c === 'escrito' && !lid.has(jogoEscrito(e))) || (citado[e.id] && !citado[e.id].some(vis)));
+      const hidden = new Set(spOn ? E.filter(e => !s.reveal[e.id] && escondeVerbete(e, lidos, visAtual)).map(e => e.id) : []);
       this.hidden = hidden;
       const Ev = E.filter(e => !hidden.has(e.id));
       const fechouSaga = limTudo >= 1268.99, jogouAlgo = limJogo > -Infinity;
@@ -859,8 +868,12 @@
       const arvLargura = Math.max(600, Math.ceil((CW + 14) / (menorVao / 100))) + 'px';
       const L = X.lacos, arvLinhas = [];
       const linha = (x1, y1, x2, y2, tipo) => arvLinhas.push({ x1: x1 + '%', y1, x2: x2 + '%', y2, cor: L[tipo].cor, traco: L[tipo].traco || 'none' });
-      arv.unioes.forEach(([a, b, tipo]) => { const pa = pes[a], pb = pes[b]; linha(pa.x, pa.g * LH + CH / 2, pb.x, pb.g * LH + CH / 2, tipo || 'casamento'); });
+      // Modo sem spoilers: a árvore inteira pode ficar bloqueada, e linhas que levam a pessoas escondidas somem.
+      const arvBloq = spOn && arv.revela && !lidos.has(arv.revela);
+      const escPessoa = (id) => { const p = pes[id]; return spOn && ((p.e && hidden.has(p.e)) || (p.oculta && !lidos.has(p.oculta))); };
+      arv.unioes.forEach(([a, b, tipo]) => { if (arvBloq || escPessoa(a) || escPessoa(b)) return; const pa = pes[a], pb = pes[b]; linha(pa.x, pa.g * LH + CH / 2, pb.x, pb.g * LH + CH / 2, tipo || 'casamento'); });
       arv.filhos.forEach(([pais, f, tipo]) => {
+        if (arvBloq || escPessoa(f) || pais.some(escPessoa)) return;
         const ps = pais.map(id => pes[id]), c = pes[f], t = tipo || 'casamento', cor = tipo ? t : 'casamento';
         const mx = ps.reduce((s2, p) => s2 + p.x, 0) / ps.length, topo = Math.max(...ps.map(p => p.g)) * LH;
         // Ligações especiais correm um pouco abaixo da barra comum, para não parecerem do mesmo casal.
@@ -869,8 +882,12 @@
       });
       const usados = new Set([...arv.unioes.map(u => u[2] || 'casamento'), ...arv.filhos.map(f => f[2] || 'casamento')]);
       const arvLegenda = Object.entries(L).filter(([k]) => usados.has(k)).map(([, v]) => ({ label: v.label, cor: v.cor, traco: v.traco || 'none' }));
+      // No modo sem spoilers, quem ainda não foi revelado na leitura aparece como "?".
       const arvPessoas = arv.pessoas.map(p => {
-        const tem = p.e && em[p.e] && !hidden.has(p.e), d = p.destaque;
+        const tem = p.e && em[p.e] && !hidden.has(p.e), d = p.destaque, oculto = spOn && ((p.e && hidden.has(p.e)) || (p.oculta && !lidos.has(p.oculta)));
+        if (spOn && p.rOculto && p.revela && !lidos.has(p.revela)) p = { ...p, r: p.rOculto };
+        if (oculto) return { n: '?', r: 'revelado mais adiante na leitura', left: p.x + '%', top: (p.g * LH) + 'px', w: CW + 'px', dica: 'Escondido pelo modo sem spoilers',
+          bg: '#F4EEE1', bd: '#E1D5BB', fg: '#6B5C46', sub: '#6B5C46', cur: 'default', open: () => {} };
         return { n: p.n, r: p.r, left: p.x + '%', top: (p.g * LH) + 'px', w: CW + 'px', dica: tem ? 'Abrir o verbete de ' + p.n : p.n,
           bg: d ? '#8C2A1B' : tem ? '#FBF8F1' : '#F4EEE1', bd: d ? '#8C2A1B' : tem ? '#CDBE9C' : '#E1D5BB', fg: d ? '#FBF8F1' : '#1E1710', sub: d ? '#F3DED3' : '#4F4231',
           cur: tem ? 'pointer' : 'default', open: () => { if (tem) this.open(p.e); } };
@@ -1019,22 +1036,57 @@
       const quizModes = [['perguntas', 'Perguntas'], ['contrato', 'Contrato de bruxo']].map(([id, label]) => ({ label, bg: qMode === id ? '#1E1710' : 'transparent', fg: qMode === id ? '#F4EEE1' : '#1E1710', select: () => this.quizIr(id, true) }));
 
       // Aba Leitura.
-      const setLidos = (arr) => this.saveLeitura({ ...s.leitura, lidos: LE.map(o => o.id).filter(id => arr.includes(id)) });
+      const setLidos = (arr) => {
+        const lid = LE.map(o => o.id).filter(id => arr.includes(id)), partes = { ...partesLidas };
+        // Desmarcar um livro de contos limpa os contos; marcar o livro inteiro dispensa a marcação conto a conto.
+        LE.forEach(o => { if (o.partes && !lid.includes(o.id) && lidos.has(o.id)) delete partes[o.id]; });
+        this.saveLeitura({ ...s.leitura, lidos: lid, partes });
+      };
+      const ordem = s.ordemLeitura || 'recomendada';
+      const LEord = ordem === 'publicacao' ? LE.slice().sort((a, b) => a.ano - b.ano || LE.indexOf(a) - LE.indexOf(b)) : ordem === 'cronologica' ? LE.slice().sort((a, b) => a.cron - b.cron) : LE;
+      // O que cada obra ainda não lida liberaria (eventos e verbetes), pela mesma regra do modo sem spoilers.
+      const ocultoAgora = new Set(E.filter(e => escondeVerbete(e, lidos, visAtual)).map(e => e.id));
+      const libera = (o) => {
+        const lid2 = new Set([...lidos, o.id]), vis2 = regra(lid2, partesLidas);
+        const ev = evAll.filter(e => vis2(e) && !visAtual(e)).length;
+        const vb = E.filter(e => ocultoAgora.has(e.id) && !escondeVerbete(e, lid2, vis2)).length;
+        return ev || vb ? 'Libera ' + [ev ? ev + (ev === 1 ? ' evento' : ' eventos') : '', vb ? vb + (vb === 1 ? ' verbete' : ' verbetes') : ''].filter(Boolean).join(' e ') : 'Não libera nada novo';
+      };
+      const ultimaPos = Math.max(-1, ...LEord.map((o, i) => lidos.has(o.id) ? i : -1));
+      const proxima = LEord.find((o, i) => i > ultimaPos && !lidos.has(o.id) && !o.extra);
       let nLivro = 0, nJogo = 0;
-      const leituraItens = LE.map((o, i) => {
-        const on = lidos.has(o.id), has = !!em[o.id];
-        const num = o.fim != null ? (o.tipo === 'jogo' ? 'Jogo ' + (++nJogo) : 'Livro ' + (++nLivro)) : 'Extra';
-        const anteriores = LE.slice(0, i + 1).filter(x => x.tipo === o.tipo && x.fim != null).map(x => x.id);
+      const leituraItens = LEord.map((o, i) => {
+        const on = lidos.has(o.id), ve = em[o.verbete || o.id], has = !!ve;
+        const num = o.extra ? 'Extra' : o.expansao ? 'Expansão' : o.fim != null ? (o.tipo === 'jogo' ? 'Jogo ' + (++nJogo) : 'Livro ' + (++nLivro)) : 'Extra';
+        const anteriores = LEord.slice(0, i + 1).filter(x => x.tipo === o.tipo && x.fim != null).map(x => x.id);
+        const fato = (k) => ((ve && ve.f) || []).find(f => f[0] === k);
+        const original = fato('Título original'), feitas = new Set(partesLidas[o.id] || []);
+        const ficha = [original ? original[1] : '', o.ano ? String(o.ano) : '', o.editora || ''].filter(Boolean).join(' · ');
         return {
-          n: o.n, num, tipo: o.tipo === 'jogo' ? 'Jogo' : 'Livro', sub: o.nota || (has ? em[o.id].ep : ''),
+          n: o.n, num, tipo: o.tipo === 'jogo' ? 'Jogo' : 'Livro', sub: o.sinopse || o.nota || (has ? ve.ep : ''), nota: o.sinopse && o.nota ? o.nota : '', temNota: !!(o.sinopse && o.nota),
+          ficha, temFicha: !!ficha, libera: on ? 'Já lido' : libera(o),
+          aqui: i === ultimaPos, prox: proxima === o, selo: i === ultimaPos ? 'Você está aqui' : proxima === o ? 'Próxima leitura' : '', temSelo: i === ultimaPos || proxima === o,
+          seloBg: i === ultimaPos ? '#8C2A1B' : '#3F5E2A',
           tagBg: o.tipo === 'jogo' ? '#3A4150' : '#E6DCC6', tagFg: o.tipo === 'jogo' ? '#F4EEE1' : '#4F4231',
           bg: on ? '#F2EBDC' : '#FBF8F1', box: on ? '#8C2A1B' : '#9C8B6A', boxBg: on ? '#8C2A1B' : 'transparent', mark: on ? '✓' : '',
           checkedStr: on ? 'true' : 'false', aria: (on ? 'Desmarcar ' : 'Marcar como lido: ') + o.n,
           toggle: () => setLidos(on ? s.leitura.lidos.filter(x => x !== o.id) : [...s.leitura.lidos, o.id]),
           canAte: o.fim != null && anteriores.length > 1, ate: () => setLidos([...new Set([...s.leitura.lidos, ...anteriores])]),
-          cur: has ? 'pointer' : 'default', open: () => { if (has) this.open(o.id); }
+          cur: has ? 'pointer' : 'default', open: () => { if (has) this.open(ve.id); },
+          temPartes: !!o.partes && !on, partes: (o.partes || []).map((p, j) => {
+            const pon = feitas.has(j);
+            return { n: p.n, mark: pon ? '✓' : '', bg: pon ? '#8C2A1B' : 'transparent', bd: pon ? '#8C2A1B' : '#9C8B6A',
+              toggle: () => {
+                const f = new Set(feitas); pon ? f.delete(j) : f.add(j);
+                const todas = f.size === o.partes.length, partes = { ...partesLidas, [o.id]: [...f] };
+                const lid = todas ? [...new Set([...s.leitura.lidos, o.id])] : s.leitura.lidos;
+                this.saveLeitura({ ...s.leitura, lidos: LE.map(x => x.id).filter(id => lid.includes(id)), partes });
+              } };
+          })
         };
       });
+      const ordemOpts = [['recomendada', 'Recomendada'], ['publicacao', 'Publicação'], ['cronologica', 'Cronológica']].map(([id, label]) => ({ label, bg: ordem === id ? '#1E1710' : 'transparent', fg: ordem === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ ordemLeitura: id }) }));
+      const ordemDesc = { recomendada: 'A ordem sugerida pela wiki: os contos primeiro, depois a saga e os jogos.', publicacao: 'Na ordem em que saíram (A Espada do Destino foi publicada antes de O Último Desejo).', cronologica: 'Na ordem dos acontecimentos no mundo: Season of Storms entra entre os contos, e Thronebreaker durante a guerra.' }[ordem];
       const nOcultosEv = evAll.length - evOk.length;
       const spoilerAte = ultimaLida ? 'até ' + ultimaLida.n : 'nada lido ainda';
 
@@ -1054,7 +1106,7 @@
         toggleAllLabel: defOpen ? 'Recolher tudo' : 'Expandir tudo',
         toggleAll: () => this.setState({ expandAll: !defOpen, open: {} }),
         compTabs, compCards, compDay, compRandom, compSrcOpts, compTemas, hasCompTemas: compTemas.length > 0,
-        leituraItens, leituraFeitas: s.leitura.lidos.length, leituraTotal: LE.length, leituraPct: Math.round(100 * s.leitura.lidos.length / LE.length) + '%',
+        leituraItens, ordemOpts, ordemDesc, leituraFeitas: s.leitura.lidos.length, leituraTotal: LE.length, leituraPct: Math.round(100 * s.leitura.lidos.length / LE.length) + '%',
         leituraLimpar: () => setLidos([]),
         spoilerToggle: () => this.saveLeitura({ ...s.leitura, on: !spOn }), spoilerOnStr: spOn ? 'true' : 'false',
         spoilerTrack: spOn ? '#7A2442' : '#CDBE9C', spoilerKnob: spOn ? '25px' : '3px', spoilerEstado: spOn ? 'ligado' : 'desligado',
@@ -1091,7 +1143,7 @@
         contrasteTabs, contrasteGrupos, contrasteAviso: spOn, contrasteOrigens, contrasteJogos, grandes, eventosJogos, temEventosJogos: eventosJogos.length > 0,
         quiz, quizTem: !!qq, quizVazio: !qq, quizModes, quizStart: () => this.quizIr(qMode, true), quizNext: () => this.quizIr(qMode, false),
         quizPlacar: qz ? qz.acertos + ' acertos em ' + qz.total + (qz.total === 1 ? ' pergunta' : ' perguntas') : '',
-        arvoreOpts, arvoreTitulo: arv.titulo, arvoreSub: arv.sub, arvLinhas, arvPessoas, arvLegenda, arvLargura, arvAltura, arvNotas: arv.notas || [],
+        arvoreOpts, arvoreTitulo: arv.titulo, arvoreSub: arv.sub, arvLinhas, arvPessoas: arvBloq ? [] : arvPessoas, arvLegenda: arvBloq ? [] : arvLegenda, arvLargura, arvAltura: arvBloq ? '10px' : arvAltura, arvNotas: arvBloq ? ['Esta árvore revela um segredo da saga e fica escondida pelo modo sem spoilers até você marcar ' + (LE.find(o => o.id === arv.revela) || {}).n + '.'] : spOn && !fechouSaga ? ['As notas desta árvore ficam escondidas pelo modo sem spoilers até o fim da saga.'] : (arv.notas || []),
         relEdges, relNodes, relSel, relTipoOpts, relGrupoOpts, relAspect: '1 / 1', relModes,
         relGraph: !conexOn, relConex: conexOn, pickers, conex,
         relModeDesc: conexOn ? 'Escolha dois verbetes: o caminho mais curto entre eles e o que têm em comum.' : auto ? R.nodes.length + ' personagens ligados por citações nos verbetes e por eventos em comum.' : (R.nodes.length + ' personagens e ' + R.edges.length + ' laços explicados, escolhidos à mão. Toque num tipo para esconder ou mostrar.') + (spOn ? ' Atenção: estes laços não são filtrados pelo modo sem spoilers.' : ''),

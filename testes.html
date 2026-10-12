@@ -80,6 +80,14 @@ const TESTES = [
     li.querySelector('[role=checkbox]').click(); await sleep(200);
     confere(JSON.parse(frame.contentWindow.localStorage.getItem('witcher-leitura')).lidos.includes('o-ultimo-desejo'), 'progresso não foi salvo');
   }],
+  ['Leitura por conto e expansões separadas', async () => {
+    await abrir('#/tempo', ls => ls.setItem('witcher-leitura', JSON.stringify({ on: true, lidos: [], partes: { 'o-ultimo-desejo': [0] } })));
+    await esperar(() => doc.getElementById('ev-estrige'), 4000, 'o conto "O Bruxo" não liberou a estrige');
+    confere(!doc.getElementById('ev-questao-preco'), '"Uma Questão de Preço" apareceu sem o conto marcado');
+    await abrir('#/tempo', ls => ls.setItem('witcher-leitura', JSON.stringify({ on: true, lidos: ['the-witcher-3'], partes: {} })));
+    await esperar(() => doc.getElementById('ev-tw3'), 4000, 'The Witcher 3 não liberou seu evento');
+    confere(!doc.getElementById('ev-sangue-vinho'), 'Blood and Wine apareceu sem a expansão marcada');
+  }],
   ['O mapa desenha uma jornada', async () => {
     await abrir('#/mapa');
     await clicar('A jornada da Hansa');

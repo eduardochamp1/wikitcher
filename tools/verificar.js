@@ -53,7 +53,15 @@ X.arvores.forEach(a => {
 Object.keys(X.fichas).forEach(id => verb(id, 'Ficha do bestiário'));
 W.contrastes.forEach(c => verb(c.e, 'Livros × Jogos'));
 Object.keys(app.WITCHER_NASC || {}).forEach(id => verb(id, 'Nascimento'));
-X.leitura.forEach(o => { if (!ids.has(o.id)) aviso('Obra da leitura sem verbete: ' + o.id); (o.eventos || []).forEach(ev => { if (!evIds.has(ev)) erro('Leitura ' + o.id + ' cita evento inexistente: ' + ev); }); });
+X.leitura.forEach(o => {
+  if (!ids.has(o.verbete || o.id)) aviso('Obra da leitura sem verbete: ' + o.id);
+  const evs = (o.eventos || []).concat(...(o.partes || []).map(p => p.eventos));
+  evs.forEach(ev => { if (!evIds.has(ev)) erro('Leitura ' + o.id + ' cita evento inexistente: ' + ev); });
+  (o.eras || []).forEach(er => { if (!eras.has(er)) erro('Leitura ' + o.id + ' cita era inexistente: ' + er); });
+});
+X.arvores.forEach(a => [a.revela, ...a.pessoas.map(p => p.revela), ...a.pessoas.map(p => p.oculta)].filter(Boolean).forEach(o => {
+  if (!X.leitura.some(l => l.id === o)) erro('Árvore ' + a.id + ' cita obra de leitura inexistente: ' + o);
+}));
 ['livro', 'jogo'].forEach(t => {
   const f = X.leitura.filter(o => o.tipo === t && o.fim != null).map(o => o.fim);
   if (f.some((v, i) => i && v <= f[i - 1])) erro('Os cortes "fim" da leitura (' + t + ') não estão em ordem crescente');

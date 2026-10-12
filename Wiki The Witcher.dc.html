@@ -816,17 +816,37 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
         <button onClick="{{ leituraLimpar }}" style="background:none;border:none;padding:0;cursor:pointer;color:#8C2A1B;text-decoration:underline;font-family:'IBM Plex Sans',sans-serif;font-size:13px">desmarcar tudo</button>
       </div>
       <div style="height:8px;border-radius:999px;background:#E6DCC6;overflow:hidden"><div style="height:100%;width:{{ leituraPct }};background:#8C2A1B;transition:width .3s"></div></div>
-      <ol style="list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:22px 0 0">
+        <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#1E1710">Ordem</span>
+        <div style="display:flex;border:1px solid #CDBE9C;border-radius:6px;overflow:hidden">
+          <sc-for list="{{ ordemOpts }}" as="oo" hint-placeholder-count="3">
+            <button onClick="{{ oo.select }}" style="background:{{ oo.bg }};color:{{ oo.fg }};border:none;padding:6px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">{{ oo.label }}</button>
+          </sc-for>
+        </div>
+        <span style="font-size:15px;color:#4F4231;font-style:italic">{{ ordemDesc }}</span>
+      </div>
+      <ol style="list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:8px">
         <sc-for list="{{ leituraItens }}" as="li" hint-placeholder-count="12">
-          <li style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:{{ li.bg }};border:1px solid #DCCFB3;border-radius:10px">
-            <button onClick="{{ li.toggle }}" role="checkbox" aria-checked="{{ li.checkedStr }}" aria-label="{{ li.aria }}" style="flex:0 0 auto;width:26px;height:26px;border-radius:6px;border:1.5px solid {{ li.box }};background:{{ li.boxBg }};color:#FBF8F1;cursor:pointer;font-size:16px;line-height:1;padding:0">{{ li.mark }}</button>
-            <div style="flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px">
+          <li style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:10px 14px;padding:12px 16px;background:{{ li.bg }};border:1px solid #DCCFB3;border-radius:10px">
+            <button onClick="{{ li.toggle }}" role="checkbox" aria-checked="{{ li.checkedStr }}" aria-label="{{ li.aria }}" style="flex:0 0 auto;margin-top:4px;width:26px;height:26px;border-radius:6px;border:1.5px solid {{ li.box }};background:{{ li.boxBg }};color:#FBF8F1;cursor:pointer;font-size:16px;line-height:1;padding:0">{{ li.mark }}</button>
+            <div style="flex:1 1 260px;min-width:0;display:flex;flex-direction:column;gap:3px">
               <span style="display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px">
                 <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#8C2A1B">{{ li.num }}</span>
                 <button onClick="{{ li.open }}" style="background:none;border:none;padding:0;cursor:{{ li.cur }};font-family:'IM Fell English',serif;font-size:22px;line-height:1.15;color:#1E1710;text-align:left">{{ li.n }}</button>
                 <span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:{{ li.tagBg }};color:{{ li.tagFg }}">{{ li.tipo }}</span>
+                <sc-if value="{{ li.temSelo }}" hint-placeholder-val="{{ false }}"><span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:{{ li.seloBg }};color:#FBF8F1">{{ li.selo }}</span></sc-if>
               </span>
-              <span style="font-size:15px;color:#4F4231;font-style:italic">{{ li.sub }}</span>
+              <sc-if value="{{ li.temFicha }}" hint-placeholder-val="{{ false }}"><span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#6B5C46">{{ li.ficha }}</span></sc-if>
+              <span style="font-size:16px;color:#33281C;line-height:1.4">{{ li.sub }}</span>
+              <sc-if value="{{ li.temNota }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#4F4231;font-style:italic">{{ li.nota }}</span></sc-if>
+              <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#7A2442">{{ li.libera }}</span>
+              <sc-if value="{{ li.temPartes }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+                  <sc-for list="{{ li.partes }}" as="pt" hint-placeholder-count="0">
+                    <button onClick="{{ pt.toggle }}" style="display:flex;align-items:center;gap:6px;padding:3px 9px 3px 5px;cursor:pointer;background:#FBF8F1;border:1px solid #DCCFB3;border-radius:999px;font-size:14px;color:#1E1710"><span style="width:16px;height:16px;border-radius:4px;border:1.5px solid {{ pt.bd }};background:{{ pt.bg }};color:#FBF8F1;font-size:11px;line-height:13px;text-align:center">{{ pt.mark }}</span>{{ pt.n }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
             </div>
             <sc-if value="{{ li.canAte }}" hint-placeholder-val="{{ false }}">
               <button onClick="{{ li.ate }}" style="flex:0 0 auto;background:none;border:1px solid #CDBE9C;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#1E1710">li até aqui</button>
@@ -834,6 +854,17 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
           </li>
         </sc-for>
       </ol>
+      <div style="margin-top:22px;padding:14px 18px;background:#FBF8F1;border:1px solid #DCCFB3;border-radius:10px">
+        <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#1E1710">O que o modo sem spoilers esconde</span>
+        <ul style="margin:8px 0 0;padding:0 0 0 20px;display:flex;flex-direction:column;gap:4px;font-size:16px;color:#33281C;line-height:1.4">
+          <li>Eventos da Linha do Tempo (também na escala real e no mapa ao longo do tempo) e as jornadas do mapa.</li>
+          <li>Verbetes citados só por acontecimentos que você ainda não leu, e os sublinhados e links para eles.</li>
+          <li>Trechos marcados como spoiler ou como conteúdo dos jogos dentro dos verbetes, e a aba Livros × Jogos.</li>
+          <li>Escritos do jogo, por jogo ou expansão, e as relações e conexões com personagens escondidos.</li>
+          <li>Na Linhagem, pessoas e segredos ainda não revelados aparecem como "?".</li>
+        </ul>
+        <span style="display:block;margin-top:8px;font-size:14px;color:#6B5C46;font-style:italic">É uma aproximação: alguns verbetes antigos ainda citam fatos de livros posteriores.</span>
+      </div>
     </main>
   </sc-if>
 
