@@ -228,30 +228,11 @@
       if ((X.semObra || []).includes(e.id) || !['bruxo', 'guerras', 'depois'].includes(e.era) || /anunciado/i.test(e.d)) return null;
       return L.find(o => o.fim != null && (o.tipo === 'jogo') === !!e.g && e.s <= o.fim) || null;
     }
-    // Rede de personagens: peso 2 quando um verbete cita o outro, mais 1 por evento em comum.
-    // O layout é um modelo de forças simples, calculado uma vez para cada conjunto de verbetes visíveis.
-    rede(E, events, hidden) {
-      const key = [...hidden].sort().join(',') + '#' + events.length;
-      if (this._rede && this._rede.key === key) return this._rede.v;
-      const extra = new Set(['coen', 'eskel', 'lambert', 'o-dimm']);
-      const pessoas = E.filter(e => (e.c === 'personagem' || extra.has(e.id)) && !hidden.has(e.id));
-      const ok = new Set(pessoas.map(e => e.id)), byId = Object.fromEntries(pessoas.map(e => [e.id, e]));
-      const par = (a, b) => a < b ? a + '|' + b : b + '|' + a;
-      const cit = {}, junto = {};
-      pessoas.forEach(e => (e.l || []).forEach(o => { if (ok.has(o) && o !== e.id) cit[par(e.id, o)] = 1; }));
-      events.forEach(ev => {
-        const ps = [...new Set((ev.l || []).filter(id => ok.has(id)))];
-        for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) { const k = par(ps[i], ps[j]); junto[k] = (junto[k] || 0) + 1; }
-      });
-      const w = {};
-      new Set([...Object.keys(cit), ...Object.keys(junto)]).forEach(k => { w[k] = (cit[k] ? 2 : 0) + (junto[k] || 0); });
-      const grau = {};
-      Object.entries(w).forEach(([k, v]) => k.split('|').forEach(id => { grau[id] = (grau[id] || 0) + v; }));
-      const top = pessoas.filter(e => grau[e.id]).sort((a, b) => grau[b.id] - grau[a.id]).slice(0, 36).map(e => e.id);
-      const T = new Set(top), idx = Object.fromEntries(top.map((id, i) => [id, i]));
-      const ligs = Object.entries(w).map(([k, v]) => [...k.split('|'), v]).filter(([a, b]) => T.has(a) && T.has(b));
-      const n = top.length, kk = Math.sqrt(1 / Math.max(n, 1)) * 0.9;
-      const pos = top.map((id, i) => ({ x: 0.5 + 0.4 * Math.cos(2 * Math.PI * i / n), y: 0.5 + 0.4 * Math.sin(2 * Math.PI * i / n) }));
+    // Layout de forças para um grafo de pessoas: ids, ligações [a, b, peso] e nome curto de cada id.
+    // Afasta também os rótulos que se cobririam (caixas estimadas em % da área do gráfico).
+    forca(ids, ligs, nomeDe) {
+      const n = ids.length, idx = Object.fromEntries(ids.map((id, i) => [id, i])), kk = Math.sqrt(1 / Math.max(n, 1)) * 0.9;
+      const pos = ids.map((id, i) => ({ x: 0.5 + 0.4 * Math.cos(2 * Math.PI * i / n), y: 0.5 + 0.4 * Math.sin(2 * Math.PI * i / n) }));
       for (let it = 0; it < 500; it++) {
         const temp = 0.08 * (1 - it / 500) + 0.002, disp = pos.map(() => ({ x: 0, y: 0 }));
         for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
@@ -259,7 +240,8 @@
           dx /= d; dy /= d; disp[i].x += dx * f; disp[i].y += dy * f; disp[j].x -= dx * f; disp[j].y -= dy * f;
         }
         ligs.forEach(([a, b, v]) => {
-          const i = idx[a], j = idx[b]; let dx = pos[i].x - pos[j].x, dy = pos[i].y - pos[j].y;
+          const i = idx[a], j = idx[b]; if (i == null || j == null) return;
+          let dx = pos[i].x - pos[j].x, dy = pos[i].y - pos[j].y;
           const d = Math.max(0.01, Math.hypot(dx, dy)), f = d * d / kk * Math.min(1, 0.3 + v / 6);
           dx /= d; dy /= d; disp[i].x -= dx * f; disp[i].y -= dy * f; disp[j].x += dx * f; disp[j].y += dy * f;
         });
@@ -272,10 +254,9 @@
       const xs = pos.map(p => p.x), ys = pos.map(p => p.y);
       const nx = (v) => 9 + 82 * (v - Math.min(...xs)) / Math.max(0.001, Math.max(...xs) - Math.min(...xs));
       const ny = (v) => 6 + 88 * (v - Math.min(...ys)) / Math.max(0.001, Math.max(...ys) - Math.min(...ys));
-      const curado = Object.fromEntries(window.WITCHER_TEMPO.rels.nodes.map(x => [x.id, x.n]));
-      const nodes = top.map((id, i) => ({ id, full: byId[id].t, n: curado[id] || byId[id].t.replace(/ (de|da|do|var|aep|von|verch) .*$/, ''), x: nx(pos[i].x), y: ny(pos[i].y) }));
-      // Afasta rótulos que se cobrem (caixas estimadas em % da área do gráfico).
-      const caixa = nodes.map(nd => ({ w: 3.2 + nd.n.length * 1.05, h: 5.4 }));
+      const nodes = ids.map((id, i) => ({ id, n: nomeDe(id), x: nx(pos[i].x), y: ny(pos[i].y) }));
+      // Caixa de cada rótulo em %, estimada para um gráfico quadrado de 560 px com letra de 13 px.
+      const caixa = nodes.map(nd => ({ w: (nd.n.length * 7.4 + 30) / 5.6, h: 30 / 5.6 }));
       for (let it = 0; it < 300; it++) {
         let mexeu = false;
         for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
@@ -289,14 +270,60 @@
         nodes.forEach((nd, i) => { nd.x = Math.min(100 - caixa[i].w / 2 - 1, Math.max(caixa[i].w / 2 + 1, nd.x)); nd.y = Math.min(96, Math.max(4, nd.y)); });
         if (!mexeu) break;
       }
-      const tipo = (v) => v >= 4 ? 'forte' : v >= 2 ? 'medio' : 'fraco';
+      return nodes;
+    }
+    nomeCurto(id, E) {
+      const X = window.WITCHER_EXTRAS.relacoes, e = E.find(x => x.id === id);
+      // Nome do mapa: o apelido definido ou a primeira palavra do título (Geralt, Yennefer, Cahir...).
+      return X.nomes[id] || (e ? e.t.replace(/^(A|O) /, '').split(/[ ,]/)[0] : id);
+    }
+    // Laços principais (witcher-extras.js): só pessoas visíveis no modo sem spoilers; layout automático.
+    curado(E, hidden) {
+      const key = [...hidden].sort().join(',');
+      if (this._curado && this._curado.key === key) return this._curado.v;
+      const RL = window.WITCHER_EXTRAS.relacoes, ok = new Set(E.filter(e => !hidden.has(e.id)).map(e => e.id));
+      const lacos = RL.lacos.filter(([a, b]) => ok.has(a) && ok.has(b));
+      const ids = [...new Set(lacos.flatMap(([a, b]) => [a, b]))];
+      const full = Object.fromEntries(E.map(e => [e.id, e.t]));
+      const nodes = this.forca(ids, lacos.map(([a, b, t]) => [a, b, RL.tipos[t].peso]), id => this.nomeCurto(id, E)).map(nd => ({ ...nd, full: full[nd.id] }));
+      const v = { nodes, edges: lacos.map(([a, b, t, l, muda]) => [a, b, t, l, RL.tipos[t].peso, muda]), types: RL.tipos };
+      this._curado = { key, v };
+      return v;
+    }
+    // Rede de personagens: peso 2 quando um verbete cita o outro, mais 1 por evento em comum.
+    // Quando o par também está nos laços principais, a ligação usa o tipo e a explicação de lá.
+    rede(E, events, hidden) {
+      const key = [...hidden].sort().join(',') + '#' + events.length;
+      if (this._rede && this._rede.key === key) return this._rede.v;
+      const RL = window.WITCHER_EXTRAS.relacoes;
+      const extra = new Set(['coen', 'eskel', 'lambert', 'o-dimm']);
+      const pessoas = E.filter(e => (e.c === 'personagem' || extra.has(e.id)) && !hidden.has(e.id));
+      const ok = new Set(pessoas.map(e => e.id)), byId = Object.fromEntries(pessoas.map(e => [e.id, e]));
+      const par = (a, b) => a < b ? a + '|' + b : b + '|' + a;
+      const cit = {}, junto = {};
+      pessoas.forEach(e => (e.l || []).forEach(o => { if (ok.has(o) && o !== e.id) cit[par(e.id, o)] = 1; }));
+      events.forEach(ev => {
+        const ps = [...new Set((ev.l || []).filter(id => ok.has(id)))];
+        for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) { const k = par(ps[i], ps[j]); junto[k] = (junto[k] || 0) + 1; }
+      });
+      const curadoPar = Object.fromEntries(RL.lacos.map(l => [par(l[0], l[1]), l]));
+      const w = {};
+      new Set([...Object.keys(cit), ...Object.keys(junto), ...Object.keys(curadoPar).filter(k => k.split('|').every(id => ok.has(id)))])
+        .forEach(k => { w[k] = (cit[k] ? 2 : 0) + (junto[k] || 0) + (curadoPar[k] ? 2 : 0); });
+      const grau = {};
+      Object.entries(w).forEach(([k, v]) => k.split('|').forEach(id => { grau[id] = (grau[id] || 0) + v; }));
+      const top = pessoas.filter(e => grau[e.id]).sort((a, b) => grau[b.id] - grau[a.id]).slice(0, 36).map(e => e.id);
+      const T = new Set(top);
+      const ligs = Object.entries(w).map(([k, v]) => [...k.split('|'), v]).filter(([a, b]) => T.has(a) && T.has(b));
+      const nodes = this.forca(top, ligs, id => this.nomeCurto(id, E)).map(nd => ({ ...nd, full: byId[nd.id].t }));
+      const forca = (v) => v >= 4 ? 'forte' : v >= 2 ? 'medio' : 'fraco';
       const edges = ligs.map(([a, b, v]) => {
-        const k = par(a, b), jt = junto[k] || 0;
-        const label = [cit[k] ? 'Um aparece no verbete do outro' : '', jt ? jt + (jt === 1 ? ' evento em comum' : ' eventos em comum') : ''].filter(Boolean).join(' · ');
-        return [a, b, tipo(v), label, v];
+        const k = par(a, b), jt = junto[k] || 0, c = curadoPar[k];
+        const base = [cit[k] ? 'Um aparece no verbete do outro' : '', jt ? jt + (jt === 1 ? ' evento em comum' : ' eventos em comum') : ''].filter(Boolean).join(' · ');
+        return c ? [a, b, c[2], c[3] + (base ? ' · ' + base : ''), v, c[4]] : [a, b, forca(v), base, v];
       });
       const v = { nodes, edges, forte: (a, b) => (w[par(a, b)] || 0) >= 3,
-        types: { forte: { label: 'Muito ligados', color: '#8C2A1B' }, medio: { label: 'Ligados', color: '#8A5E10' }, fraco: { label: 'Citados juntos uma vez', color: '#9C8B6A' } } };
+        types: { ...RL.tipos, forte: { label: 'Muito ligados', color: '#6B5C46' }, medio: { label: 'Ligados', color: '#9C8B6A' }, fraco: { label: 'Citados juntos uma vez', color: '#CDBE9C' } } };
       this._rede = { key, v };
       return v;
     }
@@ -819,28 +846,45 @@
       });
       const arvAltura = ((geracoes - 1) * LH + CH + 6) + 'px';
 
-      // Relações: o mapa curado de witcher-tempo.js ou a rede montada a partir dos verbetes e eventos.
-      const auto = s.relMode === 'auto';
-      const R = auto ? this.rede(E, evOk, hidden) : D.rels;
+      // Relações: laços principais (witcher-extras.js) ou a rede montada a partir dos verbetes e eventos.
+      // Filtros: tipos de laço escondidos e um grupo (Hansa, Kaer Morhen...) que restringe as pessoas.
+      const auto = s.relMode === 'auto', RLx = X.relacoes;
+      const R = auto ? this.rede(E, evOk, hidden) : this.curado(E, hidden);
+      const tiposOff = new Set(s.relTiposOff || []), grupo = s.relGrupo && RLx.grupos[s.relGrupo];
+      const noGrupo = (id) => !grupo || grupo.membros.includes(id);
+      const arestas = R.edges.filter(([a, b, t]) => !tiposOff.has(t) && noGrupo(a) && noGrupo(b));
+      const comLaco = new Set(arestas.flatMap(([a, b]) => [a, b]));
+      const nos = R.nodes.filter(n => noGrupo(n.id) && (comLaco.has(n.id) || n.id === s.node || grupo));
       const nm = Object.fromEntries(R.nodes.map(n => [n.id, n]));
-      const node = nm[s.node] ? s.node : (nm.geralt ? 'geralt' : R.nodes[0].id);
+      const node = nos.some(n => n.id === s.node) ? s.node : (nos.some(n => n.id === 'geralt') ? 'geralt' : (nos[0] || R.nodes[0]).id);
       const linked = new Set([node]);
-      R.edges.forEach(([a, b]) => { if (a === node) linked.add(b); if (b === node) linked.add(a); });
-      const relEdges = R.edges.filter(([a, b]) => !auto || a === node || b === node || R.forte(a, b)).map(([a, b, t]) => {
+      arestas.forEach(([a, b]) => { if (a === node) linked.add(b); if (b === node) linked.add(a); });
+      // Na rede automática, só aparecem as ligações da pessoa escolhida, as fortes e as que têm tipo definido.
+      const relEdges = arestas.filter(([a, b, t]) => !auto || a === node || b === node || R.forte(a, b) || RLx.tipos[t]).map(([a, b, t]) => {
         const on = a === node || b === node;
-        return { x1: nm[a].x + '%', y1: nm[a].y + '%', x2: nm[b].x + '%', y2: nm[b].y + '%', color: R.types[t].color, w: on ? 2.5 : 1, op: on ? 1 : (auto ? 0.12 : 0.2) };
+        return { x1: nm[a].x + '%', y1: nm[a].y + '%', x2: nm[b].x + '%', y2: nm[b].y + '%', color: R.types[t].color, w: on ? 2.5 : 1, op: on ? 1 : (auto ? 0.15 : 0.22) };
       });
-      const relNodes = R.nodes.map(n => {
+      const relNodes = nos.map(n => {
         const sel = n.id === node, near = linked.has(n.id);
-        return { n: n.n, left: n.x + '%', top: n.y + '%', bg: sel ? '#1E1710' : '#FBF8F1', fg: sel ? '#FBF8F1' : '#1E1710', border: sel ? '#1E1710' : near ? '#8C2A1B' : '#DCCFB3', op: near ? 1 : (auto ? 0.45 : 0.55), fs: mobile ? (auto ? '11px' : '13px') : (sel ? '19px' : (auto ? '13px' : '16px')), select: () => this.setState({ node: n.id }) };
+        return { n: n.n, left: n.x + '%', top: n.y + '%', bg: sel ? '#1E1710' : '#FBF8F1', fg: sel ? '#FBF8F1' : '#1E1710', border: sel ? '#1E1710' : near ? '#8C2A1B' : '#DCCFB3', op: near ? 1 : 0.5, fs: sel ? '16px' : '13px', select: () => this.setState({ node: n.id }) };
       });
       const relSel = {
         n: nm[node].full || nm[node].n, open: () => this.open(node),
-        list: R.edges.filter(([a, b]) => a === node || b === node).sort((x, y) => (y[4] || 0) - (x[4] || 0)).map(([a, b, t, l]) => {
+        list: arestas.filter(([a, b]) => a === node || b === node).sort((x, y) => (y[4] || 0) - (x[4] || 0)).map(([a, b, t, l, , muda]) => {
           const o = a === node ? b : a;
-          return { other: nm[o].full || nm[o].n, type: R.types[t].label, color: R.types[t].color, label: l, select: () => this.setState({ node: o }) };
+          return { other: nm[o].full || nm[o].n, type: R.types[t].label, color: R.types[t].color, label: l, muda: muda || '', temMuda: !!muda, select: () => this.setState({ node: o }) };
         })
       };
+      const usadosT = new Set(R.edges.map(e => e[2]));
+      const relTipoOpts = Object.entries(R.types).filter(([k]) => usadosT.has(k)).map(([k, v]) => {
+        const on = !tiposOff.has(k);
+        return { label: v.label, cor: v.color, bd: on ? v.color : '#DCCFB3', bg: on ? '#FBF8F1' : 'transparent', op: on ? '1' : '.45',
+          toggle: () => this.setState(st => { const off = new Set(st.relTiposOff || []); off.has(k) ? off.delete(k) : off.add(k); return { relTiposOff: [...off] }; }) };
+      });
+      const relGrupoOpts = [[null, 'Todos'], ...Object.entries(RLx.grupos).map(([k, g]) => [k, g.label])].map(([k, label]) => {
+        const on = (s.relGrupo || null) === k;
+        return { label, bg: on ? '#1E1710' : '#FBF8F1', fg: on ? '#F4EEE1' : '#1E1710', bd: on ? '#1E1710' : '#DCCFB3', select: () => this.setState({ relGrupo: k }) };
+      });
       const relModes = [['curado', 'Laços principais'], ['auto', 'Rede do codex'], ['conexoes', 'Conexões']].map(([id, label]) => ({ label, bg: s.relMode === id ? '#1E1710' : 'transparent', fg: s.relMode === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ relMode: id }) }));
 
       // Conexões: dois verbetes, o caminho mais curto entre eles e o que têm em comum.
@@ -1017,9 +1061,9 @@
         quiz, quizTem: !!qq, quizVazio: !qq, quizModes, quizStart: () => this.quizIr(qMode, true), quizNext: () => this.quizIr(qMode, false),
         quizPlacar: qz ? qz.acertos + ' acertos em ' + qz.total + (qz.total === 1 ? ' pergunta' : ' perguntas') : '',
         arvoreOpts, arvoreTitulo: arv.titulo, arvoreSub: arv.sub, arvLinhas, arvPessoas, arvLegenda, arvLargura, arvAltura, arvNotas: arv.notas || [],
-        relEdges, relNodes, relSel, relLegend: Object.values(R.types), relAspect: mobile ? '3 / 4' : '16 / 11', relModes,
+        relEdges, relNodes, relSel, relTipoOpts, relGrupoOpts, relAspect: '1 / 1', relModes,
         relGraph: !conexOn, relConex: conexOn, pickers, conex,
-        relModeDesc: conexOn ? 'Escolha dois verbetes: o caminho mais curto entre eles e o que têm em comum.' : auto ? R.nodes.length + ' personagens ligados por citações nos verbetes e por eventos em comum.' : 'Os laços mais importantes da saga, escolhidos à mão.' + (spOn ? ' Atenção: estes laços não são filtrados pelo modo sem spoilers.' : ''),
+        relModeDesc: conexOn ? 'Escolha dois verbetes: o caminho mais curto entre eles e o que têm em comum.' : auto ? R.nodes.length + ' personagens ligados por citações nos verbetes e por eventos em comum.' : (R.nodes.length + ' personagens e ' + R.edges.length + ' laços explicados, escolhidos à mão. Toque num tipo para esconder ou mostrar.') + (spOn ? ' Atenção: estes laços não são filtrados pelo modo sem spoilers.' : ''),
         fontes,
         hasEntry: !!ce, entry, canBack: s.stack.length > 1,
         back: () => this.setState(st => ({ stack: st.stack.slice(0, -1) })),

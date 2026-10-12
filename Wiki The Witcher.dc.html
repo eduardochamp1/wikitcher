@@ -551,13 +551,20 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
         <span style="font-size:16px;color:#4F4231;font-style:italic">{{ relModeDesc }}</span>
       </div>
       <sc-if value="{{ relGraph }}" hint-placeholder-val="{{ true }}">
-      <div style="display:flex;flex-wrap:wrap;gap:6px 16px;margin:0 0 22px">
-        <sc-for list="{{ relLegend }}" as="lg" hint-placeholder-count="6">
-          <span style="display:flex;align-items:center;gap:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#33281C"><span style="width:18px;height:3px;border-radius:2px;background:{{ lg.color }}"></span>{{ lg.label }}</span>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 10px">
+        <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#4F4231;margin-right:4px">Grupo</span>
+        <sc-for list="{{ relGrupoOpts }}" as="rg" hint-placeholder-count="5">
+          <button onClick="{{ rg.select }}" style="padding:4px 11px;cursor:pointer;border:1px solid {{ rg.bd }};background:{{ rg.bg }};color:{{ rg.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:12px;border-radius:999px">{{ rg.label }}</button>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin:0 0 22px">
+        <sc-for list="{{ relTipoOpts }}" as="lg" hint-placeholder-count="6">
+          <button onClick="{{ lg.toggle }}" title="Mostrar ou esconder este tipo de laço" style="display:flex;align-items:center;gap:6px;padding:4px 10px;cursor:pointer;border:1px solid {{ lg.bd }};background:{{ lg.bg }};border-radius:999px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#33281C;opacity:{{ lg.op }}"><span style="width:18px;height:3px;border-radius:2px;background:{{ lg.cor }}"></span>{{ lg.label }}</button>
         </sc-for>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start">
-        <div style="flex:1 1 560px;min-width:0;position:relative;aspect-ratio:{{ relAspect }};background:#FBF8F1;border:1px solid #DCCFB3;border-radius:10px">
+        <div style="flex:1 1 560px;min-width:0;overflow-x:auto;border-radius:10px">
+        <div style="min-width:560px;position:relative;aspect-ratio:{{ relAspect }};background:#FBF8F1;border:1px solid #DCCFB3;border-radius:10px">
           <svg width="100%" height="100%" style="position:absolute;inset:0;overflow:visible">
             <sc-for list="{{ relEdges }}" as="ed" hint-placeholder-count="0">
               <line x1="{{ ed.x1 }}" y1="{{ ed.y1 }}" x2="{{ ed.x2 }}" y2="{{ ed.y2 }}" style="stroke:{{ ed.color }};stroke-width:{{ ed.w }};stroke-opacity:{{ ed.op }}"></line>
@@ -567,6 +574,7 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
             <button onClick="{{ nd.select }}" style="position:absolute;left:{{ nd.left }};top:{{ nd.top }};transform:translate(-50%,-50%);padding:5px 11px;cursor:pointer;background:{{ nd.bg }};color:{{ nd.fg }};border:1px solid {{ nd.border }};border-radius:999px;font-family:'IM Fell English',serif;font-size:{{ nd.fs }};white-space:nowrap;opacity:{{ nd.op }}">{{ nd.n }}</button>
           </sc-for>
         </div>
+        </div>
         <aside style="flex:1 1 280px;min-width:0;max-width:400px;display:flex;flex-direction:column;gap:6px">
           <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8C2A1B">Laços de</span>
           <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:34px;line-height:1.05;margin:0 0 4px">{{ relSel.n }}</h2>
@@ -575,6 +583,7 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
             <button onClick="{{ rl.select }}" style="display:flex;flex-direction:column;gap:3px;text-align:left;background:none;border:none;border-top:1px solid #E1D5BB;padding:10px 0;cursor:pointer">
               <span style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:3px;border-radius:2px;background:{{ rl.color }}"></span><span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:{{ rl.color }}">{{ rl.type }}</span><span style="font-family:'IM Fell English',serif;font-size:19px;color:#1E1710">{{ rl.other }}</span></span>
               <span style="font-size:16px;color:#33281C;line-height:1.4">{{ rl.label }}</span>
+              <sc-if value="{{ rl.temMuda }}" hint-placeholder-val="{{ false }}"><span style="font-size:15px;color:#4F4231;line-height:1.4;font-style:italic;padding-left:10px;border-left:2px solid #DCCFB3">{{ rl.muda }}</span></sc-if>
             </button>
           </sc-for>
         </aside>

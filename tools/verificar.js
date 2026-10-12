@@ -30,8 +30,13 @@ D.events.forEach(e => {
 });
 app.WITCHER_GLOSSARIO.concat(W.glossario).forEach(g => verb(g.e, 'Glossário (' + g.k.join('/') + ')'));
 D.places.forEach(p => verb(p.e, 'Lugar do mapa ' + p.id));
-D.rels.nodes.forEach(n => verb(n.id, 'Nó de relações'));
-D.rels.edges.forEach(([a, b]) => { verb(a, 'Relação'); verb(b, 'Relação'); });
+X.relacoes.lacos.forEach(([a, b, t]) => {
+  verb(a, 'Relação'); verb(b, 'Relação');
+  if (!X.relacoes.tipos[t]) erro('Relação ' + a + '–' + b + ' com tipo desconhecido: ' + t);
+});
+Object.entries(X.relacoes.grupos).forEach(([k, g]) => g.membros.forEach(id => verb(id, 'Grupo ' + k)));
+const paresRel = X.relacoes.lacos.map(([a, b]) => [a, b].sort().join('|'));
+paresRel.forEach((p, i) => { if (paresRel.indexOf(p) !== i) erro('Relação repetida: ' + p); });
 D.tree.forEach(g => { verb(g.p.id, 'Linhagem'); verb(g.sp && g.sp.id, 'Linhagem'); });
 X.arvores.forEach(a => {
   const pid = new Set(a.pessoas.map(p => p.id));

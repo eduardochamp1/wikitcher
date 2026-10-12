@@ -110,6 +110,15 @@ const TESTES = [
     await clicar('Nilfgaard');
     await esperar(() => texto().includes('A casa var Emreis'), 3000, 'árvore de Nilfgaard não apareceu');
   }],
+  ['Relações filtram por grupo e mostram a mudança dos laços', async () => {
+    await abrir('#/rel');
+    const nos = () => doc.querySelectorAll('main div[style*="aspect-ratio"] > button').length;
+    confere(nos() >= 40, 'poucos personagens nos laços principais (' + nos() + ')');
+    await clicar('A Hansa');
+    confere(nos() === 6, 'o grupo da Hansa deveria ter 6 pessoas (' + nos() + ')');
+    await clicar('Todos'); await clicar('Cahir');
+    await esperar(() => /Começa como/.test(doc.querySelector('main aside').innerText), 3000, 'a mudança do laço com Cahir não apareceu');
+  }],
   ['Conexões encontra o caminho entre dois verbetes', async () => {
     await abrir('#/rel');
     await clicar('Conexões');
