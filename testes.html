@@ -50,6 +50,20 @@ const digitar = async (input, v) => {
 const confere = (cond, msg) => { if (!cond) throw new Error(msg); };
 
 const TESTES = [
+  ['Quem chega pela primeira vez vê as boas-vindas e escolhe um caminho', async () => {
+    await abrir('');
+    await esperar(() => /Por onde você quer começar/.test(texto()), 5000, 'a página de boas-vindas não apareceu');
+    const b = [...doc.querySelectorAll('main button')].find(x => x.innerText.trim().startsWith('Li os livros'));
+    b.click(); await sleep(500);
+    await esperar(() => frame.contentWindow.location.hash === '#/tempo', 3000, 'o caminho não levou à Linha do Tempo');
+    const l = JSON.parse(frame.contentWindow.localStorage.getItem('witcher-leitura'));
+    confere(l.on && l.lidos.includes('a-senhora-do-lago') && !l.lidos.includes('the-witcher-3'), 'o caminho "Li os livros" não configurou a leitura');
+  }],
+  ['A busca encontra pelo nome original', async () => {
+    await abrir('#/tempo');
+    await digitar(doc.querySelector('header input'), 'Beliefs of Skellige');
+    await esperar(() => [...doc.querySelectorAll('header button')].some(b => /Crenças de Skellige/.test(b.innerText)), 3000, 'o título original não encontrou o escrito');
+  }],
   ['A linha do tempo carrega com todos os eventos', async () => {
     await abrir('#/tempo');
     await esperar(() => texto().includes('Da Conjunção das Esferas'), 6000, 'título não apareceu');

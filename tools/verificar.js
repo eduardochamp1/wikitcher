@@ -120,6 +120,13 @@ if (mestra) mestra.corpo.split('\n').forEach(l => {
   assuntos.forEach(lk => { const id = idNota(lk); if (id && ids.has(id)) confere('Linha do Tempo Mestra, "' + limpar(c[1]).slice(0, 50) + '…"', c[0], id); });
 });
 
+// Código: dois métodos com o mesmo nome na classe do app fazem o segundo sobrescrever o primeiro, sem erro.
+{
+  const codigo = require('fs').readFileSync(require('path').join(__dirname, '..', 'witcher-app.js'), 'utf8');
+  const nomes = [...codigo.matchAll(/^    (?:static (?:get )?)?([a-zA-Z_]\w*)\s*\([^)]*\)\s*\{/gm)].map(m => m[1]);
+  nomes.filter((x, i) => nomes.indexOf(x) !== i).forEach(x => erro('witcher-app.js: método definido duas vezes: ' + x));
+}
+
 // Relatório.
 console.log('Verbetes: ' + E.length + ' · eventos: ' + D.events.length + ' · notas da wiki: ' + notas.length);
 if (avisos.length) { console.log('\nAvisos (' + avisos.length + '):'); avisos.forEach(a => console.log('  - ' + a)); }

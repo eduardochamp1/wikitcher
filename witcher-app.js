@@ -18,7 +18,7 @@
   ICONS.obra = BOOK;
   const PAD = "M4.5 5h7a3 3 0 0 1 3 3v1.5a2.5 2.5 0 0 1-4.6 1.3L9 9.5H7l-.9 1.3A2.5 2.5 0 0 1 1.5 9.5V8a3 3 0 0 1 3-3ZM5 7v2M4 8h2M11 7.5h.01M12 9h.01";
 
-  const VIEWS = [['tempo', 'Linha do Tempo'], ['comp', 'Compêndio'], ['mapa', 'Mapa'], ['linhagem', 'Linhagem'], ['rel', 'Relações'], ['contraste', 'Livros × Jogos'], ['leitura', 'Leitura'], ['quiz', 'Quiz'], ['fontes', 'Fontes']];
+  const VIEWS = [['inicio', 'Início'], ['tempo', 'Linha do Tempo'], ['comp', 'Compêndio'], ['mapa', 'Mapa'], ['linhagem', 'Linhagem'], ['rel', 'Relações'], ['contraste', 'Livros × Jogos'], ['leitura', 'Leitura'], ['quiz', 'Quiz'], ['fontes', 'Fontes']];
   const LS_KEY = 'witcher-leitura';
   function lerLeitura() {
     try { const v = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (v && Array.isArray(v.lidos)) return { on: !!v.on, lidos: v.lidos, partes: v.partes && typeof v.partes === 'object' ? v.partes : {} }; } catch (e) {}
@@ -56,7 +56,8 @@
     applyHash() {
       const h = this.parseHash();
       this.popping = true; this.hashReady = true;
-      if (!h) { this.setState({ stack: [] }); return; }
+      // Sem endereço: quem nunca escolheu um caminho vê a página de boas-vindas.
+      if (!h) { this.setState(s => ({ stack: [], view: s.prefs && s.prefs.visitou ? 'tempo' : 'inicio' })); return; }
       if (h.ev) { const ev = window.WITCHER_TEMPO.events.find(e => e.id === h.ev); if (ev) { this.goEvent(ev); return; } }
       this.setState(s => {
         let stack = [];
@@ -186,7 +187,23 @@
         clearTimeout(this.ft); this.ft = setTimeout(() => this.setState({ flash: null }), 2200);
       });
     }
-    go(view) { this.setState({ view, searchOpen: false, tip: null, evLink: null, stack: [] }); window.scrollTo({ top: 0 }); }
+    go(view) {
+      this.setState({ view, searchOpen: false, tip: null, evLink: null, stack: [] }); window.scrollTo({ top: 0 });
+      if (view !== 'inicio' && this.state.prefs && !this.state.prefs.visitou) this.savePrefs(() => ({ visitou: true }));
+    }
+    // Caminhos da página de boas-vindas: cada um já configura o modo sem spoilers e a leitura.
+    escolherCaminho(tipo) {
+      const LE = window.WITCHER_EXTRAS.leitura;
+      const livros = LE.filter(o => o.tipo === 'livro').map(o => o.id);
+      const conf = {
+        novato: { on: true, lidos: [], partes: {}, ir: 'leitura' },
+        livros: { on: true, lidos: livros, partes: {}, ir: 'tempo' },
+        tudo: { on: false, lidos: LE.map(o => o.id), partes: {}, ir: 'tempo' },
+        escolher: { on: true, lidos: this.state.leitura.lidos, partes: this.state.leitura.partes || {}, ir: 'leitura' }
+      }[tipo];
+      this.saveLeitura({ on: conf.on, lidos: conf.lidos, partes: conf.partes });
+      this.go(conf.ir);
+    }
 
     // Busca tolerante: prefixo e trecho valem mais; palavras com um ou dois erros de digitação ainda contam.
     lev(a, b) {
@@ -271,6 +288,14 @@
         if (!mexeu) break;
       }
       return nodes;
+    }
+    // Outros nomes de cada verbete, para a busca: nomes e apelidos das notas da wiki e o título original dos escritos.
+    outrosNomes(E) {
+      if (this._outros) return this._outros;
+      const o = {};
+      Object.entries((window.WITCHER_WIKI || {}).notas || {}).forEach(([nome, id]) => (o[id] = o[id] || []).push(nome));
+      E.forEach(e => (e.f || []).forEach(([k, v]) => { if (k === 'Título original') (o[e.id] = o[e.id] || []).push(v); }));
+      return (this._outros = o);
     }
     nomeCurto(id, E) {
       const X = window.WITCHER_EXTRAS.relacoes, e = E.find(x => x.id === id);
@@ -603,7 +628,7 @@
         atalhos: [['/', 'Ir para a busca'], ['Esc', 'Fechar verbete, busca ou esta janela'], ['j / k', 'Próximo e anterior evento na Linha do Tempo'], ['1 – 9', 'Trocar de aba (na ordem do menu)'], ['f', 'Favoritar o verbete aberto'], ['?', 'Mostrar ou esconder estes atalhos']].map(([k, d]) => ({ k, d })),
         navTabs, qFilters, q: s.q, loading: !s.ready,
         headerRef: (el) => { this.header = el; },
-        goTempo: () => this.go('tempo'), goLeitura: () => this.go('leitura'),
+        goTempo: () => this.go('tempo'), goLeitura: () => this.go('leitura'), goInicio: () => this.go('inicio'), isInicio: s.view === 'inicio',
         onQ: (e) => this.setState({ q: e.target.value, searchOpen: true }),
         openSearch: () => this.setState({ searchOpen: true }),
         closeSearch: () => setTimeout(() => this.setState({ searchOpen: false }), 250),
@@ -653,7 +678,8 @@
       this.hidden = hidden;
       const Ev = E.filter(e => !hidden.has(e.id));
       const fechouSaga = limTudo >= 1268.99, jogouAlgo = limJogo > -Infinity;
-      const ultimaLida = LE.filter(o => lidos.has(o.id)).slice(-1)[0];
+      // A obra de referência do selo: a mais avançada na história entre as lidas (corte de spoiler), não a última da lista.
+      const ultimaLida = LE.filter(o => lidos.has(o.id) && o.fim != null).sort((a, b) => a.fim - b.fim).slice(-1)[0] || LE.filter(o => lidos.has(o.id)).slice(-1)[0];
 
       const chip = (id) => { const e = em[id]; if (!e || hidden.has(id)) return null; const c = catMap[e.c]; return { label: e.t, color: c.color, icon: ICONS[e.c], open: () => this.open(id) }; };
       const srcBadge = (game) => game
@@ -833,7 +859,13 @@
       if (qn.length >= 2) {
         const rank = (list, f) => list.map(x => [x, f(x)]).filter(p => p[1] > 0).sort((a, b) => b[1] - a[1]).map(p => p[0]);
         if (s.qf !== 'eventos') {
-          const er = rank(Ev, e => Math.max(this.score(qn, e.t), 0.6 * this.score(qn, e.ep)) || (this.norm(e.s + ' ' + e.b.map(this.blockText).join(' ')).includes(qn) ? 10 : 0));
+          // Também pelos outros nomes: apelidos das notas (nomes em inglês dos jogos) e título original dos escritos.
+          // Escritos do jogo valem um pouco menos, para não passar à frente dos verbetes centrais.
+          const outros = this.outrosNomes(E);
+          const er = rank(Ev, e => {
+            const sc = Math.max(this.score(qn, e.t), 0.6 * this.score(qn, e.ep), ...(outros[e.id] || []).map(n => 0.9 * this.score(qn, n))) || (this.norm(e.s + ' ' + e.b.map(this.blockText).join(' ')).includes(qn) ? 10 : 0);
+            return e.c === 'escrito' ? sc * 0.7 : sc;
+          });
           results = er.slice(0, s.qf === 'verbetes' ? 16 : 10).map(e => ({ kind: catMap[e.c].label, color: catMap[e.c].color, label: e.t, sub: e.ep, open: () => this.setState({ q: '' }, () => this.open(e.id)) }));
         }
         if (s.qf !== 'verbetes') {
@@ -1077,7 +1109,14 @@
           title: ce.t, ep: ce.ep, s: oculto ? 'Este verbete fala de acontecimentos que vêm depois do ponto em que você está na leitura.' : ce.s, cat: c.label, color: c.color, icon: ICONS[ce.c],
           oculto, reveal: () => this.setState(st => ({ reveal: { ...st.reveal, [ce.id]: true } })),
           srcs: (ce.fo || ['livros']).map(x => x === 'jogos' ? { label: 'Jogos', bg: '#3A4150', fg: '#F4EEE1', bd: '#3A4150', icon: PAD } : x === 'livros' ? { label: 'Livros', bg: 'transparent', fg: '#1E1710', bd: '#9C8B6A', icon: BOOK } : x === 'fandom' ? { label: 'Witcher Wiki', bg: '#EDE3EA', fg: '#6E4A63', bd: '#D6BFD0', icon: ICONS.escrito } : { label: 'Material próprio', bg: '#F3E6C6', fg: '#7A520C', bd: '#E0C88E', icon: ICONS.lenda }),
-          facts: oculto ? [] : facts.map(f => { const u = /(https?:\/\/\S+)/.exec(f.v); return { ...f, url: u ? u[1] : '', hasUrl: !!u, semUrl: !u, vTxt: u ? f.v.replace(u[1], '').replace(/[:\s]+$/, '') : f.v }; }), hasFacts: !oculto && facts.length > 0,
+          // Modo sem spoilers: até o fim da saga, fatos que entregam a história (pais, morte, cônjuge, filhos, disfarce,
+          // resultado) ficam recolhidos e abrem com um clique.
+          facts: oculto ? [] : facts.map((f, i) => {
+            const u = /(https?:\/\/\S+)/.exec(f.v), chave = 'f:' + ce.id + ':' + i;
+            const sens = spOn && !fechouSaga && !s.reveal[chave] && !['obra', 'escrito', 'besta'].includes(ce.c) && /^(Morte|Pais|Pai|Mãe|Esposa|Esposo|Marido|Filh|Disfarce|Resultado|Destino)/i.test(f.k);
+            return { ...f, url: u ? u[1] : '', hasUrl: !!u && !sens, semUrl: !u && !sens, vTxt: u ? f.v.replace(u[1], '').replace(/[:\s]+$/, '') : f.v,
+              sens, revelar: () => this.setState(st => ({ reveal: { ...st.reveal, [chave]: true } })) };
+          }), hasFacts: !oculto && facts.length > 0,
           escritos: oculto ? [] : escList, hasEscritos: !oculto && escList.length > 0,
           paras: oculto ? [] : paras,
           events: oculto ? [] : evs.map(e => {
@@ -1223,6 +1262,10 @@
         ...base,
         isTempo: s.view === 'tempo', isComp: s.view === 'comp', isMapa: s.view === 'mapa', isLinhagem: s.view === 'linhagem', isRel: s.view === 'rel', isFontes: s.view === 'fontes',
         isContraste: s.view === 'contraste', isLeitura: s.view === 'leitura', isQuiz: s.view === 'quiz',
+        inicioCaminhos: [['novato', 'Nunca li nem joguei', 'Começo do zero. Liga o modo sem spoilers e leva ao guia de leitura, para você marcar o que for lendo.'], ['livros', 'Li os livros', 'Libera toda a saga de Sapkowski e esconde o que só existe nos jogos.'], ['tudo', 'Conheço livros e jogos', 'Mostra tudo, sem esconder nada.']].map(([id, titulo, d]) => ({ titulo, d, ir: () => this.escolherCaminho(id) })),
+        inicioEscolher: () => this.escolherCaminho('escolher'),
+        inicioAbas: [['tempo', 'Linha do Tempo', 'A história do mundo em nove eras, da Conjunção ao fim dos tempos.'], ['comp', 'Compêndio', 'Personagens, lugares, povos, deuses, criaturas e os escritos do jogo.'], ['mapa', 'Mapa', 'Reinos, cidades, jornadas e quem domina o quê em cada ano.'], ['linhagem', 'Linhagem', 'As árvores do Sangue Antigo, de Cintra e de Nilfgaard.'], ['rel', 'Relações', 'Quem ama, ensina, protege ou persegue quem.'], ['contraste', 'Livros × Jogos', 'Onde a história dos jogos se separa da dos livros.'], ['leitura', 'Leitura', 'A ordem de leitura e o controle de spoilers.'], ['quiz', 'Quiz', 'Rodadas de perguntas e o contrato de bruxo.']].map(([id, titulo, d]) => ({ titulo, d, ir: () => this.go(id) })),
+        inicioPessoas: ['geralt', 'yennefer', 'ciri', 'jaskier', 'triss', 'vesemir'].map(chip).filter(Boolean),
         erasView, cur, mini, ruler, srcOpts, catChips, evCount: evF.length,
         escOpts, escOn: !!escR, escBandas, escTicks, escPontos, escAltura, escNota, escSel, escTemSel: !!escE,
         hasCatFilter: s.cats.length > 0 || s.src !== 'all', clearCats: () => this.setState({ cats: [], src: 'all' }),
