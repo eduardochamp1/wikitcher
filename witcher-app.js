@@ -328,38 +328,122 @@
       return v;
     }
     // Quiz: as perguntas saem dos dados visíveis (respeitam o modo sem spoilers) guardados em this.qdata.
-    sortear(a, n) { const c = a.slice(); for (let i = c.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [c[i], c[j]] = [c[j], c[i]]; } return c.slice(0, n); }
-    novaPergunta(mode) {
-      const Q = this.qdata; if (!Q) return null;
-      const montar = (certo, outros, extra) => {
-        const opts = this.sortear([certo, ...this.sortear(outros.filter(o => o !== certo), 3)], 4);
-        return { ...extra, opts, answer: opts.indexOf(certo) };
-      };
-      if (mode === 'contrato') {
-        const b = this.sortear(Q.bestas, 1)[0];
-        const esconde = (t) => b.t.split(/\s+/).concat(b.t.replace(/s$/, '')).filter(w => w.length > 3).reduce((x, w) => x.replace(new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '▇▇▇'), t);
-        const clues = [esconde(b.s)];
-        (Q.fichas[b.id] || []).forEach(([k, v]) => clues.push(k + ': ' + v));
-        (b.f || []).forEach(([k, v]) => clues.push(k + ': ' + esconde(v)));
-        if (b.ep && b.ep !== 'Criatura') clues.push('Conhecido como: ' + esconde(b.ep));
-        return montar(b.t, Q.bestas.map(x => x.t), { kind: 'Contrato de bruxo', text: 'Que criatura é esta?', clues, ref: { tipo: 'verbete', id: b.id } });
-      }
-      const tipos = ['data', 'quem', 'quem'].concat(Q.gloss.length >= 4 ? ['termo'] : []);
-      const t = this.sortear(tipos, 1)[0];
-      if (t === 'data') {
-        const e = this.sortear(Q.datas, 1)[0];
-        return montar(e.d, [...new Set(Q.datas.filter(x => Math.floor(x.s) !== Math.floor(e.s)).map(x => x.d))], { kind: 'Linha do tempo', text: 'Quando aconteceu?', subject: e.t, ref: { tipo: 'evento', id: e.id } });
-      }
-      if (t === 'termo') {
-        const g = this.sortear(Q.gloss, 1)[0];
-        return montar(g.d, Q.gloss.map(x => x.d), { kind: 'Glossário', text: 'O que é “' + g.title + '”?', ref: null });
-      }
-      const p = this.sortear(Q.pessoas, 1)[0];
-      return montar(p.t, Q.pessoas.map(x => x.t), { kind: 'Personagens', text: 'Quem é conhecido como…', subject: '“' + p.ep + '”', ref: { tipo: 'verbete', id: p.id } });
+    // this.rng permite sortear com semente (pergunta do dia); fora disso é Math.random.
+    sortear(a, n) { const r = this.rng || Math.random, c = a.slice(); for (let i = c.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [c[i], c[j]] = [c[j], c[i]]; } return c.slice(0, n); }
+    um(a) { return this.sortear(a, 1)[0]; }
+    // Tipos de pergunta: temas em que entram e nível mínimo (1 fácil, 2 médio, 3 difícil).
+    static get TIPOS_QUIZ() {
+      return [
+        { id: 'quem', temas: ['personagens', 'livros'], nivel: 1 }, { id: 'categoria', temas: ['mundo'], nivel: 1 },
+        { id: 'divergencia', temas: ['jogos', 'livros'], nivel: 1 }, { id: 'ordem', temas: ['historia', 'livros'], nivel: 1 },
+        { id: 'lugar', temas: ['mundo'], nivel: 1 }, { id: 'obra', temas: ['livros', 'jogos', 'historia'], nivel: 2 },
+        { id: 'data', temas: ['historia'], nivel: 2 }, { id: 'laco', temas: ['personagens'], nivel: 2 },
+        { id: 'termo', temas: ['mundo'], nivel: 2 }, { id: 'escrito', temas: ['jogos'], nivel: 3 }, { id: 'linhagem', temas: ['personagens'], nivel: 3 }
+      ];
     }
-    quizIr(mode, zerar) {
-      const q = this.novaPergunta(mode);
-      this.setState(st => ({ quiz: { mode, q, picked: null, acertos: zerar || !st.quiz ? 0 : st.quiz.acertos, total: zerar || !st.quiz ? 0 : st.quiz.total } }));
+    novaPergunta(mode, nivel, tema, usadas) {
+      const Q = this.qdata; if (!Q) return null;
+      const N = { facil: 1, medio: 2, dificil: 3 }[nivel || 'medio'] || 2, dificil = N === 3;
+      const esconde = (texto, nome) => String(nome).split(/[\s,]+/).filter(w => w.length > 3).reduce((x, w) => x.replace(new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '▇▇▇'), texto);
+      const montar = (certo, outros, extra, n = 4) => {
+        const opts = this.sortear([certo, ...this.sortear([...new Set(outros)].filter(o => o && o !== certo), n - 1)], n);
+        return opts.length >= 2 ? { ...extra, opts, answer: opts.indexOf(certo) } : null;
+      };
+      const perto = (lista, alvo, chave) => lista.slice().sort((a, b) => Math.abs(chave(a) - chave(alvo)) - Math.abs(chave(b) - chave(alvo)));
+      if (mode === 'contrato') {
+        const b = this.um(Q.bestas); if (!b) return null;
+        const clues = [esconde(b.s, b.t)];
+        (Q.fichas[b.id] || []).forEach(([k, v]) => clues.push(k + ': ' + esconde(v, b.t)));
+        (b.f || []).forEach(([k, v]) => clues.push(k + ': ' + esconde(v, b.t)));
+        if (b.ep && b.ep !== 'Criatura') clues.push('Conhecido como: ' + esconde(b.ep, b.t));
+        return montar(b.t, Q.bestas.map(x => x.t), { kind: 'Contrato de bruxo', text: 'Que criatura é esta?', clues, chave: 'b:' + b.id, ref: { tipo: 'verbete', id: b.id } });
+      }
+      const G = {
+        quem: () => { const p = this.um(Q.pessoas); return p && montar(p.t, Q.pessoas.map(x => x.t), { kind: 'Personagens', text: 'Quem é conhecido como…', subject: '“' + p.ep + '”', chave: 'p:' + p.id, ref: { tipo: 'verbete', id: p.id } }); },
+        categoria: () => {
+          const cats = Object.keys(Q.porCat).filter(c => Q.porCat[c].length); const c = this.um(cats); if (!c) return null;
+          const certo = this.um(Q.porCat[c]), outros = cats.filter(x => x !== c).map(x => this.um(Q.porCat[x]).t);
+          return montar(certo.t, outros, { kind: 'Compêndio', text: 'Qual destes está em “' + Q.catNome[c] + '”?', chave: 'c:' + certo.id, ref: { tipo: 'verbete', id: certo.id } });
+        },
+        divergencia: () => {
+          const d = this.um(Q.divs); if (!d) return null; const lado = (this.rng || Math.random)() < 0.5 ? 'livros' : 'jogos';
+          const opts = ['Nos livros', 'Nos jogos'];
+          return { kind: 'Livros × Jogos', text: d.tema + ': isso acontece…', subject: d[lado], opts, answer: lado === 'livros' ? 0 : 1, chave: 'd:' + d.id + lado, ref: null };
+        },
+        ordem: () => {
+          const a = this.um(Q.datas); if (!a) return null;
+          const cand = Q.datas.filter(x => Math.floor(x.s) !== Math.floor(a.s) && (!dificil || Math.abs(x.s - a.s) < 15));
+          const b = this.um(cand.length ? cand : Q.datas.filter(x => Math.floor(x.s) !== Math.floor(a.s))); if (!b) return null;
+          const [p, s2] = a.s < b.s ? [a, b] : [b, a], opts = this.sortear([p.t, s2.t], 2);
+          return { kind: 'Linha do tempo', text: 'O que aconteceu primeiro?', opts, answer: opts.indexOf(p.t), chave: 'o:' + p.id + s2.id, ref: { tipo: 'evento', id: p.id } };
+        },
+        lugar: () => { const l = this.um(Q.lugares); return l && montar(l.n, Q.lugares.map(x => x.n), { kind: 'Mapa', text: 'Que lugar é este?', subject: esconde(l.d, l.n), chave: 'l:' + l.id, ref: { tipo: 'verbete', id: l.e } }); },
+        obra: () => {
+          const e = this.um(Q.comObra); if (!e) return null; const ob = this.obraDe(e);
+          const outras = dificil ? perto(Q.obras, ob, o => Q.obras.indexOf(o)).slice(1, 6) : Q.obras;
+          return montar(ob.n, outras.map(o => o.n), { kind: 'Obras', text: 'Em que livro ou jogo isso acontece?', subject: e.t, chave: 'w:' + e.id, ref: { tipo: 'evento', id: e.id } });
+        },
+        data: () => {
+          const e = this.um(Q.datas); if (!e) return null;
+          const outros = (dificil ? perto(Q.datas, e, x => x.s) : Q.datas).filter(x => Math.floor(x.s) !== Math.floor(e.s)).map(x => x.d);
+          return montar(e.d, dificil ? outros.slice(0, 8) : outros, { kind: 'Linha do tempo', text: 'Quando aconteceu?', subject: e.t, chave: 'e:' + e.id, ref: { tipo: 'evento', id: e.id } });
+        },
+        laco: () => { const l = this.um(Q.lacos); return l && montar(l.label, Q.lacos.filter(x => x !== l).map(x => x.label), { kind: 'Relações', text: 'Qual é o laço entre ' + l.a + ' e ' + l.b + '?', chave: 'r:' + l.a + l.b, ref: { tipo: 'verbete', id: l.ida } }); },
+        termo: () => { const g = this.um(Q.gloss); return g && montar(g.d, Q.gloss.map(x => x.d), { kind: 'Glossário', text: 'O que é “' + g.title + '”?', chave: 'g:' + g.title, ref: null }); },
+        escrito: () => {
+          const e = this.um(Q.escritos); if (!e) return null; const mesmo = Q.escritos.filter(x => x.tm === e.tm && x !== e);
+          return montar(e.t, (mesmo.length >= 3 ? mesmo : Q.escritos).map(x => x.t), { kind: 'Escritos do jogo', text: 'De qual escrito vem este resumo?', subject: esconde(e.s, e.t), chave: 's:' + e.id, ref: { tipo: 'verbete', id: e.id } });
+        },
+        linhagem: () => {
+          const f = this.um(Q.filhos); if (!f) return null;
+          return montar(f.filho, f.outros, { kind: 'Linhagem', text: 'Quem é filho ou filha de ' + f.pais + '?', chave: 'f:' + f.filho + f.pais, ref: f.ref ? { tipo: 'verbete', id: f.ref } : null });
+        }
+      };
+      const tipos = WitcherApp.TIPOS_QUIZ.filter(t => t.nivel <= N && (!tema || tema === 'tudo' || t.temas.includes(tema)));
+      for (let tent = 0; tent < 25; tent++) {
+        const t = this.um(tipos); if (!t) return null;
+        const q = G[t.id]();
+        if (q && !(usadas || []).includes(q.chave)) return q;
+      }
+      return null;
+    }
+    // Rodada de 10 perguntas, contrato de bruxo ou pergunta do dia (sorteada com a data como semente).
+    quizIr(mode, cfg) {
+      const st = this.state, atual = st.quiz || {};
+      const nivel = (cfg && cfg.nivel) || atual.nivel || 'medio', tema = (cfg && cfg.tema) || atual.tema || 'tudo';
+      if (mode === 'diaria') {
+        const hoje = new Date(), semente = hoje.getFullYear() * 10000 + (hoje.getMonth() + 1) * 100 + hoje.getDate();
+        let x = semente; this.rng = () => { x |= 0; x = x + 0x6D2B79F5 | 0; let t = Math.imul(x ^ x >>> 15, 1 | x); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+        const feita = ((st.prefs || {}).quizStats || {}).diaria;
+        if (feita && feita.dia === semente) { this.rng = null; this.setState({ quiz: { mode, nivel, tema, q: null, picked: null, i: 0, total: 1, acertos: 0, erros: [], usadas: [], fim: false, dia: semente } }); return; }
+        const q = this.novaPergunta('perguntas', 'medio', 'tudo', []); this.rng = null;
+        this.setState({ quiz: { mode, nivel, tema, q, picked: null, i: 0, total: 1, acertos: 0, erros: [], usadas: [], fim: false, dia: semente } });
+        return;
+      }
+      const q = this.novaPergunta(mode, nivel, tema, []);
+      this.setState({ quiz: { mode, nivel, tema, q, picked: null, i: 0, total: 10, acertos: 0, erros: [], usadas: q ? [q.chave] : [], fim: false } });
+    }
+    quizResponder(i) {
+      const qz = this.state.quiz; if (!qz || !qz.q || qz.picked != null) return;
+      const certo = i === qz.q.answer, erros = certo ? qz.erros : [...qz.erros, { q: qz.q, escolhida: qz.q.opts[i] }];
+      this.setState({ quiz: { ...qz, picked: i, acertos: qz.acertos + (certo ? 1 : 0), erros } });
+      this.savePrefs(p => {
+        const e = { recorde: {}, seq: 0, melhorSeq: 0, ...(p.quizStats || {}) };
+        e.seq = certo ? e.seq + 1 : 0; e.melhorSeq = Math.max(e.melhorSeq, e.seq);
+        if (qz.mode === 'diaria') e.diaria = { dia: qz.dia, acertou: certo };
+        return { quizStats: e };
+      });
+    }
+    quizProxima() {
+      const qz = this.state.quiz; if (!qz) return;
+      if (qz.i + 1 >= qz.total) {
+        this.setState({ quiz: { ...qz, fim: true } });
+        const chave = qz.mode === 'contrato' ? 'contrato' : qz.nivel + ':' + qz.tema;
+        if (qz.mode !== 'diaria') this.savePrefs(p => { const e = { recorde: {}, seq: 0, melhorSeq: 0, ...(p.quizStats || {}) }; e.recorde = { ...e.recorde, [chave]: Math.max(e.recorde[chave] || 0, qz.acertos) }; return { quizStats: e }; });
+        return;
+      }
+      const q = this.novaPergunta(qz.mode, qz.nivel, qz.tema, qz.usadas);
+      this.setState({ quiz: { ...qz, q, picked: null, i: qz.i + 1, usadas: q ? [...qz.usadas, q.chave] : qz.usadas } });
     }
     // Grafo de todos os verbetes visíveis: ligação quando um cita o outro ou quando aparecem no mesmo evento.
     grafo(Ev, events, hidden) {
@@ -1006,34 +1090,73 @@
         };
       }
 
-      // Quiz.
+      // Quiz: dados de cada tipo de pergunta, só com o que está visível no modo sem spoilers.
       const pessoasQ = Ev.filter(e => e.c === 'personagem' && e.ep && !/^(Personagem|Humano|Humana|Elfo|Elfa)\b/.test(e.ep) && !this.norm(e.ep).includes(this.norm(e.t.split(' ')[0])));
+      const porCat = {};
+      Ev.filter(e => !['escrito', 'obra'].includes(e.c)).forEach(e => (porCat[e.c] = porCat[e.c] || []).push(e));
+      const nomeP = (id) => (em[id] ? this.nomeCurto(id, E) : id);
+      const filhosQ = [];
+      X.arvores.filter(a => !(spOn && a.revela && !lidos.has(a.revela))).forEach(a => {
+        const pes2 = Object.fromEntries(a.pessoas.map(p => [p.id, p]));
+        const ok2 = (p) => !(spOn && ((p.e && hidden.has(p.e)) || (p.oculta && !lidos.has(p.oculta))));
+        a.filhos.filter(([pais, f, t]) => !t && ok2(pes2[f]) && pais.every(id => ok2(pes2[id]))).forEach(([pais, f]) => {
+          const outros = a.pessoas.filter(p => p.id !== f && !pais.includes(p.id) && ok2(p)).map(p => p.n);
+          if (outros.length >= 3) filhosQ.push({ filho: pes2[f].n, pais: pais.map(id => pes2[id].n).join(' e '), outros, ref: pes2[f].e });
+        });
+      });
       this.qdata = {
         pessoas: pessoasQ, bestas: Ev.filter(e => e.c === 'besta'), fichas: X.fichas,
         datas: evOk.filter(e => /\b\d{3,4}\b/.test(e.d) && e.era !== 'fim' && !/incerta/i.test(e.d)),
-        gloss: this.gl.items.filter(it => !it.e && it.d && it.d.length < 140)
+        gloss: this.gl.items.filter(it => !it.e && it.d && it.d.length < 140),
+        porCat, catNome: Object.fromEntries(D.cats.map(c => [c.id, c.label])),
+        divs: spOn && !(fechouSaga && jogouAlgo) ? [] : (X.divergencias || []),
+        lugares: D.places.filter(pl => pl.e && pl.d && em[pl.e] && !hidden.has(pl.e)),
+        comObra: evOk.filter(e => this.obraDe(e)), obras: LE.filter(o => !o.extra),
+        lacos: X.relacoes.lacos.filter(([a, b]) => em[a] && em[b] && !hidden.has(a) && !hidden.has(b)).map(([a, b, , label]) => ({ a: nomeP(a), b: nomeP(b), ida: a, label })),
+        escritos: Ev.filter(e => e.c === 'escrito' && e.s && e.s.length > 40),
+        filhos: filhosQ
       };
-      const qz = s.quiz, qq = qz && qz.q;
+      const qz = s.quiz, qq = qz && qz.q, qst = { recorde: {}, seq: 0, melhorSeq: 0, ...(pr.quizStats || {}) };
       let quiz = {};
-      if (qq) {
+      if (qq && !qz.fim) {
         const answered = qz.picked != null, acertou = answered && qz.picked === qq.answer;
         const refEv = qq.ref && qq.ref.tipo === 'evento' ? evAll.find(e => e.id === qq.ref.id) : null;
         quiz = {
           kind: qq.kind, text: qq.text, subject: qq.subject || '', hasSubject: !!qq.subject, clues: qq.clues || [], hasClues: !!(qq.clues && qq.clues.length),
           answered, feedback: acertou ? 'Acertou!' : 'Era: ' + qq.opts[qq.answer], fbCor: acertou ? '#2F4A1F' : '#8C2A1B',
-          saberLabel: refEv ? 'ver na linha do tempo' : (qq.ref ? 'abrir verbete' : ''),
+          saberLabel: refEv ? 'ver na linha do tempo' : (qq.ref ? 'abrir verbete' : ''), temSaber: !!(refEv || qq.ref),
           saber: () => { if (refEv) this.goEvent(refEv); else if (qq.ref) this.open(qq.ref.id); },
+          proxLabel: qz.i + 1 >= qz.total ? (qz.mode === 'diaria' ? 'Ver resultado' : 'Ver o resultado da rodada') : 'Próxima →',
+          progresso: qz.mode === 'diaria' ? 'Pergunta do dia' : 'Pergunta ' + (qz.i + 1) + ' de ' + qz.total,
+          progPct: Math.round(100 * (qz.i + (answered ? 1 : 0)) / qz.total) + '%',
           opts: qq.opts.map((label, i) => {
             const certo = i === qq.answer, esse = i === qz.picked;
             return { label, cur: answered ? 'default' : 'pointer',
               bd: answered ? (certo ? '#2F4A1F' : esse ? '#8C2A1B' : '#DCCFB3') : '#CDBE9C',
-              bg: answered ? (certo ? '#E3EAD6' : esse ? '#F1E4E6' : '#FBF8F1') : '#FBF8F1', fg: '#1E1710',
-              pick: () => { if (!answered) this.setState(st => ({ quiz: { ...st.quiz, picked: i, total: st.quiz.total + 1, acertos: st.quiz.acertos + (certo ? 1 : 0) } })); } };
+              bg: answered ? (certo ? '#E3EAD6' : esse ? '#F1E4E6' : '#FBF8F1') : '#FBF8F1', fg: '#1E1710', pick: () => this.quizResponder(i) };
           })
         };
       }
-      const qMode = qz ? qz.mode : 'perguntas';
-      const quizModes = [['perguntas', 'Perguntas'], ['contrato', 'Contrato de bruxo']].map(([id, label]) => ({ label, bg: qMode === id ? '#1E1710' : 'transparent', fg: qMode === id ? '#F4EEE1' : '#1E1710', select: () => this.quizIr(id, true) }));
+      const qMode = qz ? qz.mode : 'perguntas', qNivel = qz ? qz.nivel : 'medio', qTema = qz ? qz.tema : 'tudo';
+      const quizModes = [['perguntas', 'Rodada'], ['contrato', 'Contrato de bruxo'], ['diaria', 'Pergunta do dia']].map(([id, label]) => ({ label, bg: qMode === id ? '#1E1710' : 'transparent', fg: qMode === id ? '#F4EEE1' : '#1E1710', select: () => this.quizIr(id) }));
+      const quizNiveis = [['facil', 'Fácil'], ['medio', 'Médio'], ['dificil', 'Difícil']].map(([id, label]) => ({ label, bd: qNivel === id ? '#8C2A1B' : '#DCCFB3', bg: qNivel === id ? '#8C2A1B' : '#FBF8F1', fg: qNivel === id ? '#FBF8F1' : '#1E1710', select: () => this.quizIr(qMode === 'diaria' ? 'perguntas' : qMode, { nivel: id }) }));
+      const quizTemas = [['tudo', 'Tudo'], ['personagens', 'Personagens'], ['historia', 'História'], ['mundo', 'O mundo'], ['livros', 'Livros'], ['jogos', 'Jogos']].map(([id, label]) => ({ label, bd: qTema === id ? '#1E1710' : '#DCCFB3', bg: qTema === id ? '#1E1710' : '#FBF8F1', fg: qTema === id ? '#F4EEE1' : '#1E1710', select: () => this.quizIr('perguntas', { tema: id }) }));
+      const fimRodada = !!(qz && qz.fim);
+      const recChave = qMode === 'contrato' ? 'contrato' : qNivel + ':' + qTema;
+      const hojeN = (() => { const h = new Date(); return h.getFullYear() * 10000 + (h.getMonth() + 1) * 100 + h.getDate(); })();
+      const quizRes = fimRodada ? {
+        titulo: qz.mode === 'diaria' ? (qz.acertos ? 'Acertou a pergunta do dia!' : 'Não foi desta vez.') : qz.acertos + ' de ' + qz.total,
+        msg: qz.mode === 'diaria' ? 'Volte amanhã para uma pergunta nova.' : qz.acertos === qz.total ? 'Rodada perfeita. Digno de Kaer Morhen.' : qz.acertos >= 7 ? 'Muito bem: o Continente não tem muitos segredos para você.' : qz.acertos >= 4 ? 'Nada mal. Vale revisar os erros abaixo.' : 'O Continente é grande. Os erros abaixo levam aos verbetes.',
+        erros: qz.erros.map(er => {
+          const refEv = er.q.ref && er.q.ref.tipo === 'evento' ? evAll.find(e => e.id === er.q.ref.id) : null;
+          return { pergunta: er.q.text + (er.q.subject ? ' ' + er.q.subject : ''), certa: er.q.opts[er.q.answer], escolhida: er.escolhida, temLink: !!(refEv || er.q.ref),
+            link: () => { if (refEv) this.goEvent(refEv); else if (er.q.ref) this.open(er.q.ref.id); } };
+        }),
+        recorde: qz.mode === 'diaria' ? '' : 'Recorde neste modo: ' + Math.max(qz.acertos, qst.recorde[recChave] || 0) + ' de ' + qz.total
+      } : {};
+      const quizStats = 'Sequência atual: ' + qst.seq + ' · melhor sequência: ' + qst.melhorSeq + (qst.recorde[recChave] != null && qMode !== 'diaria' ? ' · recorde neste modo: ' + qst.recorde[recChave] + '/10' : '');
+      const diariaFeita = qst.diaria && qst.diaria.dia === hojeN;
+      const quizSemPergunta = !!(qz && !qz.q && !qz.fim && qz.mode !== 'diaria');
 
       // Aba Leitura.
       const setLidos = (arr) => {
@@ -1121,7 +1244,7 @@
         })).filter(l => l.itens.length),
         cartaoVerbete: () => { if (ce) this.cartao({ kicker: catMap[ce.c].label, titulo: ce.t, sub: ce.ep, texto: entry.oculto ? entry.s : [ce.s, (ce.b || []).find(b => typeof b === 'string') || ''].join(' '), cor: catMap[ce.c].color, arquivo: 'verbete-' + ce.id }); },
         cartaoQuiz: () => { if (qz && qz.total) this.cartao({ kicker: qz.mode === 'contrato' ? 'Contrato de bruxo' : 'Quiz', titulo: qz.acertos + ' de ' + qz.total, sub: qz.acertos === qz.total ? 'Nenhum erro. Digno de Kaer Morhen.' : 'acertos no quiz do codex', texto: 'Perguntas geradas a partir da linha do tempo, dos verbetes e do glossário de The Witcher.', cor: '#8C2A1B', arquivo: 'quiz-witcher' }); },
-        quizTemPlacar: !!(qz && qz.total),
+        quizTemPlacar: !!(qz && qz.fim && qz.mode !== 'diaria'),
         favToggle: () => { if (curId) this.toggleFav(curId); }, favStr: pr.favs.includes(curId) ? 'true' : 'false',
         favLabel: pr.favs.includes(curId) ? '★ favorito' : '☆ favoritar', favBg: pr.favs.includes(curId) ? '#8A5E10' : 'transparent', favFg: pr.favs.includes(curId) ? '#FBF8F1' : '#1E1710',
         copyLabel: s.copied === 'verbete' ? 'link copiado ✓' : 'copiar link',
@@ -1141,8 +1264,9 @@
         anoEventos: anoEvs.map(e => ({ date: e.d, title: e.t, go: () => this.goEvent(e) })),
         anoEvTitulo: anoEvs.length ? 'Neste ano' : 'Nenhum evento registrado neste ano',
         contrasteTabs, contrasteGrupos, contrasteAviso: spOn, contrasteOrigens, contrasteJogos, grandes, eventosJogos, temEventosJogos: eventosJogos.length > 0,
-        quiz, quizTem: !!qq, quizVazio: !qq, quizModes, quizStart: () => this.quizIr(qMode, true), quizNext: () => this.quizIr(qMode, false),
-        quizPlacar: qz ? qz.acertos + ' acertos em ' + qz.total + (qz.total === 1 ? ' pergunta' : ' perguntas') : '',
+        quiz, quizTem: !!qq && !fimRodada, quizVazio: !qz, quizModes, quizNiveis, quizTemas, quizEhRodada: qMode === 'perguntas', quizRes, quizFim: fimRodada, quizStats, quizSemPergunta,
+        quizStart: () => this.quizIr(qMode), quizNext: () => this.quizProxima(), quizDiariaFeita: !!diariaFeita && qMode === 'diaria' && !qq, quizDiariaTxt: diariaFeita ? (qst.diaria.acertou ? 'Você já acertou a pergunta de hoje.' : 'Você já respondeu a pergunta de hoje.') : '',
+        quizPlacar: qz && !fimRodada ? qz.acertos + ' acertos' : '',
         arvoreOpts, arvoreTitulo: arv.titulo, arvoreSub: arv.sub, arvLinhas, arvPessoas: arvBloq ? [] : arvPessoas, arvLegenda: arvBloq ? [] : arvLegenda, arvLargura, arvAltura: arvBloq ? '10px' : arvAltura, arvNotas: arvBloq ? ['Esta árvore revela um segredo da saga e fica escondida pelo modo sem spoilers até você marcar ' + (LE.find(o => o.id === arv.revela) || {}).n + '.'] : spOn && !fechouSaga ? ['As notas desta árvore ficam escondidas pelo modo sem spoilers até o fim da saga.'] : (arv.notas || []),
         relEdges, relNodes, relSel, relTipoOpts, relGrupoOpts, relAspect: '1 / 1', relModes,
         relGraph: !conexOn, relConex: conexOn, pickers, conex,

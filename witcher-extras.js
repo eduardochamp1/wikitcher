@@ -372,9 +372,9 @@ fichas: {
   "kikimora": [["Classe nos jogos", "Insectoide"], ["Óleo indicado", "Óleo contra insectoides"]],
   "grifo": [["Classe nos jogos", "Híbrido"], ["Óleo indicado", "Óleo contra híbridos"]],
   "dragoes": [["Classe nos jogos", "Dracônido"], ["Óleo indicado", "Óleo contra dracônidos"]],
-  "basilisco": [["Classe nos jogos", "Dracônido"], ["Óleo indicado", "Óleo contra dracônidos"]],
-  "wyvern": [["Classe nos jogos", "Dracônido"], ["Óleo indicado", "Óleo contra dracônidos"]],
-  "doppler": [["Classe", "Metamorfo inteligente; não é caçado como monstro"]],
+  "basilisco": [["Classe nos jogos", "Dracônido"], ["Óleo indicado", "Óleo contra dracônidos"], ["Onde vive", "Cavernas, ruínas e lugares úmidos"], ["Fama", "A lenda diz que petrifica com o olhar; os caçadores de Toussaint escreveram tratados inteiros sobre ele"]],
+  "wyvern": [["Classe nos jogos", "Dracônido"], ["Óleo indicado", "Óleo contra dracônidos"], ["Aparência", "Parente menor dos dragões: duas patas, asas e cauda longa"], ["Caça", "Ataca do alto, mergulhando sobre a presa"]],
+  "doppler": [["Classe", "Metamorfo inteligente; não é caçado como monstro"], ["Poder", "Copia a aparência, a voz e até as memórias de quem imita"], ["O mais famoso", "Dudu, que vive como mercador em Novigrad no conto \"O Fogo Eterno\""]],
   "polifemo": [["Classe", "Relicto (só nos livros)"]]
 }
 };

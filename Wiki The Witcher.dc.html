@@ -756,23 +756,63 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
     <main style="max-width:780px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
       <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Quiz</div>
       <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 12px;color:#1E1710">Teste o que você sabe</h1>
-      <p style="max-width:640px;font-size:19px;line-height:1.55;color:#33281C;margin:0 0 22px">Perguntas geradas a partir do próprio codex. No contrato de bruxo, você recebe as pistas de uma criatura e precisa dizer qual é.</p>
-      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-bottom:16px">
+      <p style="max-width:640px;font-size:19px;line-height:1.55;color:#33281C;margin:0 0 22px">Perguntas geradas a partir do próprio codex: rodadas de dez, o contrato de bruxo (adivinhe a criatura pelas pistas) e uma pergunta do dia.</p>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-bottom:12px">
         <div style="display:flex;border:1px solid #CDBE9C;border-radius:6px;overflow:hidden">
-          <sc-for list="{{ quizModes }}" as="qm" hint-placeholder-count="2">
+          <sc-for list="{{ quizModes }}" as="qm" hint-placeholder-count="3">
             <button onClick="{{ qm.select }}" style="background:{{ qm.bg }};color:{{ qm.fg }};border:none;padding:7px 14px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">{{ qm.label }}</button>
           </sc-for>
         </div>
-        <span style="display:flex;align-items:center;gap:10px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:#4F4231">{{ quizPlacar }}
-          <sc-if value="{{ quizTemPlacar }}" hint-placeholder-val="{{ false }}"><button onClick="{{ cartaoQuiz }}" style="background:none;border:1px solid #CDBE9C;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#1E1710">compartilhar placar</button></sc-if>
-        </span>
+        <span style="font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:#4F4231">{{ quizPlacar }}</span>
       </div>
+      <sc-if value="{{ quizEhRodada }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:8px">
+          <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#4F4231;margin-right:4px">Nível</span>
+          <sc-for list="{{ quizNiveis }}" as="qn" hint-placeholder-count="3">
+            <button onClick="{{ qn.select }}" style="padding:4px 11px;cursor:pointer;border:1px solid {{ qn.bd }};background:{{ qn.bg }};color:{{ qn.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:12px;border-radius:999px">{{ qn.label }}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:14px">
+          <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#4F4231;margin-right:4px">Tema</span>
+          <sc-for list="{{ quizTemas }}" as="qt" hint-placeholder-count="6">
+            <button onClick="{{ qt.select }}" style="padding:4px 11px;cursor:pointer;border:1px solid {{ qt.bd }};background:{{ qt.bg }};color:{{ qt.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:12px;border-radius:999px">{{ qt.label }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <p style="margin:0 0 16px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#6B5C46">{{ quizStats }}</p>
       <sc-if value="{{ quizVazio }}" hint-placeholder-val="{{ true }}">
-        <button onClick="{{ quizStart }}" style="padding:12px 22px;cursor:pointer;background:#1E1710;color:#F4EEE1;border:none;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:500">Começar</button>
+        <button onClick="{{ quizStart }}" style="padding:12px 22px;cursor:pointer;background:#1E1710;color:#F4EEE1;border:none;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:500">Começar uma rodada</button>
+      </sc-if>
+      <sc-if value="{{ quizDiariaFeita }}" hint-placeholder-val="{{ false }}">
+        <p style="margin:0;padding:12px 16px;background:#E3EAD6;border-radius:8px;font-size:17px;color:#2F4A1F">{{ quizDiariaTxt }} Volte amanhã para uma pergunta nova.</p>
+      </sc-if>
+      <sc-if value="{{ quizSemPergunta }}" hint-placeholder-val="{{ false }}">
+        <p style="margin:0;padding:12px 16px;background:#F1E4E6;border-radius:8px;font-size:17px;color:#7A2442">Não há perguntas suficientes para este nível e tema com o que está visível agora. Tente outro tema, outro nível ou avance na leitura.</p>
+      </sc-if>
+      <sc-if value="{{ quizFim }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FBF8F1;border:1px solid #DCCFB3;border-radius:12px;padding:22px clamp(16px,3vw,28px);display:flex;flex-direction:column;gap:12px">
+          <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8C2A1B">Resultado</span>
+          <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:44px;line-height:1;margin:0;color:#1E1710">{{ quizRes.titulo }}</h2>
+          <p style="margin:0;font-size:18px;color:#33281C">{{ quizRes.msg }}</p>
+          <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#6B5C46">{{ quizRes.recorde }}</span>
+          <sc-for list="{{ quizRes.erros }}" as="qe" hint-placeholder-count="0">
+            <div style="padding:10px 0;border-top:1px solid #E1D5BB;display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:16px;color:#1E1710">{{ qe.pergunta }}</span>
+              <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#2F4A1F">Certa: {{ qe.certa }}</span>
+              <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#8C2A1B">Sua resposta: {{ qe.escolhida }}</span>
+              <sc-if value="{{ qe.temLink }}" hint-placeholder-val="{{ false }}"><button onClick="{{ qe.link }}" style="align-self:flex-start;background:none;border:none;padding:0;cursor:pointer;color:#8C2A1B;text-decoration:underline;font-family:'IBM Plex Sans',sans-serif;font-size:13px">rever no codex</button></sc-if>
+            </div>
+          </sc-for>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+            <button onClick="{{ quizStart }}" style="padding:9px 16px;cursor:pointer;background:#1E1710;color:#F4EEE1;border:none;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500">Jogar de novo</button>
+            <sc-if value="{{ quizTemPlacar }}" hint-placeholder-val="{{ false }}"><button onClick="{{ cartaoQuiz }}" style="padding:9px 16px;cursor:pointer;background:none;border:1px solid #CDBE9C;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:#1E1710">compartilhar placar</button></sc-if>
+          </div>
+        </div>
       </sc-if>
       <sc-if value="{{ quizTem }}" hint-placeholder-val="{{ false }}">
+        <div style="height:6px;border-radius:999px;background:#E6DCC6;overflow:hidden;margin-bottom:10px"><div style="height:100%;width:{{ quiz.progPct }};background:#8C2A1B;transition:width .3s"></div></div>
         <div style="background:#FBF8F1;border:1px solid #DCCFB3;border-radius:12px;padding:22px clamp(16px,3vw,28px);display:flex;flex-direction:column;gap:14px">
-          <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8C2A1B">{{ quiz.kind }}</span>
+          <span style="display:flex;justify-content:space-between;gap:10px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8C2A1B"><span>{{ quiz.kind }}</span><span style="color:#6B5C46">{{ quiz.progresso }}</span></span>
           <h2 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(24px,3vw,30px);line-height:1.2;margin:0;color:#1E1710">{{ quiz.text }}</h2>
           <sc-if value="{{ quiz.hasSubject }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:20px;line-height:1.4;color:#33281C;font-style:italic">{{ quiz.subject }}</p></sc-if>
           <sc-if value="{{ quiz.hasClues }}" hint-placeholder-val="{{ false }}">
@@ -788,8 +828,8 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
           <sc-if value="{{ quiz.answered }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding-top:6px;border-top:1px solid #ECE3D0">
               <span style="font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:600;color:{{ quiz.fbCor }}">{{ quiz.feedback }}</span>
-              <button onClick="{{ quiz.saber }}" style="background:none;border:none;padding:0;cursor:pointer;color:#8C2A1B;text-decoration:underline;font-family:'IBM Plex Sans',sans-serif;font-size:14px">{{ quiz.saberLabel }}</button>
-              <button onClick="{{ quizNext }}" style="margin-left:auto;padding:8px 16px;cursor:pointer;background:#1E1710;color:#F4EEE1;border:none;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500">Próxima →</button>
+              <sc-if value="{{ quiz.temSaber }}" hint-placeholder-val="{{ false }}"><button onClick="{{ quiz.saber }}" style="background:none;border:none;padding:0;cursor:pointer;color:#8C2A1B;text-decoration:underline;font-family:'IBM Plex Sans',sans-serif;font-size:14px">{{ quiz.saberLabel }}</button></sc-if>
+              <button onClick="{{ quizNext }}" style="margin-left:auto;padding:8px 16px;cursor:pointer;background:#1E1710;color:#F4EEE1;border:none;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:500">{{ quiz.proxLabel }}</button>
             </div>
           </sc-if>
         </div>

@@ -138,13 +138,24 @@ const TESTES = [
     await escolher(a, 'jaskier', 'Jaskier'); await escolher(b, 'eredin', 'Eredin');
     await esperar(() => /passos? de distância|ligados diretamente/.test(texto()), 3000, 'caminho não apareceu');
   }],
-  ['O quiz gera perguntas com quatro opções', async () => {
+  ['O quiz faz uma rodada de 10 perguntas com resultado', async () => {
     await abrir('#/quiz');
-    await clicar('Começar');
-    const opts = doc.querySelectorAll('main div[style*="grid"] button');
-    confere(opts.length >= 2, 'opções insuficientes');
-    opts[0].click(); await sleep(200);
-    await esperar(() => /Acertou!|Era: /.test(texto()), 2000, 'sem resposta do quiz');
+    await clicar('Começar uma rodada');
+    for (let i = 0; i < 10; i++) {
+      const opts = await esperar(() => { const o = doc.querySelectorAll('main div[style*="grid"] button'); return o.length >= 2 && o; }, 3000, 'pergunta ' + (i + 1) + ' sem opções');
+      opts[0].click(); await sleep(120);
+      await esperar(() => /Acertou!|Era: /.test(texto()), 2000, 'sem resposta na pergunta ' + (i + 1));
+      const prox = [...doc.querySelectorAll('main button')].find(b => /Próxima|resultado/.test(b.textContent));
+      prox.click(); await sleep(150);
+    }
+    await esperar(() => /\d+ de 10/.test(texto()) && /Jogar de novo/.test(texto()), 3000, 'a rodada não terminou com resultado');
+  }],
+  ['O contrato de bruxo tem pistas que distinguem as criaturas', async () => {
+    await abrir('#/quiz');
+    await clicar('Contrato de bruxo');
+    await esperar(() => doc.querySelector('main ul li'), 3000, 'contrato sem pistas');
+    const pistas = [...doc.querySelectorAll('main ul li')].length;
+    confere(pistas >= 2, 'contrato com uma pista só');
   }],
   ['Atalhos de teclado e favoritos', async () => {
     await abrir('#/comp/vesemir');
