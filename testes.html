@@ -52,7 +52,7 @@ const confere = (cond, msg) => { if (!cond) throw new Error(msg); };
 const TESTES = [
   ['A página inicial é a mesma para todo leitor', async () => {
     await abrir('');
-    await esperar(() => /Comece por aqui/.test(texto()), 5000, 'a página inicial não apareceu');
+    await esperar(() => /Comece por aqui/i.test(texto()), 5000, 'a página inicial não apareceu');
     confere(!/Por onde você quer começar/.test(texto()), 'ainda pergunta o perfil do leitor');
     const g = [...doc.querySelectorAll('main button')].find(x => x.innerText.trim().startsWith('Geralt de Rívia'));
     g.click();
@@ -64,13 +64,13 @@ const TESTES = [
     const antes = todos();
     await clicar('Livros', doc.querySelector('main'));
     confere(todos() < antes, 'o filtro "Livros" não reduziu o Compêndio (' + antes + ' × ' + todos() + ')');
-    await clicar('História');
+    await clicar('Linha do Tempo');
     await esperar(() => doc.getElementById('ev-tw3'), 3000, 'o filtro do Compêndio escondeu eventos de jogo na Linha do Tempo');
   }],
   ['A busca encontra pelo nome original', async () => {
     await abrir('#/tempo');
-    await digitar(doc.querySelector('header input'), 'Beliefs of Skellige');
-    await esperar(() => [...doc.querySelectorAll('header button')].some(b => /Crenças de Skellige/.test(b.innerText)), 3000, 'o título original não encontrou o escrito');
+    await digitar(doc.querySelector('.lateral input'), 'Beliefs of Skellige');
+    await esperar(() => [...doc.querySelectorAll('.lateral button')].some(b => /Crenças de Skellige/.test(b.innerText)), 3000, 'o título original não encontrou o escrito');
   }],
   ['A linha do tempo mostra todas as eras com seus eventos', async () => {
     await abrir('#/tempo');
@@ -93,18 +93,18 @@ const TESTES = [
   }],
   ['A busca entende nomes dos jogos sem sugerir resultados errados', async () => {
     await abrir('#/tempo');
-    const res = () => [...doc.querySelectorAll('header button')].map(b => b.innerText);
-    await digitar(doc.querySelector('header input'), 'Crones');
+    const res = () => [...doc.querySelectorAll('.lateral button')].map(b => b.innerText);
+    await digitar(doc.querySelector('.lateral input'), 'Crones');
     await esperar(() => res().some(t => t.includes('As Damas da Floresta')), 3000, '"Crones" não achou as Damas da Floresta');
     confere(!res().some(t => t.includes('Jarre')), '"Crones" ainda sugere Jarre');
-    await digitar(doc.querySelector('header input'), 'Iris');
+    await digitar(doc.querySelector('.lateral input'), 'Iris');
     await sleep(300);
     confere(!res().some(t => /\nTriss Merigold/.test('\n' + t.split('\n').slice(1).join('\n'))), '"Iris" ainda sugere Triss');
   }],
   ['A busca aceita erros de digitação', async () => {
     await abrir('#/tempo');
-    await digitar(doc.querySelector('header input'), 'kaer mohren');
-    await esperar(() => [...doc.querySelectorAll('header button')].some(b => b.innerText.includes('Kaer Morhen')), 3000, 'nenhum resultado para "kaer mohren"');
+    await digitar(doc.querySelector('.lateral input'), 'kaer mohren');
+    await esperar(() => [...doc.querySelectorAll('.lateral button')].some(b => b.innerText.includes('Kaer Morhen')), 3000, 'nenhum resultado para "kaer mohren"');
   }],
   ['Os spoilers ficam recolhidos para todo leitor e abrem com um clique', async () => {
     await abrir('#/tempo');
@@ -154,9 +154,10 @@ const TESTES = [
   }],
   ['O verbete mostra em que obras aparece', async () => {
     await abrir('#/comp/yennefer');
-    await esperar(() => [...doc.querySelectorAll('h2')].some(h => h.textContent.trim() === 'Aparece em'), 3000, 'sem "Aparece em"');
-    const h = [...doc.querySelectorAll('h2')].find(h => h.textContent.trim() === 'Aparece em');
-    confere(/O Último Desejo/.test(h.nextElementSibling.innerText), 'O Último Desejo não está entre as obras de Yennefer');
+    const rotulo = () => [...doc.querySelectorAll('.artigo-ficha div')].find(d => d.textContent.trim() === 'Aparece em');
+    await esperar(rotulo, 3000, 'sem "Aparece em" na ficha');
+    confere(/O Último Desejo/.test(rotulo().nextElementSibling.innerText), 'O Último Desejo não está entre as obras de Yennefer');
+    confere(doc.querySelector('.artigo-ficha') && doc.querySelector('.artigo-corpo'), 'o verbete não abriu como página de artigo');
   }],
   ['A linha do tempo em escala mostra os pontos', async () => {
     await abrir('#/tempo');

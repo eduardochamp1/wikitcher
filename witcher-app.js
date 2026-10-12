@@ -80,7 +80,7 @@
       if (e.key === 'Escape') { this.setState({ stack: [], searchOpen: false, tip: null, ajuda: false }); if (digitando) alvo.blur(); return; }
       if (digitando || e.ctrlKey || e.metaKey || e.altKey || !this.state.ready) return;
       const s = this.state, top = s.stack[s.stack.length - 1];
-      if (e.key === '/') { e.preventDefault(); const i = this.header && this.header.querySelector('input'); if (i) i.focus(); return; }
+      if (e.key === '/') { e.preventDefault(); this.setState({ menuAberto: true }, () => { const i = document.querySelector('.lateral input'); if (i) i.focus(); }); return; }
       if (e.key === '?') { this.setState({ ajuda: !s.ajuda }); return; }
       if ((e.key === 'f' || e.key === 'F') && top) { this.toggleFav(top); return; }
       if (/^[1-9]$/.test(e.key) && VIEWS[+e.key - 1]) { this.go(VIEWS[+e.key - 1][0]); return; }
@@ -146,7 +146,10 @@
     componentDidUpdate() {
       const b = this.state.stack[this.state.stack.length - 1];
       if (b !== this.topId) {
-        this.topId = b; if (this.aside) this.aside.scrollTop = 0;
+        // O verbete é uma página: abre no topo; ao fechar, a aba volta para onde o leitor estava.
+        const antes = this.topId; this.topId = b;
+        if (b) window.scrollTo({ top: 0 });
+        else if (antes && this.rolagemAntes != null) { window.scrollTo({ top: this.rolagemAntes }); this.rolagemAntes = null; }
         // Todo verbete aberto (por clique, link ou histórico) entra em "vistos recentemente".
         if (b && this.state.prefs && this.state.prefs.recentes[0] !== b) this.savePrefs(p => ({ recentes: [b, ...p.recentes.filter(x => x !== b)].slice(0, 10) }));
       }
@@ -182,17 +185,22 @@
     scrollToEl(el) { if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - this.hh() - 16, behavior: 'smooth' }); }
 
     norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
-    open(id) { this.setState(s => ({ stack: [...s.stack, id], searchOpen: false, tip: null })); }
+    open(id) {
+      if (!this.state.stack.length) this.rolagemAntes = window.scrollY;
+      this.setState(s => ({ stack: [...s.stack, id], searchOpen: false, tip: null, menuAberto: false }));
+    }
     goEvent(ev) {
       // Ir a um evento volta o filtro de fonte da Linha do Tempo para "Tudo", para ele aparecer.
       // Quem pede um evento pelo link quer vê-lo: um evento-spoiler já chega revelado.
-      this.setState(s => ({ fonteAba: { ...(s.fonteAba || {}), tempo: 'tudo' }, reveal: { ...s.reveal, ['ev:' + ev.id]: true }, view: 'tempo', stack: [], flash: ev.id, evLink: ev.id, person: null, searchOpen: false, cats: [], open: { ...s.open, [ev.id]: true } }), () => {
+      this.rolagemAntes = null;
+      this.setState(s => ({ menuAberto: false, fonteAba: { ...(s.fonteAba || {}), tempo: 'tudo' }, reveal: { ...s.reveal, ['ev:' + ev.id]: true }, view: 'tempo', stack: [], flash: ev.id, evLink: ev.id, person: null, searchOpen: false, cats: [], open: { ...s.open, [ev.id]: true } }), () => {
         setTimeout(() => this.scrollToEl(document.getElementById('ev-' + ev.id)), 60);
         clearTimeout(this.ft); this.ft = setTimeout(() => this.setState({ flash: null }), 2200);
       });
     }
     go(view) {
-      this.setState({ view, searchOpen: false, tip: null, evLink: null, stack: [] }); window.scrollTo({ top: 0 });
+      this.rolagemAntes = null;
+      this.setState({ view, searchOpen: false, tip: null, evLink: null, stack: [], menuAberto: false }); window.scrollTo({ top: 0 });
       if (view !== 'inicio' && this.state.prefs && !this.state.prefs.visitou) this.savePrefs(() => ({ visitou: true }));
     }
     // Busca tolerante: prefixo e trecho valem mais; palavras com um ou dois erros de digitação ainda contam.
@@ -591,7 +599,7 @@
     }
     blockText(b) { return typeof b === 'string' ? b : (b.h || b.li || b.t || ''); }
     block(b, used, exclude, on) {
-      const P = { m: '0', fs: '19px', ff: 'inherit', fw: '400', col: '#1E1710', pad: '0', bg: 'transparent', bl: 'none', br: '0', hasTag: false, tag: '', tagCol: 'inherit', tagFs: 'inherit', tagLs: '0', tagTt: 'none' };
+      const P = { id: '', m: '0', fs: '19px', ff: 'inherit', fw: '400', col: '#1E1710', pad: '0', bg: 'transparent', bl: 'none', bb: 'none', br: '0', hasTag: false, tag: '', tagCol: 'inherit', tagFs: 'inherit', tagLs: '0', tagTt: 'none' };
       if (typeof b === 'string') return { ...P, segs: this.segs(b, used, exclude, on) };
       if (b.h) return { ...P, m: '14px 0 -4px', fs: '13px', ff: "'IBM Plex Sans',sans-serif", fw: '600', col: '#8C2A1B', segs: this.segs(b.h, used, exclude, false) };
       if (b.li) return { ...P, fs: '18px', pad: '0 0 0 4px', hasTag: true, tag: '•', tagCol: '#8C2A1B', segs: this.segs(b.li, used, exclude, on) };
@@ -623,6 +631,23 @@
       const grupoAtivo = (GRUPOS.find(g => g[2].some(([id]) => id === subAtiva)) || GRUPOS[1])[0];
       const irSub = (id) => id === 'escritos' ? (this.go('comp'), this.setState({ compCat: 'escrito' })) : (this.go(id), id === 'comp' && s.compCat === 'escrito' && this.setState({ compCat: 'all' }));
       const navTabs = GRUPOS.map(([gid, label, subs]) => ({ label, bd: grupoAtivo === gid ? '#8C2A1B' : 'transparent', go: () => irSub(subs[0][0]) }));
+      // Barra lateral de wiki: os grupos com suas páginas; a página atual fica marcada.
+      const NAV_ICONE = { inicio: 'M2.5 7.5 8 3l5.5 4.5V13H10V9.5H6V13H2.5Z', tempo: 'M8 2.5v11M5 5h6M5 8h6M5 11h6', mapa: 'M2 4l4-1.5 4 1.5 4-1.5v9.5l-4 1.5-4-1.5-4 1.5ZM6 2.5v9.5M10 4v9.5',
+        linhagem: 'M8 2.5v4M8 6.5H4v3M8 6.5h4v3M4 9.5v4M12 9.5v4', rel: 'M4.5 5.5a2 2 0 1 0 0-.01M11.5 5.5a2 2 0 1 0 0-.01M8 12a2 2 0 1 0 0-.01M5.5 7l2 3.2M10.5 7l-2 3.2', comp: 'M3 3h4.5v10H3ZM8.5 3H13v10H8.5Z',
+        escritos: 'M4 2.5h7.5a1.5 1.5 0 0 1 0 3H11v8H5a1.5 1.5 0 0 1 0-3h.5v-8M7 8h2.5M7 10.5h2.5', contraste: 'M2.5 4h4.5v8H2.5ZM9 4h4.5v8H9Z', fontes: 'M3 2.5h7l3 3v8H3ZM10 2.5v3h3',
+        leitura: 'M2 3.5c2-1 4-1 6 .5 2-1.5 4-1.5 6-.5v9.5c-2-1-4-1-6 .5-2-1.5-4-1.5-6-.5ZM8 4v9.5', quiz: 'M6 6a2 2 0 1 1 3 1.7c-.6.4-1 .8-1 1.6M8 11.5h.01M8 14.5a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13' };
+      const navLado = GRUPOS.map(([gid, label, subs]) => ({ titulo: label, temTitulo: gid !== 'inicio', itens: subs.map(([id, l]) => {
+        const on = subAtiva === id;
+        return { label: l, icon: NAV_ICONE[id], bg: on ? '#E2D6BE' : 'transparent', bl: on ? '#8C2A1B' : 'transparent', fw: on ? '600' : '400', atual: on ? 'page' : 'false', go: () => irSub(id) };
+      }) }));
+      // Caminho no topo (Grupo › Página › Verbete aberto).
+      const grupoAt = GRUPOS.find(g => g[0] === grupoAtivo) || GRUPOS[1], paginaAt = grupoAt[2].find(([id]) => id === subAtiva) || grupoAt[2][0];
+      const topoId = s.stack[s.stack.length - 1];
+      const trilha = [
+        ...(grupoAtivo === 'inicio' ? [] : [{ label: grupoAt[1], go: () => irSub(grupoAt[2][0][0]) }]),
+        { label: paginaAt[1], go: () => irSub(paginaAt[0]) },
+        ...(topoId ? [{ label: (this._titulos || {})[topoId] || topoId, go: () => {} }] : [])
+      ].map((t, i, a) => ({ ...t, sep: i > 0, fw: i === a.length - 1 ? '600' : '400', cor: i === a.length - 1 ? '#1E1710' : '#6B5C46', cur: i === a.length - 1 ? 'default' : 'pointer' }));
       const navSub = (GRUPOS.find(g => g[0] === grupoAtivo) || GRUPOS[1])[2].map(([id, label]) => ({ label, bg: subAtiva === id ? '#1E1710' : 'transparent', fg: subAtiva === id ? '#F4EEE1' : '#1E1710', go: () => irSub(id) }));
       const keep = (e) => e.preventDefault();
       const qFilters = [['all', 'Tudo'], ['verbetes', 'Verbetes'], ['eventos', 'Eventos']].map(([id, label]) => ({ label, keep, bg: s.qf === id ? '#1E1710' : 'transparent', fg: s.qf === id ? '#F4EEE1' : '#1E1710', select: () => this.setState({ qf: id }) }));
@@ -642,6 +667,8 @@
         ajudaOn: s.ajuda, ajudaAbrir: () => this.setState({ ajuda: true }), ajudaFechar: () => this.setState({ ajuda: false }),
         atalhos: [['/', 'Ir para a busca'], ['Esc', 'Fechar verbete, busca ou esta janela'], ['j / k', 'Próximo e anterior evento na Linha do Tempo'], ['1 – 9', 'Trocar de aba (na ordem do menu)'], ['f', 'Favoritar o verbete aberto'], ['?', 'Mostrar ou esconder estes atalhos']].map(([k, d]) => ({ k, d })),
         navTabs, navSub, temNavSub: navSub.length > 1, fonteOpts, qFilters, q: s.q, loading: !s.ready,
+        navLado, trilha, menuAberto: !!s.menuAberto, latTf: s.menuAberto ? 'none' : 'translateX(-105%)',
+        menuAbrir: () => this.setState({ menuAberto: true }), menuFechar: () => this.setState({ menuAberto: false }),
         headerRef: (el) => { this.header = el; },
         goTempo: () => this.go('tempo'), goLeitura: () => this.go('leitura'), goInicio: () => this.go('inicio'), isInicio: s.view === 'inicio',
         onQ: (e) => this.setState({ q: e.target.value, searchOpen: true }),
@@ -659,6 +686,7 @@
       const catMap = Object.fromEntries(D.cats.map(c => [c.id, c]));
       const catOrder = Object.fromEntries(D.cats.map((c, i) => [c.id, i]));
       const em = Object.fromEntries(E.map(e => [e.id, e]));
+      if (!this._titulos) this._titulos = Object.fromEntries(E.map(e => [e.id, e.t]));
       const eraMap = Object.fromEntries(D.eras.map(e => [e.id, e]));
       const mobile = s.w > 0 && s.w < 760;
       const glossOn = p.glossario ?? true, agesOn = p.idades ?? true;
@@ -764,12 +792,12 @@
         const corpo = notaEra ? notaEra.b.map((t, i) => {
           const bl = this.block(t, usedEra, new Set(), glossOn), key = 'era:' + er.id + ':' + i;
           // Seções da era com título de verdade (o estilo de verbete é pequeno demais para um texto longo).
-          if (t && t.h) Object.assign(bl, { ff: "'IM Fell English',serif", fs: '26px', fw: '400', col: '#1E1710', m: '22px 0 0' });
+          if (t && t.h) Object.assign(bl, { ff: "'IM Fell English',serif", fs: '26px', fw: '400', col: '#1E1710', m: '22px 0 0', pad: '0 0 6px', bb: '1px solid #D6C8AA' });
           if (spOn && t && t.co === 'spoiler' && !s.reveal[key] && !(fechouSaga && jogouAlgo))
             bl.segs = [{ t: 'Spoiler recolhido. Clique para mostrar.', ul: '1.5px dotted #8C2A1B', cur: 'pointer', click: () => this.setState(st => ({ reveal: { ...st.reveal, [key]: true } })) }];
           return bl;
         }) : [];
-        return { ...er, domId: 'era-' + er.id, segs: segsEra, corpo, temCorpo: corpo.length > 0, semCorpo: !corpo.length, events, empty: events.length === 0, presentes, hasPresentes: presentes.length > 0,
+        return { ...er, domId: 'era-' + er.id, segs: segsEra, corpo, temCorpo: corpo.length > 0, semCorpo: !corpo.length, events, nEventos: String(events.length), empty: events.length === 0, presentes, hasPresentes: presentes.length > 0,
           maisPresentes: ids.length > 10, presLabel: todosP ? 'ver menos' : 'ver todos os ' + ids.length,
           presToggle: () => this.setState(st => ({ presTodos: { ...(st.presTodos || {}), [er.id]: !todosP } })) };
       });
@@ -1170,8 +1198,15 @@
           // e marcou algum jogo como jogado já os vê abertos.
           const esconde = spOn && t && t.co === 'spoiler' && !s.reveal[key] && !(fechouSaga && jogouAlgo);
           if (esconde) bl.segs = [{ t: 'Spoiler recolhido. Clique para mostrar.', ul: '1.5px dotted #8C2A1B', cur: 'pointer', click: () => this.setState(st => ({ reveal: { ...st.reveal, [key]: true } })) }];
+          // Seções do artigo com título de verdade e âncora para o índice "Nesta página".
+          if (t && t.h) Object.assign(bl, { id: 'sec-' + i, ff: "'IM Fell English',serif", fs: '28px', fw: '400', col: '#1E1710', m: '22px 0 0', pad: '0 0 6px', bb: '1px solid #D6C8AA' });
+          else Object.assign(bl, { id: '', bb: 'none' });
           return bl;
         });
+        const irSec = (id) => () => { const el = document.getElementById(id); if (el) this.scrollToEl(el); };
+        const toc = [...(ce.b || []).map((t, i) => t && t.h ? { label: t.h, go: irSec('sec-' + i) } : null).filter(Boolean),
+          ...(evs.length ? [{ label: 'Na história do mundo', go: irSec('sec-historia') }] : []),
+          ...(ce.l || []).some(id => em[id]) ? [{ label: 'Ver também', go: irSec('sec-vertambem') }] : []];
         const nasc = NASC[ce.id];
         // Escritos do jogo que citam este verbete.
         const escList = ce.c === 'escrito' ? [] : Ev.filter(e => e.c === 'escrito' && (e.l || []).includes(ce.id)).map(e => ({ label: e.t, sub: e.ep, open: () => this.open(e.id) }));
@@ -1192,6 +1227,7 @@
               sens, revelar: () => this.setState(st => ({ reveal: { ...st.reveal, [chave]: true } })) };
           }), hasFacts: !oculto && facts.length > 0,
           aparece: oculto ? [] : aparece, hasAparece: !oculto && aparece.length > 0,
+          toc, temToc: toc.length >= 2,
           escritos: oculto ? [] : escList, hasEscritos: !oculto && escList.length > 0,
           paras: oculto ? [] : paras,
           events: oculto ? [] : evs.map(e => {
@@ -1341,8 +1377,10 @@
 
       return {
         ...base,
-        isTempo: s.view === 'tempo', isComp: s.view === 'comp', isMapa: s.view === 'mapa', isLinhagem: s.view === 'linhagem', isRel: s.view === 'rel', isFontes: s.view === 'fontes',
-        isContraste: s.view === 'contraste', isLeitura: s.view === 'leitura', isQuiz: s.view === 'quiz',
+        // Com um verbete aberto, ele ocupa a página (as abas somem até fechar).
+        isInicio: !ce && s.view === 'inicio', isTempo: !ce && s.view === 'tempo', isComp: !ce && s.view === 'comp', isMapa: !ce && s.view === 'mapa', isLinhagem: !ce && s.view === 'linhagem', isRel: !ce && s.view === 'rel', isFontes: !ce && s.view === 'fontes',
+        isContraste: !ce && s.view === 'contraste', isLeitura: !ce && s.view === 'leitura', isQuiz: !ce && s.view === 'quiz',
+        inicioNums: [[E.filter(e => e.c !== 'escrito').length, 'verbetes'], [D.events.length, 'acontecimentos'], [D.eras.length, 'eras'], [E.filter(e => e.c === 'escrito').length, 'escritos do jogo']].map(([n, t]) => ({ n: n.toLocaleString('pt-BR'), t })),
         // Início: a mesma porta para todo leitor. Seis verbetes para começar e a história em nove eras, em uma linha cada.
         inicioEssenciais: ['geralt', 'ciri', 'yennefer', 'bruxos', 'conjuncao', 'nilfgaard'].filter(id => em[id]).map(id => ({ t: em[id].t, ep: em[id].ep, s: em[id].s, color: catMap[em[id].c].color, icon: ICONS[em[id].c], open: () => this.open(id) })),
         // Índice das eras: nome, período e as seções do texto de cada era (sem resumo).
