@@ -105,7 +105,8 @@ const TESTES = [
     await abrir('#/contraste');
     await esperar(() => /Divergências\s*\d+/.test(texto()), 4000, 'abas não apareceram');
     confere(doc.querySelectorAll('main section h3').length >= 10, 'faltam as grandes divergências');
-    confere(/Nos livros/.test(texto()) && /Nos jogos/.test(texto()), 'as divergências não estão lado a lado');
+    // Os rótulos aparecem em maiúsculas pelo CSS; o texto da página vem como "NOS LIVROS".
+    confere(/nos livros/i.test(texto()) && /nos jogos/i.test(texto()), 'as divergências não estão lado a lado');
   }],
   ['A Linhagem troca de árvore', async () => {
     await abrir('#/linhagem');
