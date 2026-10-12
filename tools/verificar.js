@@ -33,7 +33,14 @@ D.places.forEach(p => verb(p.e, 'Lugar do mapa ' + p.id));
 D.rels.nodes.forEach(n => verb(n.id, 'Nó de relações'));
 D.rels.edges.forEach(([a, b]) => { verb(a, 'Relação'); verb(b, 'Relação'); });
 D.tree.forEach(g => { verb(g.p.id, 'Linhagem'); verb(g.sp && g.sp.id, 'Linhagem'); });
-X.arvores.forEach(a => (a.geracoes || []).forEach(g => { verb(g.p.id, 'Árvore ' + a.id); verb(g.sp && g.sp.id, 'Árvore ' + a.id); }));
+X.arvores.forEach(a => {
+  const pid = new Set(a.pessoas.map(p => p.id));
+  a.pessoas.forEach(p => verb(p.e, 'Árvore ' + a.id + ' (' + p.n + ')'));
+  const ref = (id, onde) => { if (!pid.has(id)) erro('Árvore ' + a.id + ': ' + onde + ' cita pessoa inexistente: ' + id); };
+  const tipo = (t) => { if (t && !X.lacos[t]) erro('Árvore ' + a.id + ': tipo de ligação desconhecido: ' + t); };
+  a.unioes.forEach(([x, y, t]) => { ref(x, 'união'); ref(y, 'união'); tipo(t); });
+  a.filhos.forEach(([pais, f, t]) => { pais.forEach(p => ref(p, 'filiação')); ref(f, 'filiação'); tipo(t); });
+});
 Object.keys(X.fichas).forEach(id => verb(id, 'Ficha do bestiário'));
 W.contrastes.forEach(c => verb(c.e, 'Livros × Jogos'));
 Object.keys(app.WITCHER_NASC || {}).forEach(id => verb(id, 'Nascimento'));

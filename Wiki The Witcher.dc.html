@@ -503,7 +503,7 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
   </sc-if>
 
   <sc-if value="{{ isLinhagem }}" hint-placeholder-val="{{ false }}">
-    <main style="max-width:980px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
+    <main style="max-width:1180px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
       <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Linhagem</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 4px">
         <sc-for list="{{ arvoreOpts }}" as="ao" hint-placeholder-count="3">
@@ -511,34 +511,30 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
         </sc-for>
       </div>
       <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 10px;color:#1E1710">{{ arvoreTitulo }}</h1>
-      <p style="max-width:640px;font-size:19px;line-height:1.55;color:#33281C;margin:0 0 34px">{{ arvoreSub }}</p>
-      <div style="display:flex;flex-direction:column">
-        <sc-for list="{{ tree }}" as="g" hint-placeholder-count="8">
-          <div style="display:grid;grid-template-columns:52px minmax(0,1fr);column-gap:14px">
-            <div style="display:flex;flex-direction:column;align-items:center">
-              <span style="margin-top:14px;width:34px;height:34px;border-radius:50%;background:#1E1710;color:#F4EEE1;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600">{{ g.gen }}</span>
-              <sc-if value="{{ g.notLast }}" hint-placeholder-val="{{ true }}"><span style="flex:1;width:1px;background:#BFAE8A;min-height:24px"></span></sc-if>
-            </div>
-            <div style="padding:10px 0 22px;display:flex;flex-direction:column;gap:8px">
-              <div style="display:flex;flex-wrap:wrap;align-items:stretch;gap:8px">
-                <button onClick="{{ g.p.open }}" style="flex:1 1 220px;text-align:left;padding:12px 16px;background:{{ g.p.bg }};border:1px solid {{ g.p.border }};border-radius:10px;cursor:{{ g.p.cursor }};display:flex;flex-direction:column;gap:2px">
-                  <span style="font-family:'IM Fell English',serif;font-size:{{ g.p.fs }};line-height:1.1;color:{{ g.p.fg }}">{{ g.p.n }}</span>
-                  <span style="font-size:15px;font-style:italic;color:{{ g.p.sub }}">{{ g.p.r }}</span>
-                </button>
-                <sc-if value="{{ g.hasSp }}" hint-placeholder-val="{{ true }}">
-                  <span style="align-self:center;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#6B5C46">casou com</span>
-                  <button onClick="{{ g.sp.open }}" style="flex:1 1 200px;text-align:left;padding:12px 16px;background:transparent;border:1px dashed #CDBE9C;border-radius:10px;cursor:{{ g.sp.cursor }};display:flex;flex-direction:column;gap:2px">
-                    <span style="font-family:'IM Fell English',serif;font-size:20px;line-height:1.1;color:#1E1710">{{ g.sp.n }}</span>
-                    <span style="font-size:15px;font-style:italic;color:#4F4231">{{ g.sp.r }}</span>
-                  </button>
-                </sc-if>
-              </div>
-              <sc-if value="{{ g.hasNote }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:17px;line-height:1.45;color:#33281C">{{ g.note }}</p></sc-if>
-              <sc-if value="{{ g.hasSide }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:15px;line-height:1.45;color:#4F4231;font-style:italic">{{ g.side }}</p></sc-if>
-            </div>
-          </div>
+      <p style="max-width:680px;font-size:19px;line-height:1.55;color:#33281C;margin:0 0 18px">{{ arvoreSub }}</p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px 16px;margin:0 0 14px">
+        <sc-for list="{{ arvLegenda }}" as="al" hint-placeholder-count="0">
+          <span style="display:flex;align-items:center;gap:6px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#33281C"><svg width="26" height="6"><line x1="1" y1="3" x2="25" y2="3" style="stroke:{{ al.cor }};stroke-width:2.5;stroke-dasharray:{{ al.traco }}"></line></svg>{{ al.label }}</span>
         </sc-for>
       </div>
+      <div style="overflow-x:auto;background:#FBF8F1;border:1px solid #DCCFB3;border-radius:12px;padding:16px 8px">
+        <div style="position:relative;min-width:{{ arvLargura }};height:{{ arvAltura }}">
+          <svg width="100%" height="100%" style="position:absolute;inset:0;overflow:visible">
+            <sc-for list="{{ arvLinhas }}" as="ln" hint-placeholder-count="0">
+              <line x1="{{ ln.x1 }}" y1="{{ ln.y1 }}" x2="{{ ln.x2 }}" y2="{{ ln.y2 }}" style="stroke:{{ ln.cor }};stroke-width:2;stroke-dasharray:{{ ln.traco }};stroke-linecap:round"></line>
+            </sc-for>
+          </svg>
+          <sc-for list="{{ arvPessoas }}" as="ap" hint-placeholder-count="0">
+            <button onClick="{{ ap.open }}" title="{{ ap.dica }}" style="position:absolute;left:{{ ap.left }};top:{{ ap.top }};transform:translateX(-50%);width:{{ ap.w }};min-height:62px;padding:8px 10px;text-align:center;background:{{ ap.bg }};border:1.5px solid {{ ap.bd }};border-radius:10px;cursor:{{ ap.cur }};display:flex;flex-direction:column;justify-content:center;gap:2px;box-shadow:0 2px 0 rgba(30,23,16,.06)" style-hover="border-color:#8C2A1B">
+              <span style="font-family:'IM Fell English',serif;font-size:17px;line-height:1.1;color:{{ ap.fg }}">{{ ap.n }}</span>
+              <span style="font-size:13px;font-style:italic;line-height:1.2;color:{{ ap.sub }}">{{ ap.r }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      <ul style="margin:18px 0 0;padding:0 0 0 20px;display:flex;flex-direction:column;gap:6px;max-width:820px">
+        <sc-for list="{{ arvNotas }}" as="an" hint-placeholder-count="0"><li style="font-size:17px;line-height:1.5;color:#33281C">{{ an }}</li></sc-for>
+      </ul>
     </main>
   </sc-if>
 

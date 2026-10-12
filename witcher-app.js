@@ -791,16 +791,33 @@
       const domAtivos = ano == null ? [] : X.dominios.map(d => ({ d, f: domDe(d.p) })).filter(x => x.f).map(({ d, f }) => ({ n: (D.places.find(pl => pl.id === d.p) || {}).n || d.p, txt: f.txt.charAt(0).toLowerCase() + f.txt.slice(1), cor: f.cor }));
 
       const arv = X.arvores.find(a => a.id === s.arvore) || X.arvores[0];
-      const geracoes = arv.geracoes || D.tree;
       const arvoreOpts = X.arvores.map(a => { const on = a.id === arv.id; return { n: a.n, bd: on ? '#1E1710' : '#DCCFB3', bg: on ? '#1E1710' : '#FBF8F1', fg: on ? '#F4EEE1' : '#1E1710', select: () => this.setState({ arvore: a.id }) }; });
-      const tree = geracoes.map((g, i) => {
-        const last = i === geracoes.length - 1, pp = g.p, has = pp.id && em[pp.id];
-        return {
-          gen: g.gen, notLast: !last, note: g.note, hasNote: !!g.note, side: g.side, hasSide: !!g.side, hasSp: !!g.sp,
-          p: { n: pp.n, r: pp.r, fs: last ? '28px' : '22px', bg: last ? '#8C2A1B' : '#FBF8F1', fg: last ? '#FBF8F1' : '#1E1710', sub: last ? '#F3DED3' : '#4F4231', border: last ? '#8C2A1B' : '#DCCFB3', cursor: has ? 'pointer' : 'default', open: () => { if (has) this.open(pp.id); } },
-          sp: g.sp ? { n: g.sp.n, r: g.sp.r, cursor: g.sp.id && em[g.sp.id] ? 'pointer' : 'default', open: () => { if (g.sp.id && em[g.sp.id]) this.open(g.sp.id); } } : {}
-        };
+      // Árvore desenhada: cartões por geração; uniões na horizontal; filhos ligados ao meio do casal por uma linha em degrau.
+      const LH = 118, CH = 62, CW = 142;
+      const pes = Object.fromEntries(arv.pessoas.map(p => [p.id, p]));
+      const geracoes = Math.max(...arv.pessoas.map(p => p.g)) + 1;
+      let menorVao = 100;
+      for (let g = 0; g < geracoes; g++) { const xs = arv.pessoas.filter(p => p.g === g).map(p => p.x).sort((a, b) => a - b); xs.forEach((x, i) => { if (i) menorVao = Math.min(menorVao, x - xs[i - 1]); }); }
+      const arvLargura = Math.max(600, Math.ceil((CW + 14) / (menorVao / 100))) + 'px';
+      const L = X.lacos, arvLinhas = [];
+      const linha = (x1, y1, x2, y2, tipo) => arvLinhas.push({ x1: x1 + '%', y1, x2: x2 + '%', y2, cor: L[tipo].cor, traco: L[tipo].traco || 'none' });
+      arv.unioes.forEach(([a, b, tipo]) => { const pa = pes[a], pb = pes[b]; linha(pa.x, pa.g * LH + CH / 2, pb.x, pb.g * LH + CH / 2, tipo || 'casamento'); });
+      arv.filhos.forEach(([pais, f, tipo]) => {
+        const ps = pais.map(id => pes[id]), c = pes[f], t = tipo || 'casamento', cor = tipo ? t : 'casamento';
+        const mx = ps.reduce((s2, p) => s2 + p.x, 0) / ps.length, topo = Math.max(...ps.map(p => p.g)) * LH;
+        // Ligações especiais correm um pouco abaixo da barra comum, para não parecerem do mesmo casal.
+        const y0 = ps.length > 1 ? topo + CH / 2 : topo + CH, ym = topo + CH + (LH - CH) / 2 + (tipo ? 12 : 0), yc = c.g * LH;
+        linha(mx, y0, mx, ym, cor); linha(mx, ym, c.x, ym, cor); linha(c.x, ym, c.x, yc, cor);
       });
+      const usados = new Set([...arv.unioes.map(u => u[2] || 'casamento'), ...arv.filhos.map(f => f[2] || 'casamento')]);
+      const arvLegenda = Object.entries(L).filter(([k]) => usados.has(k)).map(([, v]) => ({ label: v.label, cor: v.cor, traco: v.traco || 'none' }));
+      const arvPessoas = arv.pessoas.map(p => {
+        const tem = p.e && em[p.e] && !hidden.has(p.e), d = p.destaque;
+        return { n: p.n, r: p.r, left: p.x + '%', top: (p.g * LH) + 'px', w: CW + 'px', dica: tem ? 'Abrir o verbete de ' + p.n : p.n,
+          bg: d ? '#8C2A1B' : tem ? '#FBF8F1' : '#F4EEE1', bd: d ? '#8C2A1B' : tem ? '#CDBE9C' : '#E1D5BB', fg: d ? '#FBF8F1' : '#1E1710', sub: d ? '#F3DED3' : '#4F4231',
+          cur: tem ? 'pointer' : 'default', open: () => { if (tem) this.open(p.e); } };
+      });
+      const arvAltura = ((geracoes - 1) * LH + CH + 6) + 'px';
 
       // Relações: o mapa curado de witcher-tempo.js ou a rede montada a partir dos verbetes e eventos.
       const auto = s.relMode === 'auto';
@@ -999,8 +1016,8 @@
         contrasteTabs, contrasteGrupos, contrasteAviso: spOn,
         quiz, quizTem: !!qq, quizVazio: !qq, quizModes, quizStart: () => this.quizIr(qMode, true), quizNext: () => this.quizIr(qMode, false),
         quizPlacar: qz ? qz.acertos + ' acertos em ' + qz.total + (qz.total === 1 ? ' pergunta' : ' perguntas') : '',
-        arvoreOpts, arvoreTitulo: arv.titulo, arvoreSub: arv.sub,
-        tree, relEdges, relNodes, relSel, relLegend: Object.values(R.types), relAspect: mobile ? '3 / 4' : '16 / 11', relModes,
+        arvoreOpts, arvoreTitulo: arv.titulo, arvoreSub: arv.sub, arvLinhas, arvPessoas, arvLegenda, arvLargura, arvAltura, arvNotas: arv.notas || [],
+        relEdges, relNodes, relSel, relLegend: Object.values(R.types), relAspect: mobile ? '3 / 4' : '16 / 11', relModes,
         relGraph: !conexOn, relConex: conexOn, pickers, conex,
         relModeDesc: conexOn ? 'Escolha dois verbetes: o caminho mais curto entre eles e o que têm em comum.' : auto ? R.nodes.length + ' personagens ligados por citações nos verbetes e por eventos em comum.' : 'Os laços mais importantes da saga, escolhidos à mão.' + (spOn ? ' Atenção: estes laços não são filtrados pelo modo sem spoilers.' : ''),
         fontes,

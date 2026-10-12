@@ -106,21 +106,87 @@ skellige: {
   ]
 },
 
-// Árvores da aba Linhagem. "sangue" usa a árvore de witcher-tempo.js.
+// Árvores da aba Linhagem, desenhadas como diagrama.
+// pessoas: g = geração (linha), x = posição horizontal (0–100), e = verbete.
+// unioes: [a, b, tipo]; filhos: [[pais...], filho, tipo]. Tipos: casamento, segundo, amor, parente, contestado, destino, jogos.
 arvores: [
-  {id:"sangue", n:"Sangue Antigo", titulo:"A linhagem do Sangue Antigo", sub:"Oito gerações, de Lara Dorren a Ciri. O gene élfico atravessa Redania, Temeria e Cintra até se manifestar por inteiro."},
-  {id:"cintra", n:"Cintra e Skellige", titulo:"A casa real de Cintra", sub:"Da corte de Dagorad à Leoa de Cintra e sua neta, com os laços que levam a Skellige.", geracoes:[
-    {gen:"I", p:{n:"Dagorad", r:"rei de Cintra, neto de Fiona"}, sp:{n:"Adalia, a Vidente", r:"viúva de Ragbard de Ellander"}},
-    {gen:"II", p:{id:"calanthe", n:"Calanthe", r:"a Leoa de Cintra"}, sp:{n:"Roegner de Ebbing", r:"primeiro marido"}, side:"Viúva, casa-se com Eist Tuirseach, de Skellige, que se torna rei consorte de Cintra. Crach an Craite, jarl de Skellige e parente de Eist, trata Ciri como sobrinha.", note:"Morre ao se lançar da torre durante o Massacre de Cintra, em 1263."},
-    {gen:"III", p:{id:"pavetta", n:"Pavetta", r:"uma Fonte"}, sp:{id:"emhyr", n:"Duny", r:"o Ouriço de Erlenwald"}, note:"Conquistada pela Lei da Surpresa; o casal desaparece no Abismo de Sedna."},
-    {gen:"IV", p:{id:"ciri", n:"Cirilla", r:"a Leãozinha de Cintra"}, side:"Nos jogos, os filhos de Crach, Hjalmar e Cerys, disputam a coroa de Skellige."}
-  ]},
-  {id:"nilfgaard", n:"Nilfgaard", titulo:"A casa var Emreis", sub:"Do imperador deposto ao filho que recuperou o trono, e à filha que ele perseguiu.", geracoes:[
-    {gen:"I", p:{n:"Fergus var Emreis", r:"imperador deposto pelo Usurpador"}, note:"Um feiticeiro a serviço do Usurpador amaldiçoa o jovem herdeiro com a forma de ouriço."},
-    {gen:"II", p:{id:"emhyr", n:"Emhyr var Emreis", r:"Duny; recupera o trono c. 1257"}, sp:{id:"pavetta", n:"Pavetta", r:"princesa de Cintra"}, side:"Na Paz de Cintra (1268), casa-se com uma sósia de Ciri criada em Toussaint para o papel."},
-    {gen:"III", p:{id:"ciri", n:"Cirilla", r:"herdeira de Cintra"}, note:"Emhyr queria casar com ela para cumprir a profecia; em Stygga, desiste e a deixa partir."}
-  ]}
+  {id:"sangue", n:"Sangue Antigo", titulo:"A linhagem do Sangue Antigo", sub:"De Lara Dorren a Ciri: o gene élfico atravessa Redania, Temeria e Cintra até se manifestar por inteiro.",
+    pessoas:[
+      {id:"lara", n:"Lara Dorren", r:"elfa, Aen Saevherne", g:0, x:40, e:"lara-dorren"},
+      {id:"cregennan", n:"Cregennan de Lod", r:"mago humano", g:0, x:62},
+      {id:"riannon", n:"Riannon", r:"criada pela rainha Cerro", g:1, x:40},
+      {id:"goidemar", n:"Goidemar", r:"rei da Temeria", g:1, x:62},
+      {id:"falka", n:"Falka", r:"a rebelde de Redania", g:1, x:86, e:"falka"},
+      {id:"coram", n:"Coram II", r:"rei de Cintra", g:2, x:12},
+      {id:"fiona", n:"Fiona", r:"morre em Cleves aos 93 anos", g:2, x:33},
+      {id:"adela", n:"Adela", r:"morta na peste de Vizima", g:2, x:55},
+      {id:"amavet", n:"Amavet", r:"assassinado", g:2, x:77},
+      {id:"corbett", n:"Corbett", r:"rei de Cintra", g:3, x:22},
+      {id:"elen", n:"Elen de Kaedwen", r:"rainha de Cintra", g:3, x:44},
+      {id:"muriel", n:"Muriel", r:"filha de Amavet", g:3, x:70},
+      {id:"crispin", n:"Crispin", r:"filho de Amavet", g:3, x:90},
+      {id:"dagorad", n:"Dagorad", r:"rei de Cintra aos 12 anos", g:4, x:22},
+      {id:"adalia", n:"Adalia", r:"a Vidente", g:4, x:44},
+      {id:"roegner", n:"Roegner de Ebbing", r:"1º marido", g:5, x:11},
+      {id:"calanthe", n:"Calanthe", r:"a Leoa de Cintra", g:5, x:33, e:"calanthe"},
+      {id:"eist", n:"Eist Tuirseach", r:"2º marido, de Skellige", g:5, x:55, e:"eist"},
+      {id:"pavetta", n:"Pavetta", r:"uma Fonte", g:6, x:33, e:"pavetta"},
+      {id:"duny", n:"Duny", r:"Emhyr var Emreis", g:6, x:55, e:"emhyr"},
+      {id:"geralt", n:"Geralt de Rívia", r:"pai pelo destino", g:6, x:77, e:"geralt"},
+      {id:"yennefer", n:"Yennefer", r:"mãe adotiva", g:6, x:95, e:"yennefer"},
+      {id:"ciri", n:"Cirilla (Ciri)", r:"Zireael, a Leãozinha", g:7, x:55, e:"ciri", destaque:true}
+    ],
+    unioes:[["lara","cregennan","amor"], ["riannon","goidemar","casamento"], ["coram","fiona","casamento"], ["corbett","elen","casamento"], ["dagorad","adalia","casamento"],
+      ["roegner","calanthe","casamento"], ["calanthe","eist","segundo"], ["pavetta","duny","casamento"], ["geralt","yennefer","amor"]],
+    filhos:[[["lara","cregennan"],"riannon"], [["riannon","goidemar"],"fiona"], [["riannon","goidemar"],"adela"], [["riannon","goidemar"],"amavet"], [["falka"],"fiona","contestado"],
+      [["amavet"],"muriel"], [["amavet"],"crispin"], [["coram","fiona"],"corbett"], [["corbett","elen"],"dagorad"], [["dagorad","adalia"],"calanthe"],
+      [["roegner","calanthe"],"pavetta"], [["pavetta","duny"],"ciri"], [["geralt","yennefer"],"ciri","destino"]],
+    notas:["Riannon, prisioneira de Falka no castelo de Houtborg, dá à luz os trigêmeos Fiona, Adela e Amavet.",
+      "Filiação contestada: o documento obtido por Codringher em Tempo do Desprezo afirma que Fiona era, na verdade, filha secreta de Falka, o que faria de Ciri herdeira do \"sangue maculado\" da profecia.",
+      "O nome de Ciri homenageia as ancestrais da linhagem: Fiona, Elen e Riannon."]},
+  {id:"cintra", n:"Cintra e Skellige", titulo:"A casa real de Cintra", sub:"Da corte de Dagorad à Leoa de Cintra e sua neta, com os laços que levam a Skellige.",
+    pessoas:[
+      {id:"dagorad", n:"Dagorad", r:"rei de Cintra, neto de Fiona", g:0, x:30},
+      {id:"adalia", n:"Adalia", r:"a Vidente", g:0, x:52},
+      {id:"roegner", n:"Roegner de Ebbing", r:"1º marido", g:1, x:13},
+      {id:"calanthe", n:"Calanthe", r:"a Leoa de Cintra", g:1, x:35, e:"calanthe"},
+      {id:"eist", n:"Eist Tuirseach", r:"2º marido, rei consorte", g:1, x:57, e:"eist"},
+      {id:"crach", n:"Crach an Craite", r:"jarl de Skellige, parente de Eist", g:1, x:83, e:"crach-an-craite"},
+      {id:"pavetta", n:"Pavetta", r:"uma Fonte", g:2, x:35, e:"pavetta"},
+      {id:"duny", n:"Duny", r:"o Ouriço de Erlenwald", g:2, x:57, e:"emhyr"},
+      {id:"hjalmar", n:"Hjalmar", r:"filho de Crach (jogos)", g:2, x:76},
+      {id:"cerys", n:"Cerys", r:"filha de Crach (jogos)", g:2, x:94},
+      {id:"ciri", n:"Cirilla (Ciri)", r:"a Leãozinha de Cintra", g:3, x:46, e:"ciri", destaque:true}
+    ],
+    unioes:[["dagorad","adalia","casamento"], ["roegner","calanthe","casamento"], ["calanthe","eist","segundo"], ["eist","crach","parente"], ["pavetta","duny","casamento"]],
+    filhos:[[["dagorad","adalia"],"calanthe"], [["roegner","calanthe"],"pavetta"], [["pavetta","duny"],"ciri"], [["crach"],"hjalmar","jogos"], [["crach"],"cerys","jogos"]],
+    notas:["Calanthe morre ao se lançar da torre durante o Massacre de Cintra, em 1263; Eist cai na Batalha de Marnadal.",
+      "Pavetta é conquistada por Duny pela Lei da Surpresa; o casal desaparece no Abismo de Sedna.",
+      "Crach an Craite trata Ciri como sobrinha. Nos jogos, seus filhos Hjalmar e Cerys disputam a coroa de Skellige."]},
+  {id:"nilfgaard", n:"Nilfgaard", titulo:"A casa var Emreis", sub:"Do imperador deposto ao filho que recuperou o trono, e à filha que ele perseguiu.",
+    pessoas:[
+      {id:"fergus", n:"Fergus var Emreis", r:"imperador deposto pelo Usurpador", g:0, x:45},
+      {id:"pavetta", n:"Pavetta", r:"princesa de Cintra", g:1, x:22, e:"pavetta"},
+      {id:"emhyr", n:"Emhyr var Emreis", r:"Duny; recupera o trono c. 1257", g:1, x:45, e:"emhyr"},
+      {id:"falsa", n:"A falsa Cirilla", r:"sósia criada em Toussaint", g:1, x:72},
+      {id:"ciri", n:"Cirilla (Ciri)", r:"herdeira de Cintra", g:2, x:34, e:"ciri", destaque:true}
+    ],
+    unioes:[["pavetta","emhyr","casamento"], ["emhyr","falsa","segundo"]],
+    filhos:[[["fergus"],"emhyr"], [["pavetta","emhyr"],"ciri"]],
+    notas:["Um feiticeiro a serviço do Usurpador amaldiçoa o jovem herdeiro com a forma de ouriço durante o dia.",
+      "Emhyr queria casar com a própria filha para cumprir a profecia; em Stygga, desiste e a deixa partir.",
+      "Na Paz de Cintra (1268), casa-se com uma sósia de Ciri criada em Toussaint para o papel."]}
 ],
+// Estilo de cada tipo de ligação na árvore.
+lacos: {
+  casamento: {label:"Casamento", cor:"#8A5E10", traco:""},
+  segundo: {label:"Segundo casamento", cor:"#8A5E10", traco:"6 4"},
+  amor: {label:"Amor", cor:"#A0375A", traco:""},
+  parente: {label:"Parentesco", cor:"#4A4E57", traco:"2 4"},
+  contestado: {label:"Filiação contestada", cor:"#8C2A1B", traco:"2 4"},
+  destino: {label:"Pais pelo destino", cor:"#22696B", traco:"6 4"},
+  jogos: {label:"Só nos jogos", cor:"#3A4150", traco:"6 4"}
+},
 
 // Ficha das criaturas. A classe e o óleo seguem o sistema de The Witcher 3.
 fichas: {
