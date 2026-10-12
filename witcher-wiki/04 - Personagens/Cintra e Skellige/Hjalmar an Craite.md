@@ -7,6 +7,8 @@ tags: [personagem, jogos, skellige]
 ---
 # Hjalmar an Craite 🎮
 
+> **Filho guerreiro do jarl Crach an Craite, de Skellige.**
+
 > [!jogos] Filho de [[Crach an Craite]], guerreiro impetuoso e candidato à coroa das [[Ilhas Skellige]] em [[The Witcher 3]].
 
 Hjalmar encarna o ideal guerreiro das ilhas. Depois da morte do rei Bran, ele disputa o trono com a irmã, [[Cerys an Craite]], e outros pretendentes.

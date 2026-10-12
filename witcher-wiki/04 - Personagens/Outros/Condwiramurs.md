@@ -9,6 +9,8 @@ tags: [personagem, moldura]
 
 > **Jovem sonhadora que ajuda Nimue a reconstruir a lenda de Geralt e Ciri.**
 
+Estudante de onirologia que, séculos depois da saga, revisita em sonhos a história de Geralt e Ciri.
+
 Primeira aparição: [[A Senhora do Lago]].
 
 Condwiramurs é uma estudante de onirologia, a arte de ver o passado por meio dos sonhos, que vive séculos depois dos acontecimentos da saga. Ela vai trabalhar com a feiticeira [[Nimue]], obcecada pela história do bruxo e de [[Ciri]].

@@ -20,6 +20,6 @@ Uma das feiticeiras mais respeitadas do Norte. Dirige a escola de moças de Aret
 
 ## Na saga
 - Em [[O Sangue dos Elfos]], já demonstra desconfiança em relação a [[Vilgefortz de Roggeveen]].
-- No [[Golpe de Thanedd]], fica dividida entre as facções. Vendo os magos presos por ordem de [[Filippa Eilhart]], decide libertá-los, fiel à ideia de que a irmandade não deve servir a reis.
-- O gesto aumenta ainda mais a confusão daquela noite.
-- Diante das consequências, tira a própria vida.
+- No [[Golpe de Thanedd]], fica dividida entre as facções.
+
+> [!spoiler] Vendo os magos presos por ordem de [[Filippa Eilhart]], Tissaia decide libertá-los, fiel à ideia de que a irmandade não deve servir a reis. O gesto aumenta ainda mais a confusão daquela noite. Diante das consequências, tira a própria vida.

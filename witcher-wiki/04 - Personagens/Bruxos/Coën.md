@@ -23,4 +23,5 @@ Bruxo da **Escola do Grifo**, vindo de Poviss. É uma raridade na saga: um bruxo
 - Participa do treinamento de Ciri, em [[O Sangue dos Elfos]], ajudando a ensinar-lhe esgrima e os exercícios da fortaleza.
 - Mais tranquilo e cortês que Lambert, trata a menina com paciência.
 - Ao contrário de Geralt, toma partido na guerra: luta ao lado dos reinos do Norte.
-- Morre na [[Batalha de Brenna]], em 1268, lutando pelo Norte.
+
+> [!spoiler] Morre na [[Batalha de Brenna]], em 1268, lutando pelo Norte.

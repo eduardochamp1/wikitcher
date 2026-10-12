@@ -15,4 +15,6 @@ tags: [criatura, vampiro]
 
 > [!jogos] O katakan é um vampiro com traços de morcego: corpo musculoso, orelhas grandes, garras compridas e uma boca cheia de presas. Nos jogos, não se disfarça entre humanos; caça à noite, em geral perto de povoados, e ataca de surpresa. Aparece em [[The Witcher 3]] e é parente próximo do [[Ekimmara]].
 
-> [!divergencia] Nos livros, em [[Batismo de Fogo]], o vampiro Regis inclui alps, bruxas e katakans entre os vampiros superiores, capazes de assumir forma humana. Os jogos tratam algumas dessas criaturas como feras.
+> [!divergencia] Nos livros, em [[Batismo de Fogo]], alps, bruxas e katakans aparecem listados entre os vampiros superiores, capazes de assumir forma humana. Os jogos tratam algumas dessas criaturas como feras.
+
+> [!spoiler] Em Batismo de Fogo, quem faz essa lista é Regis, ele mesmo um vampiro superior.

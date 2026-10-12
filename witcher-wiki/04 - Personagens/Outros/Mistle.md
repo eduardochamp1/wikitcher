@@ -7,12 +7,12 @@ tags: [personagem, ratos]
 ---
 # Mistle
 
-> **Integrante dos Ratos e amante de Ciri durante o período em que ela vive como Falka.**
+> **Integrante dos Ratos, o bando que acolhe Ciri.**
+
+Jovem salteadora do bando dos Ratos, que atua no Ebbing e em Geso.
 
 Primeira aparição: [[Tempo do Desprezo]].
 
-Mistle é uma das jovens salteadoras do bando dos [[Ratos]], que acolhe [[Ciri]] depois da fuga dela de Thanedd. É ela quem mais se aproxima da menina: as duas se tornam amantes, e Mistle a protege e a introduz na vida violenta do grupo.
+Mistle é uma das jovens salteadoras do bando dos [[Ratos]], que acolhe [[Ciri]] depois da fuga dela de Thanedd. É ela quem mais se aproxima da menina, protegendo-a e introduzindo-a na vida violenta do grupo.
 
-A relação marca a fase mais sombria de Ciri, cheia de raiva e crueldade, e termina quando o caçador de recompensas [[Leo Bonhart]] alcança o bando.
-
-> [!spoiler] Mistle morre no massacre dos Ratos cometido por Bonhart, que leva Ciri prisioneira.
+> [!spoiler] Mistle e Ciri se tornam amantes. A relação marca a fase mais sombria de Ciri, cheia de raiva e crueldade, e termina quando o caçador de recompensas [[Leo Bonhart]] alcança o bando. Mistle morre no massacre dos Ratos cometido por Bonhart, que leva Ciri prisioneira.

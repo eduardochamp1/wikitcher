@@ -6,6 +6,8 @@ tags: [bruxos]
 ---
 # Mutações dos Bruxos
 
+> **Treino e provas que fazem de uma criança um bruxo.**
+
 Processo que transforma crianças em [[Bruxos]].
 
 | Etapa | O que é |

@@ -19,6 +19,6 @@ Dupla que trabalha em Dorian: Codringher, humano, recebe os clientes; Fenn, seu 
 
 ## Na saga
 - Em [[Tempo do Desprezo]], Geralt os contrata para descobrir quem está por trás de [[Rience]], o homem que vem perseguindo as pessoas ligadas a Ciri.
-- A investigação vai muito além do pedido: reúnem papéis sobre a [[Linhagem de Ciri]], com a ascendência que remonta a Lara Dorren, e indícios do interesse de [[Emhyr var Emreis|Emhyr]] e de magos na menina.
-- Codringher percebe o valor do que tem nas mãos e tenta tirar proveito, propondo a Geralt um negócio.
-- São mortos pouco depois da visita do bruxo.
+- A investigação vai muito além do pedido, e Codringher percebe o valor do que tem nas mãos.
+
+> [!spoiler] Os dois reúnem papéis sobre a [[Linhagem de Ciri]], com a ascendência que remonta a Lara Dorren, e indícios do interesse de [[Emhyr var Emreis|Emhyr]] e de magos na menina. Codringher tenta tirar proveito, propondo a Geralt um negócio. São mortos pouco depois da visita do bruxo.

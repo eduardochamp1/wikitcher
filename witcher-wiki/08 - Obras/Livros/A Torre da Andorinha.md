@@ -7,4 +7,8 @@ tags: [obra, livro, saga]
 ---
 # A Torre da Andorinha
 
-Moldura: Ciri, ferida, conta sua história ao eremita [[Vysogota de Corvo]]. Mostra a destruição dos Ratos por [[Leo Bonhart]], a arena, a perseguição de Skellen e a fuga de Ciri até a [[Torre da Andorinha]]. Do lado de Geralt, a Hansa avança; Yennefer caça Vilgefortz por conta própria.
+> **Quarto romance da saga.**
+
+Moldura: Ciri, ferida, conta sua história ao eremita [[Vysogota de Corvo]]. Do lado de Geralt, a Hansa avança.
+
+> [!spoiler] Em A Torre da Andorinha, o livro mostra a destruição dos Ratos por [[Leo Bonhart]], a arena, a perseguição de Skellen e a fuga de Ciri até a [[Torre da Andorinha]]. Yennefer caça Vilgefortz por conta própria.

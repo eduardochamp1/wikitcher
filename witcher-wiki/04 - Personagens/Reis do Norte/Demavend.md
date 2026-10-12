@@ -22,4 +22,6 @@ Rei de Aedirn, reino vizinho de [[Kaedwen]] e de Lyria. Como os demais monarcas 
 - Os vizinhos aproveitam a derrota: Kaedwen ocupa parte de seu território.
 - O destino de Aedirn mostra o preço da desunião entre os reis do Norte.
 
-> [!jogos] Assassinado por [[Letho de Gulet]] antes de [[The Witcher 2]].
+> [!jogos] Assassinado antes de [[The Witcher 2]].
+
+> [!spoiler] Em The Witcher 2, o assassino de Demavend é [[Letho de Gulet]].

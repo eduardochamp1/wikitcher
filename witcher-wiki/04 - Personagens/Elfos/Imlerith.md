@@ -7,6 +7,8 @@ tags: [personagem, jogos, caçada, antagonista]
 ---
 # Imlerith 🎮
 
+> **General elfo da Caçada Selvagem.**
+
 > [!jogos] General da [[Caçada Selvagem]], guerreiro brutal de armadura pesada, em [[The Witcher 3]].
 
 Imlerith é um elfo [[Aen Elle]] e um dos principais comandantes de [[Eredin]]. Diferente do mago Caranthir, confia na força bruta e no combate direto. Tem ligação com as Damas da Floresta de [[Velen]].

@@ -17,7 +17,7 @@ leitura: [
     sinopse:"Primeiro romance da saga: depois de uma guerra, Geralt esconde uma menina especial entre bruxos e feiticeiras, enquanto reis e espiões tramam."},
   {id:"tempo-do-desprezo", n:"Tempo do Desprezo", tipo:"livro", fim:1267.55, ano:1995, cron:5, editora:"WMF Martins Fontes",
     sinopse:"Uma reunião de magos numa ilha vira ponto de virada para todos, e o Norte entra numa nova guerra."},
-  {id:"batismo-de-fogo", n:"Batismo de Fogo", tipo:"livro", fim:1267.67, ano:1996, cron:7, editora:"WMF Martins Fontes",
+  {id:"batismo-de-fogo", n:"Batismo de Fogo", tipo:"livro", fim:1267.67, eventos:["regis-nasce"], ano:1996, cron:7, editora:"WMF Martins Fontes",
     sinopse:"Ferido, Geralt parte para o sul com companheiros improváveis, atravessando um país em guerra."},
   {id:"a-torre-da-andorinha", n:"A Torre da Andorinha", tipo:"livro", fim:1267.9, ano:1997, cron:8, editora:"WMF Martins Fontes",
     sinopse:"Contada em parte por quem a viveu, a história de Ciri ganha um caminho próprio, longe de Geralt."},
@@ -44,6 +44,18 @@ leitura: [
 
 // Eventos da era do bruxo que são pano de fundo, sem obra própria.
 semObra: ["prova-geralt", "roegner-duny", "guerras-ebbing", "fiona-morre", "geralt-cacada"],
+// Campos da ficha que, nesses verbetes, entregam a história (recolhidos como spoiler até o fim da saga).
+fichaSpoiler: {
+  "regis": ["Raça"], "borch": ["Raça"], "cahir": ["Afiliação"], "francesca": ["Título"],
+  "geada-branca": ["Jogos"], "conclave": ["Fim"], "thanedd": ["Golpe"], "vilgefortz": ["Afiliação", "Aliados"]
+},
+// Outros nomes para a busca (nomes em inglês dos jogos) de verbetes que não vêm de nota da wiki.
+apelidos: {
+  "damas-da-floresta": ["Crones", "Ladies of the Wood", "Senhoras do Bosque"],
+  "the-witcher-3": ["Wild Hunt", "Hearts of Stone", "Blood and Wine", "Corações de Pedra", "Sangue e Vinho"],
+  "o-dimm": ["Man of Glass", "Master Mirror"],
+  "cacada-selvagem": ["Wild Hunt", "Dearg Ruadhri"]
+},
 
 // Rotas desenhadas sobre o mapa. Cada ponto usa um lugar do mapa (p) ou coordenadas próprias (x, y em %).
 rotas: [

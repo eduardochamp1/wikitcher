@@ -8,4 +8,6 @@ tags: [obra, jogo]
 ---
 # Thronebreaker: The Witcher Tales 🎮
 
+> **Jogo derivado sobre a rainha Meve.**
+
 Jogo derivado, independente da trilogia. A rainha [[Meve]] de [[Lyria e Rívia]] enfrenta a invasão de [[Nilfgaard]] durante a [[Segunda Guerra Nórdica]] e lidera uma campanha para retomar o reino.

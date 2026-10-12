@@ -9,6 +9,8 @@ tags: [personagem, medicina, oxenfurt]
 
 > **Estudante de medicina de Oxenfurt, ruiva e de temperamento firme.**
 
+Estudante de medicina da universidade de Oxenfurt e amiga de Jaskier.
+
 Primeira aparição: [[O Sangue dos Elfos]].
 
 Shani estuda medicina na universidade de [[Oxenfurt]] e é amiga de [[Jaskier]]. Conhece [[Geralt de Rívia]] por intermédio do bardo. Mais tarde, já na guerra, trabalha como ajudante de cirurgião no hospital de campanha da [[Batalha de Brenna]].

@@ -21,4 +21,6 @@ Rei de Kaedwen, o grande reino do nordeste. Rude, ambicioso e de pavio curto, go
 - Na [[Segunda Guerra Nórdica]], depois da queda de [[Aedirn]], aproveita a situação para ocupar o norte do reino vizinho.
 - Sua política mostra como os reis do Norte, mesmo aliados contra Nilfgaard, disputam terras entre si.
 
-> [!jogos] Em [[The Witcher 2]], é o rei que sitia Vergen; pode morrer pelas mãos de Roche.
+> [!jogos] Em [[The Witcher 2]], é o rei que sitia Vergen.
+
+> [!spoiler] Em The Witcher 2, Henselt pode morrer pelas mãos de Roche.

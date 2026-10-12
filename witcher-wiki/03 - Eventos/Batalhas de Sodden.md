@@ -8,6 +8,8 @@ tags: [guerra, magia]
 ---
 # Batalhas de Sodden
 
+> **Batalhas da Primeira Guerra Nórdica em que os magos lutaram ao lado do Norte.**
+
 Duas batalhas em 1263 no território de Sodden, às margens do Yaruga.
 
 1. **Primeira batalha**: vitória nilfgaardiana.

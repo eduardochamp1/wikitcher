@@ -9,10 +9,10 @@ tags: [obra, conto]
 
 > **Uma versão de "A Pequena Sereia" em que o amor exige que alguém renuncie a si mesmo.**
 
-Sem dinheiro, [[Geralt de Rívia]] aceita servir de intérprete entre o duque Agloval, senhor de uma região costeira, e a sereia Sh'eenaz, por quem ele está apaixonado. Cada um quer que o outro mude de natureza para que possam ficar juntos. Enquanto isso, o bruxo viaja com [[Jaskier]] e conhece a bardesa Essi Daven, amiga do poeta, que se apaixona por ele.
+Sem dinheiro, [[Geralt de Rívia]] aceita servir de intérprete entre o duque Agloval, senhor de uma região costeira, e a sereia Sh'eenaz, por quem ele está apaixonado. Cada um quer que o outro mude de natureza para que possam ficar juntos. Enquanto isso, o bruxo viaja com [[Jaskier]] e conhece a bardesa Essi Daven, amiga do poeta.
 
 > [!spoiler] Desfecho
-> Nem Agloval nem Sh'eenaz aceitam abrir mão de quem são, e o romance termina sem sacrifício. Geralt, ainda preso a Yennefer, não pode corresponder ao amor de Essi como ela gostaria, e os dois se despedem com carinho.
+> Essi se apaixona por Geralt. Nem Agloval nem Sh'eenaz aceitam abrir mão de quem são, e o romance termina sem sacrifício. Geralt, ainda preso a Yennefer, não pode corresponder ao amor de Essi como ela gostaria, e os dois se despedem com carinho.
 
 ## O que estabelece
 - Essi Daven, bardesa amiga de Jaskier.

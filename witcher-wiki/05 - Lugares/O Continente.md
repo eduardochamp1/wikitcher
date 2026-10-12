@@ -7,6 +7,8 @@ tags: [lugar, geografia]
 ---
 # O Continente
 
+> **A grande massa de terra onde se passa a saga.**
+
 Massa de terra onde se passa a saga. Seu eixo político é o **rio Yaruga**, que separa os [[Reinos do Norte]] dos territórios do Império de [[Nilfgaard]] ao sul. O rio Pontar corta o Norte e marca a fronteira entre Temeria e Redânia.
 
 ## Grandes regiões

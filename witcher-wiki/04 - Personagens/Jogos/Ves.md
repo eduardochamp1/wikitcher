@@ -7,7 +7,11 @@ tags: [personagem, jogos, temeria]
 ---
 # Ves 🎮
 
+> **Soldado dos Listras Azuis da Temeria.**
+
 > [!jogos] Soldado dos Listras Azuis, a unidade de forças especiais da [[Temeria]] comandada por [[Vernon Roche]].
+
+Combatente temeriana dos Listras Azuis, sempre ao lado de Roche.
 
 Primeira aparição: [[The Witcher 2]].
 

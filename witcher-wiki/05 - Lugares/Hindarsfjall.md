@@ -6,4 +6,6 @@ tags: [lugar, regiao]
 ---
 # Hindarsfjall
 
+> **Ilha de Skellige consagrada à deusa Freya.**
+
 Ilha de [[Skellige]] dedicada a [[Freya]], com seu templo e seu jardim sagrado.

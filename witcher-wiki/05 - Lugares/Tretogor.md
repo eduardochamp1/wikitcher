@@ -6,4 +6,6 @@ tags: [lugar, cidade]
 ---
 # Tretogor
 
+> **Capital da Redânia.**
+
 Capital da [[Redânia]], sede da corte de [[Vizimir II]] e depois de [[Radovid V]]. Foi para lá que [[Lara Dorren]] fugiu em busca da ajuda da rainha Cerro.

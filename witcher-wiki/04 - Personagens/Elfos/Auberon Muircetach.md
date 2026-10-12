@@ -7,6 +7,10 @@ tags: [personagem, elfos]
 ---
 # Auberon Muircetach
 
-Rei dos [[Aen Elle]], o "Povo dos Amieiros". Escolhido para gerar com Ciri um filho portador do [[Sangue Antigo]]. Morre pouco depois de Ciri fugir.
+> **Rei dos elfos Aen Elle, o Povo dos Amieiros.**
 
-> [!jogos] [[The Witcher 3]] sugere que Eredin o envenenou.
+Rei dos [[Aen Elle]], o "Povo dos Amieiros", elfos que vivem em outro mundo.
+
+> [!spoiler] Auberon é escolhido para gerar com Ciri um filho portador do [[Sangue Antigo]]. Morre pouco depois de Ciri fugir.
+
+> [!spoiler] Em [[The Witcher 3]], o jogo sugere que Eredin o envenenou.

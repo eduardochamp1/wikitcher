@@ -6,4 +6,8 @@ tags: [lugar, cidade]
 ---
 # Loc Muinne
 
-Antiga cidade élfica, palco de um dos massacres de elfos pelos humanos. Em [[The Witcher 2]], abriga a cúpula dos reis do Norte e o confronto final com [[Letho de Gulet]].
+> **Antiga cidade élfica, cenário de The Witcher 2.**
+
+Antiga cidade élfica, palco de um dos massacres de elfos pelos humanos. Em [[The Witcher 2]], abriga a cúpula dos reis do Norte.
+
+> [!spoiler] Em The Witcher 2, é em Loc Muinne que acontece o confronto final com [[Letho de Gulet]].

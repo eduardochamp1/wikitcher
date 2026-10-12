@@ -7,6 +7,8 @@ tags: [personagem, jogos, skellige]
 ---
 # Cerys an Craite 🎮
 
+> **Filha do jarl Crach an Craite, de Skellige.**
+
 > [!jogos] Filha de [[Crach an Craite]] e candidata à coroa das [[Ilhas Skellige]] em [[The Witcher 3]].
 
 Cerys é filha do jarl Crach, conhecida pela inteligência e pela independência. Depois da morte do rei Bran, ela entra na disputa pelo trono das ilhas ao lado do irmão, [[Hjalmar an Craite]], e de outros pretendentes.

@@ -6,4 +6,6 @@ tags: [lugar, regiao]
 ---
 # Pântanos de Pereplut
 
+> **Pântanos onde vive o eremita Vysogota.**
+
 Pântanos onde o eremita [[Vysogota de Corvo]] vive e acolhe [[Ciri]], ferida, em setembro de 1267.

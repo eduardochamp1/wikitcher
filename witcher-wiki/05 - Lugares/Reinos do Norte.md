@@ -7,6 +7,8 @@ tags: [lugar, politica]
 ---
 # Reinos do Norte
 
+> **Os reinos humanos ao norte do Yaruga.**
+
 Conjunto de reinos humanos ao norte do Yaruga, rivais entre si mas unidos (às vezes) contra [[Nilfgaard]].
 
 | Reino | Governante na saga | Notas |

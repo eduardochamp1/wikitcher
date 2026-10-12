@@ -50,34 +50,36 @@ const digitar = async (input, v) => {
 const confere = (cond, msg) => { if (!cond) throw new Error(msg); };
 
 const TESTES = [
-  ['Quem chega pela primeira vez vê as boas-vindas e escolhe um caminho', async () => {
+  ['A página inicial é a mesma para todo leitor', async () => {
     await abrir('');
-    await esperar(() => /Por onde você quer começar/.test(texto()), 5000, 'a página de boas-vindas não apareceu');
-    const b = [...doc.querySelectorAll('main button')].find(x => x.innerText.trim().startsWith('Li os livros'));
-    b.click(); await sleep(500);
-    await esperar(() => frame.contentWindow.location.hash === '#/tempo', 3000, 'o caminho não levou à Linha do Tempo');
-    const l = JSON.parse(frame.contentWindow.localStorage.getItem('witcher-leitura'));
-    confere(l.on && l.lidos.includes('a-senhora-do-lago') && !l.lidos.includes('the-witcher-3'), 'o caminho "Li os livros" não configurou a leitura');
+    await esperar(() => /Comece por aqui/.test(texto()), 5000, 'a página inicial não apareceu');
+    confere(!/Por onde você quer começar/.test(texto()), 'ainda pergunta o perfil do leitor');
+    const g = [...doc.querySelectorAll('main button')].find(x => x.innerText.trim().startsWith('Geralt de Rívia'));
+    g.click();
+    await esperar(() => doc.querySelector('#verbete') && doc.querySelector('#verbete').innerText.includes('Gwynbleidd'), 4000, 'o verbete de Geralt não abriu');
   }],
-  ['O filtro global de fonte vale no Compêndio e na Linha do Tempo', async () => {
-    await abrir('#/comp', ls => ls.setItem('witcher-prefs', JSON.stringify({ visitou: true, fonte: 'livros' })));
-    const todos = () => ([...doc.querySelectorAll('main button')].map(b => b.innerText).find(t => /^Todos\s*\d/.test(t)) || '').replace(/\D/g, '');
-    const comLivros = +todos();
-    frame.contentWindow.localStorage.setItem('witcher-prefs', JSON.stringify({ visitou: true, fonte: 'tudo' }));
-    await abrir('#/comp', ls => ls.setItem('witcher-prefs', JSON.stringify({ visitou: true, fonte: 'tudo' })));
-    confere(+todos() > comLivros, 'o filtro "Livros" não reduziu o Compêndio (' + comLivros + ' × ' + todos() + ')');
-    await abrir('#/tempo', ls => ls.setItem('witcher-prefs', JSON.stringify({ visitou: true, fonte: 'livros' })));
-    confere(!doc.getElementById('ev-tw3'), 'evento de jogo aparece com o filtro "Livros"');
+  ['O filtro de fonte vale só na aba em que foi escolhido', async () => {
+    await abrir('#/comp', ls => ls.setItem('witcher-prefs', JSON.stringify({ visitou: true })));
+    const todos = () => +([...doc.querySelectorAll('main button')].map(b => b.innerText).find(t => /^Todos\s*\d/.test(t)) || '').replace(/\D/g, '');
+    const antes = todos();
+    await clicar('Livros', doc.querySelector('main'));
+    confere(todos() < antes, 'o filtro "Livros" não reduziu o Compêndio (' + antes + ' × ' + todos() + ')');
+    await clicar('História');
+    await esperar(() => doc.getElementById('ev-tw3'), 3000, 'o filtro do Compêndio escondeu eventos de jogo na Linha do Tempo');
   }],
   ['A busca encontra pelo nome original', async () => {
     await abrir('#/tempo');
     await digitar(doc.querySelector('header input'), 'Beliefs of Skellige');
     await esperar(() => [...doc.querySelectorAll('header button')].some(b => /Crenças de Skellige/.test(b.innerText)), 3000, 'o título original não encontrou o escrito');
   }],
-  ['A linha do tempo carrega com todos os eventos', async () => {
+  ['A linha do tempo abre no tempo de Geralt e mostra as eras antigas com um clique', async () => {
     await abrir('#/tempo');
     await esperar(() => texto().includes('Da Conjunção das Esferas'), 6000, 'título não apareceu');
-    confere(doc.querySelectorAll('[id^="ev-"]').length >= 90, 'menos de 90 eventos na tela');
+    const n = () => doc.querySelectorAll('[id^="ev-"]').length;
+    confere(n() >= 60 && !doc.getElementById('ev-lara-dorren'), 'as eras antigas não começaram recolhidas (' + n() + ' eventos)');
+    const b = [...doc.querySelectorAll('#era-lara button')].find(x => /Mostrar os \d+ eventos/.test(x.innerText));
+    b.click(); await sleep(250);
+    confere(doc.getElementById('ev-lara-dorren'), 'o botão não mostrou os eventos da era V');
     confere(!doc.querySelector('.sc-logic-error'), 'erro de lógica do componente');
   }],
   ['Endereço de verbete abre o verbete', async () => {
@@ -88,15 +90,31 @@ const TESTES = [
     await abrir('#/tempo/@thanedd');
     await esperar(() => /Recolher/.test((doc.getElementById('ev-thanedd') || {}).innerText || ''), 6000, 'evento não abriu');
   }],
+  ['A busca entende nomes dos jogos sem sugerir resultados errados', async () => {
+    await abrir('#/tempo');
+    const res = () => [...doc.querySelectorAll('header button')].map(b => b.innerText);
+    await digitar(doc.querySelector('header input'), 'Crones');
+    await esperar(() => res().some(t => t.includes('As Damas da Floresta')), 3000, '"Crones" não achou as Damas da Floresta');
+    confere(!res().some(t => t.includes('Jarre')), '"Crones" ainda sugere Jarre');
+    await digitar(doc.querySelector('header input'), 'Iris');
+    await sleep(300);
+    confere(!res().some(t => /\nTriss Merigold/.test('\n' + t.split('\n').slice(1).join('\n'))), '"Iris" ainda sugere Triss');
+  }],
   ['A busca aceita erros de digitação', async () => {
     await abrir('#/tempo');
     await digitar(doc.querySelector('header input'), 'kaer mohren');
     await esperar(() => [...doc.querySelectorAll('header button')].some(b => b.innerText.includes('Kaer Morhen')), 3000, 'nenhum resultado para "kaer mohren"');
   }],
-  ['O modo sem spoilers esconde o que vem depois', async () => {
-    await abrir('#/tempo', ls => ls.setItem('witcher-leitura', JSON.stringify({ on: true, lidos: ['o-ultimo-desejo', 'a-espada-do-destino', 'o-sangue-dos-elfos'] })));
-    await esperar(() => /\d+ eventos escondidos/.test(texto()), 4000, 'aviso de eventos escondidos não apareceu');
-    confere(!texto().includes('O Pogrom de Rívia'), 'o Pogrom de Rívia continua visível');
+  ['Os spoilers ficam recolhidos para todo leitor e abrem com um clique', async () => {
+    await abrir('#/tempo');
+    const ev = await esperar(() => doc.getElementById('ev-pogrom'), 4000, 'o evento do Pogrom sumiu da linha do tempo');
+    confere(/Spoiler de/.test(ev.innerText) && !ev.innerText.includes('O Pogrom de Rívia'), 'o Pogrom de Rívia aparece sem máscara');
+    [...ev.querySelectorAll('span')].find(s => /Clique para mostrar/.test(s.textContent)).click(); await sleep(250);
+    confere(doc.getElementById('ev-pogrom').innerText.includes('O Pogrom de Rívia'), 'o clique não revelou o evento');
+    confere(doc.querySelectorAll('[id^="ev-"]').length >= 60, 'eventos sumiram da linha do tempo');
+    await clicar('Spoilers recolhidos');
+    confere(JSON.parse(frame.contentWindow.localStorage.getItem('witcher-leitura')).recolher === false, 'o botão do cabeçalho não mostrou os spoilers');
+    confere(!/Spoiler de/.test(texto()), 'ainda há eventos mascarados com os spoilers visíveis');
   }],
   ['O guia de leitura guarda o progresso', async () => {
     await abrir('#/leitura');
@@ -105,12 +123,13 @@ const TESTES = [
     confere(JSON.parse(frame.contentWindow.localStorage.getItem('witcher-leitura')).lidos.includes('o-ultimo-desejo'), 'progresso não foi salvo');
   }],
   ['Leitura por conto e expansões separadas', async () => {
-    await abrir('#/tempo', ls => ls.setItem('witcher-leitura', JSON.stringify({ on: true, lidos: [], partes: { 'o-ultimo-desejo': [0] } })));
-    await esperar(() => doc.getElementById('ev-estrige'), 4000, 'o conto "O Bruxo" não liberou a estrige');
-    confere(!doc.getElementById('ev-questao-preco'), '"Uma Questão de Preço" apareceu sem o conto marcado');
-    await abrir('#/tempo', ls => ls.setItem('witcher-leitura', JSON.stringify({ on: true, lidos: ['the-witcher-3'], partes: {} })));
-    await esperar(() => doc.getElementById('ev-tw3'), 4000, 'The Witcher 3 não liberou seu evento');
-    confere(!doc.getElementById('ev-sangue-vinho'), 'Blood and Wine apareceu sem a expansão marcada');
+    const aberto = (id) => { const e = doc.getElementById('ev-' + id); return e && !/Spoiler de/.test(e.innerText); };
+    await abrir('#/tempo', ls => ls.setItem('witcher-leitura', JSON.stringify({ recolher: true, lidos: [], partes: { 'o-ultimo-desejo': [0] } })));
+    await esperar(() => aberto('estrige'), 4000, 'o conto "O Bruxo" não abriu o spoiler da estrige');
+    confere(!aberto('questao-preco'), '"Uma Questão de Preço" abriu sem o conto marcado');
+    await abrir('#/tempo', ls => ls.setItem('witcher-leitura', JSON.stringify({ recolher: true, lidos: ['the-witcher-3'], partes: {} })));
+    await esperar(() => aberto('geada-ciri'), 4000, 'The Witcher 3 não abriu seu spoiler');
+    confere(!aberto('sangue-vinho'), 'Blood and Wine abriu sem a expansão marcada');
   }],
   ['O mapa desenha uma jornada', async () => {
     await abrir('#/mapa');

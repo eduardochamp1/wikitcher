@@ -6,4 +6,8 @@ tags: [lugar, regiao]
 ---
 # Marnadal
 
-Os Degraus de Marnadal, onde o exército de [[Cintra]] é derrotado por [[Nilfgaard]] em 1263, no início da [[Primeira Guerra Nórdica]]. [[Eist Tuirseach]] morre na batalha.
+> **Lugar de uma das primeiras batalhas da Primeira Guerra Nórdica.**
+
+Os Degraus de Marnadal, onde o exército de [[Cintra]] é derrotado por [[Nilfgaard]] em 1263, no início da [[Primeira Guerra Nórdica]].
+
+> [!spoiler] [[Eist Tuirseach]] morre nessa batalha.

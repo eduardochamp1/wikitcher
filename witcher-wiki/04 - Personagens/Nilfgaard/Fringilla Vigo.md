@@ -8,7 +8,7 @@ tags: [personagem, feiticeira, nilfgaard]
 ---
 # Fringilla Vigo
 
-> **Feiticeira nilfgaardiana que se envolve com Geralt em Toussaint.**
+> **Feiticeira nilfgaardiana, ambiciosa e talentosa, membro da Loja.**
 
 | | |
 |---|---|
@@ -20,6 +20,5 @@ Feiticeira nilfgaardiana ambiciosa e talentosa, próxima de [[Assire var Anahid]
 ## Na saga
 - Entra para a Loja junto com Assire, nas reuniões descritas em [[Batismo de Fogo]].
 - É enviada para vigiar Geralt quando a [[Hansa de Geralt]] chega a [[Toussaint]].
-- Durante o inverno de 1267–68, vive com ele um romance que retarda a jornada do bruxo; Geralt, cansado da estrada, se deixa ficar.
-- O envolvimento, que começa como missão, acaba ganhando peso pessoal para ela.
-- Quando a Hansa retoma a jornada, Geralt deixa Toussaint e Fringilla para trás.
+
+> [!spoiler] Durante o inverno de 1267–68, Fringilla vive com Geralt um romance que retarda a jornada do bruxo; Geralt, cansado da estrada, se deixa ficar. O envolvimento, que começa como missão, acaba ganhando peso pessoal para ela. Quando a Hansa retoma a jornada, Geralt deixa Toussaint e Fringilla para trás.

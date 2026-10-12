@@ -6,4 +6,6 @@ tags: [lugar, cidade]
 ---
 # Oxenfurt
 
+> **Cidade universitária da Redânia.**
+
 Cidade universitária da [[Redânia]], sede da academia mais prestigiosa do Norte, onde [[Jaskier]] estudou e lecionou.

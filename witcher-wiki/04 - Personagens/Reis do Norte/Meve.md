@@ -20,6 +20,7 @@ Rainha de Lyria e Rívia, viúva, enérgica e corajosa. Ao contrário de outros 
 - Em [[O Sangue dos Elfos]], está entre os reis do Norte reunidos no conselho secreto sobre a guerra.
 - Quando Nilfgaard invade em 1267 e ocupa seu reino, ela não se rende: reúne o que resta do exército e trava uma guerra de resistência.
 - Em [[Batismo de Fogo]], Geralt e seus companheiros se envolvem numa batalha ao lado das tropas dela, na ponte sobre o [[Rio Yaruga]].
-- Em reconhecimento, Meve arma Geralt cavaleiro, dando-lhe oficialmente o título "de Rívia", que até então ele usava por conta própria.
+
+> [!spoiler] Em reconhecimento, Meve arma Geralt cavaleiro, dando-lhe oficialmente o título "de Rívia", que até então ele usava por conta própria.
 
 > [!jogos] Protagonista de [[Thronebreaker|Thronebreaker: The Witcher Tales]] (2018), que narra sua campanha contra a invasão nilfgaardiana.

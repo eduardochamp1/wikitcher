@@ -56,19 +56,28 @@ function converter(n) {
     if (!s || /^---+$/.test(s)) fecharPar();
     else if (/^# /.test(s)) fecharPar();
     else if ((m = /^#{2,6}\s+(.*)$/.exec(s))) { fecharPar(); blocos.push({ h: limpar(m[1], links) }); }
-    else if ((m = /^>\s*\[!(\w+)\]\s*(.*)$/.exec(s))) { fecharPar(); blocos.push({ co: m[1], t: limpar(m[2], links) }); }
+    else if ((m = /^>\s*\[!(\w+)\]\s*(.*)$/.exec(s))) {
+      fecharPar();
+      // "> [!spoiler] Desfecho" com o texto nas linhas de baixo: a palavra curta é só o título do aviso.
+      const t = limpar(m[2], links), titulo = t.length <= 30 && !/[.!?:]$/.test(t);
+      blocos.push({ co: m[1], t, titulo });
+    }
     else if ((m = /^>\s?(.*)$/.exec(s))) {
       fecharPar();
       const ult = blocos[blocos.length - 1], t = limpar(m[1], links);
-      if (ult && ult.co && t) ult.t = (ult.t + ' ' + t).trim();
+      if (ult && ult.co && t && ult.titulo) { ult.t = t; ult.titulo = false; }
+      else if (ult && ult.co && t) ult.t = (ult.t + ' ' + t).trim();
       else if (!ep && !blocos.length && /^\*\*.*\*\*$/.test(m[1].trim())) ep = t.replace(/\.$/, '');
       else if (t) blocos.push(t);
     }
     else if ((m = /^[-*]\s+(.*)$/.exec(s)) || (m = /^\d+\.\s+(.*)$/.exec(s))) { fecharPar(); blocos.push({ li: limpar(m[1], links) }); }
+    // Linha "Rótulo: valor" solta antes do texto (ex.: "Primeira aparição: ...") vai para a ficha, não para o resumo.
+    else if (!par.length && !blocos.some(x => typeof x === 'string' || x.h) && (m = /^\*{0,2}([\p{Lu}][\p{L} ]{2,28}?)\*{0,2}:\*{0,2}\s+(.{1,120})$/u.exec(s))) fatos.push([m[1].trim(), limpar(m[2], links).replace(/\.$/, '')]);
     else par.push(s);
   }
   fecharPar(); fecharTabela();
   // Títulos de seção que ficaram sem conteúdo embaixo não servem para nada.
+  blocos.forEach(x => { if (x && x.co) delete x.titulo; });
   const b = blocos.filter((x, i) => !(x.h && (i === blocos.length - 1 || blocos[i + 1].h)) && !(x.co && !x.t));
 
   // Resumo: o primeiro parágrafo; se for longo, só a primeira frase (e o parágrafo fica no corpo).
@@ -83,7 +92,7 @@ function converter(n) {
     else resumo = fr && fr[1].length <= 230 ? fr[1] : b[i].slice(0, 200).replace(/\s\S*$/, '') + '…';
   }
   // Nota que é só um aviso "[!jogos]": o texto do aviso vira o resumo.
-  if (!resumo && b.length && b[0].co) resumo = b.shift().t;
+  if (!resumo && b.length && b[0].co && b[0].co !== 'spoiler') resumo = b.shift().t;
   if (!resumo) resumo = ep || (b.find(x => x.li) || {}).li || '';
   return { ep, resumo, fatos, blocos: b, links };
 }

@@ -7,6 +7,10 @@ tags: [obra, livro, saga]
 ---
 # O Sangue dos Elfos
 
-Primeiro romance da saga. Depois da [[Primeira Guerra Nórdica]], Geralt esconde Ciri em [[Kaer Morhen]], onde os bruxos a treinam e [[Triss Merigold]] percebe que ela é uma Fonte. Os reis do Norte tramam uma nova guerra; [[Rience]] caça quem sabe de Ciri. Ciri segue para o templo de Melitele e se torna aluna de [[Yennefer de Vengerberg]]. Tissaia descobre que Vilgefortz estuda a profecia e o Sangue Antigo.
+> **Primeiro romance da saga.**
+
+Primeiro romance da saga. Depois da [[Primeira Guerra Nórdica]], Geralt esconde Ciri em [[Kaer Morhen]], onde os bruxos a treinam. Os reis do Norte tramam uma nova guerra; [[Rience]] caça quem sabe de Ciri.
+
+> [!spoiler] Em O Sangue dos Elfos, [[Triss Merigold]] percebe que Ciri é uma Fonte. Ciri segue para o templo de Melitele e se torna aluna de [[Yennefer de Vengerberg]]. Tissaia descobre que Vilgefortz estuda a profecia e o Sangue Antigo.
 
 **Conceitos introduzidos**: [[Sangue Antigo]], [[Profecia de Ithlinne]], [[Magia e o Caos]], [[Scoia'tael]].

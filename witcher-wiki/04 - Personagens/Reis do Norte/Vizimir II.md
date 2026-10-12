@@ -8,7 +8,7 @@ tags: [personagem, realeza, redania]
 ---
 # Vizimir II
 
-> **Rei da Redânia, assassinado em plena guerra.**
+> **Rei da Redânia, um dos monarcas mais poderosos do Norte.**
 
 | | |
 |---|---|
@@ -21,6 +21,5 @@ Rei da Redânia, um dos reinos mais ricos e poderosos do Norte. Governa cercado 
 
 ## Na saga
 - Em [[O Sangue dos Elfos]], participa do conselho secreto dos reis do Norte sobre a guerra iminente e o destino de Ciri.
-- A ação de Filippa e Dijkstra no [[Golpe de Thanedd]], contra os magos aliados de Nilfgaard, é feita em nome dos interesses da Redânia.
-- É assassinado durante a [[Segunda Guerra Nórdica]], deixando o trono a um filho ainda criança.
-- Sua morte abre espaço para que Dijkstra e a Loja conduzam a Redânia de fato.
+
+> [!spoiler] A ação de Filippa e Dijkstra no [[Golpe de Thanedd]], contra os magos aliados de Nilfgaard, é feita em nome dos interesses da Redânia. Vizimir é assassinado durante a [[Segunda Guerra Nórdica]], deixando o trono a um filho ainda criança. Sua morte abre espaço para que Dijkstra e a Loja conduzam a Redânia de fato.
