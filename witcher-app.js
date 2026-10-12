@@ -111,8 +111,8 @@
       // Funcionar sem internet (só em http/https; abrindo o arquivo direto do disco não há service worker).
       if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
       // Atualização ao vivo: com tools/observar.js, a página recarrega quando a wiki ou o app mudam.
-      // Em qualquer outro servidor o endereço não existe, e a conexão é fechada no primeiro erro.
-      if (window.EventSource && /^https?:$/.test(location.protocol)) {
+      // Só no computador local: no site publicado o endereço não existe (e a conexão fecharia no primeiro erro).
+      if (window.EventSource && /^https?:$/.test(location.protocol) && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
         try {
           let aberto = false;
           this.es = new EventSource('__mudou');
