@@ -945,6 +945,13 @@
         place = { n: plSel.n, d: plSel.d, kind: skel ? 'Skellige' : kindLabel[plSel.k], hasEntry: !!(key && em[key]), open: () => this.open(key),
           temIlhas: plSel.id === 'skellige', verIlhas: () => this.setState({ mapaVista: 'skellige', place: null, mapaZ: 1 }),
           hasEvents: evs.length > 0, events: evs.map(e => ({ date: e.d, title: e.t, go: () => this.goEvent(e) })) };
+        // Escritos do jogo cujo "onde encontrar" cita este lugar.
+        const esc = key && fonte !== 'livros' ? Ev.filter(e => e.c === 'escrito' && (e.l || []).includes(key)).sort((a, b) => a.t.localeCompare(b.t, 'pt')) : [];
+        const todos = s.mapaEscTodos === plSel.id;
+        Object.assign(place, { hasEscritos: esc.length > 0, nEscritos: esc.length, maisEscritos: esc.length > 8,
+          maisLabel: todos ? 'Mostrar menos' : 'Mostrar todos os ' + esc.length,
+          verEscritos: () => this.setState({ mapaEscTodos: todos ? null : plSel.id }),
+          escritos: (todos ? esc : esc.slice(0, 8)).map(e => ({ t: e.t, open: () => this.open(e.id) })) });
       }
       const skIlhas = skel ? SK.ilhas.map(i => ({ forma: i.forma, fill: s.place === 'sk:' + i.id ? '#F1E2BE' : '#FBF8F1' })) : [];
       const vistaOpts = [['continente', 'O Continente'], ['skellige', 'Ilhas de Skellige']].map(([id, label]) => {
@@ -1130,6 +1137,9 @@
         const nasc = NASC[ce.id];
         // Escritos do jogo que citam este verbete.
         const escList = ce.c === 'escrito' ? [] : Ev.filter(e => e.c === 'escrito' && (e.l || []).includes(ce.id)).map(e => ({ label: e.t, sub: e.ep, open: () => this.open(e.id) }));
+        // Obras em que o verbete aparece, deduzidas dos eventos visíveis ligados a ele.
+        const aparece = ['obra', 'escrito'].includes(ce.c) ? [] : [...new Map(evs.map(e => this.obraDe(e)).filter(Boolean).map(o => [o.id, o])).values()]
+          .sort((a, b) => (a.cron || 0) - (b.cron || 0)).map(o => ({ label: o.n, tipo: o.tipo === 'jogo' ? 'Jogo' : 'Livro', bg: o.tipo === 'jogo' ? '#3A4150' : 'transparent', fg: o.tipo === 'jogo' ? '#F4EEE1' : '#1E1710', open: () => { const v = o.verbete || o.id; if (em[v]) this.open(v); } }));
         const oculto = hidden.has(ce.id) || (spOn && citado[ce.id] && !citado[ce.id].some(evVisivel) && !s.reveal[ce.id] && ce.c !== 'obra');
         entry = {
           title: ce.t, ep: ce.ep, s: oculto ? 'Este verbete fala de acontecimentos que vêm depois do ponto em que você está na leitura.' : ce.s, cat: c.label, color: c.color, icon: ICONS[ce.c],
@@ -1143,6 +1153,7 @@
             return { ...f, url: u ? u[1] : '', hasUrl: !!u && !sens, semUrl: !u && !sens, vTxt: u ? f.v.replace(u[1], '').replace(/[:\s]+$/, '') : f.v,
               sens, revelar: () => this.setState(st => ({ reveal: { ...st.reveal, [chave]: true } })) };
           }), hasFacts: !oculto && facts.length > 0,
+          aparece: oculto ? [] : aparece, hasAparece: !oculto && aparece.length > 0,
           escritos: oculto ? [] : escList, hasEscritos: !oculto && escList.length > 0,
           paras: oculto ? [] : paras,
           events: oculto ? [] : evs.map(e => {

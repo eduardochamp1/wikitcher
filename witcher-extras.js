@@ -43,7 +43,7 @@ leitura: [
 ],
 
 // Eventos da era do bruxo que são pano de fundo, sem obra própria.
-semObra: ["prova-geralt", "roegner-duny", "guerras-ebbing", "fiona-morre"],
+semObra: ["prova-geralt", "roegner-duny", "guerras-ebbing", "fiona-morre", "geralt-cacada"],
 
 // Rotas desenhadas sobre o mapa. Cada ponto usa um lugar do mapa (p) ou coordenadas próprias (x, y em %).
 rotas: [

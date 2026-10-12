@@ -127,6 +127,17 @@ const TESTES = [
     await esperar(() => [...doc.querySelectorAll('main button')].some(b => b.title === 'Undvik'), 3000, 'ilha de Undvik não apareceu');
     confere(doc.querySelectorAll('main svg polygon').length >= 6, 'ilhas não foram desenhadas');
   }],
+  ['O lugar no mapa lista os escritos encontrados lá', async () => {
+    await abrir('#/mapa');
+    await clicar('Novigrad');
+    await esperar(() => /Escritos encontrados aqui \(\d+\)/.test(texto()), 3000, 'sem lista de escritos de Novigrad');
+  }],
+  ['O verbete mostra em que obras aparece', async () => {
+    await abrir('#/comp/yennefer');
+    await esperar(() => [...doc.querySelectorAll('h2')].some(h => h.textContent.trim() === 'Aparece em'), 3000, 'sem "Aparece em"');
+    const h = [...doc.querySelectorAll('h2')].find(h => h.textContent.trim() === 'Aparece em');
+    confere(/O Último Desejo/.test(h.nextElementSibling.innerText), 'O Último Desejo não está entre as obras de Yennefer');
+  }],
   ['A linha do tempo em escala mostra os pontos', async () => {
     await abrir('#/tempo');
     await clicar('Tudo', doc.querySelector('main'));

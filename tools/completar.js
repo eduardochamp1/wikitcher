@@ -1,6 +1,6 @@
 // Completa os verbetes escritos à mão (witcher-verbetes.js) com o que a nota da wiki do mesmo assunto tem a mais.
 // Uso: node tools/completar.js [--simular]
-// Só acrescenta, nunca apaga nem reescreve texto: links que faltam ("Ver também"), fatos da ficha e do cabeçalho
+// Só acrescenta, nunca apaga nem reescreve texto: parágrafos da nota quando o verbete é curto, links que faltam ("Ver também"), fatos da ficha e do cabeçalho
 // da nota (nascimento, morte, data, raça, primeira aparição) e os avisos [!jogos], [!spoiler] e [!divergencia]
 // (um de cada tipo; se o verbete já fala dos jogos no texto corrido, vale revisar para não repetir).
 // Rodar de novo não duplica nada. Depois, `node tools/diferencas.js` mostra o que ainda difere.
@@ -43,12 +43,25 @@ function avisosDaNota(n) {
   return out.filter(a => a.t).map(({ co, t }) => ({ co, t }));
 }
 
+// Parágrafos de texto corrido da nota (sem título, avisos, tabelas, listas nem linhas "Rótulo: valor"), antes das seções.
+function paragrafosDaNota(n) {
+  const out = [];
+  for (const l of n.corpo.split('\n')) {
+    const t = l.trim();
+    if (/^##/.test(t)) break;
+    if (!t || /^[#>|*\-]/.test(t) || /^[\p{L} ]{3,30}:\s/u.test(t)) continue;
+    const p = limpar(t);
+    if (p.split(/\s+/).length >= 8) out.push(p);
+  }
+  return out;
+}
+
 const linhas = fs.readFileSync(ARQ, 'utf8').split('\n');
 const ser = o => '{' + Object.entries(o).map(([k, v]) => k + ':' + JSON.stringify(v)).join(', ') + '}';
 const porId = new Map();
 linhas.forEach((l, i) => { const m = /^\s*(\{id:.*\})(,?)\s*$/.exec(l); if (m) { const o = vm.runInNewContext('(' + m[1] + ')'); porId.set(o.id, { i, o, virgula: m[2] }); } });
 
-const rel = { links: 0, fatos: 0, avisos: 0, verbetes: new Set() };
+const rel = { links: 0, fatos: 0, avisos: 0, paragrafos: 0, verbetes: new Set() };
 for (const n of lerNotas()) {
   const id = W.notas[norm(n.nome)], alvo = id && porId.get(id);
   if (!alvo) continue;
@@ -73,6 +86,16 @@ for (const n of lerNotas()) {
     if (avisos.some(a => a.co === 'jogos')) e.fo = [...new Set((e.fo || ['livros']).concat('jogos'))];
   }
 
+  // Verbete curto (menos de 60 palavras de texto corrido): acrescenta os parágrafos da nota que ele ainda não tem,
+  // até umas 150 palavras.
+  const palavras = b => (typeof b === 'string' ? b : '').split(/\s+/).filter(Boolean).length;
+  let total = (e.b || []).reduce((s, b) => s + palavras(b), 0);
+  if (total < 60) for (const p of paragrafosDaNota(n)) {
+    if (total >= 150) break;
+    if (texto.includes(norm(p).slice(0, 40)) || (e.b || []).some(b => typeof b === 'string' && norm(b).includes(norm(p).slice(0, 40)))) continue;
+    e.b = (e.b || []).concat(p); total += palavras(p); rel.paragrafos++;
+  }
+
   if (ser(e) !== antes) {
     e.fo = [...new Set((e.fo || ['livros']).concat('usuario'))];
     linhas[alvo.i] = ser(e) + alvo.virgula;
@@ -80,5 +103,5 @@ for (const n of lerNotas()) {
   }
 }
 
-console.log((simular ? '[simulação] ' : '') + rel.verbetes.size + ' verbetes completados: ' + rel.links + ' links, ' + rel.fatos + ' fatos, ' + rel.avisos + ' avisos.');
+console.log((simular ? '[simulação] ' : '') + rel.verbetes.size + ' verbetes completados: ' + rel.links + ' links, ' + rel.fatos + ' fatos, ' + rel.avisos + ' avisos, ' + rel.paragrafos + ' parágrafos.');
 if (!simular) fs.writeFileSync(ARQ, linhas.join('\n'));

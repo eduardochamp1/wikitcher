@@ -21,7 +21,7 @@ const MESMO = {
 // Notas que não viram verbete, mas cujos links devem levar a um verbete parecido.
 const LINK = { 'Linhagem de Ciri': 'sangue-antigo' };
 // Categoria do app por tipo da nota, com exceções por nome.
-const CAT_TIPO = { personagem: 'personagem', lugar: 'politica', evento: 'politica', conceito: 'cosmo', raca: 'raca', organizacao: 'politica', obra: 'obra', escrito: 'escrito' };
+const CAT_TIPO = { personagem: 'personagem', lugar: 'politica', evento: 'politica', conceito: 'cosmo', raca: 'raca', organizacao: 'politica', obra: 'obra', escrito: 'escrito', criatura: 'besta', conto: 'obra' };
 // Escritos de The Witcher 3 (pasta "10 - Escritos do Jogo"): rótulos de subtipo e tema.
 const SUBTIPO = { livro: 'Livro', carta: 'Carta', diario: 'Diário', relatorio: 'Relatório', poema: 'Poema', guia: 'Guia', documento: 'Documento' };
 const TEMA = { historia: 'História', mitologia: 'Mitologia', lendas: 'Lendas', profecias: 'Profecias', bestiario: 'Bestiário', povos: 'Povos', magia: 'Magia', lugares: 'Lugares', personagens: 'Personagens', bruxos: 'Bruxos', cotidiano: 'Cotidiano' };
@@ -93,6 +93,8 @@ const TAG = { feiticeira: 'feiticeira', bruxo: 'bruxo', realeza: 'realeza', anta
 const CERTEZA = { '●': 'firme', '◐': 'aproximada', '○': 'especulativa' };
 function rotulo(n) {
   if (n.tipo === 'escrito') return [SUBTIPO[n.fm.subtipo] || 'Escrito', TEMA[n.fm.tema], JOGO[n.fm.jogo]].filter(Boolean).join(' · ');
+  if (n.tipo === 'conto') return ['Conto', n.fm.livro].filter(Boolean).join(' · ');
+  if (n.tipo === 'criatura') return 'Criatura';
   if (n.tipo === 'obra') return [n.tags.includes('jogo') ? 'Jogo' : n.tags.includes('contos') ? 'Livro de contos' : 'Romance', n.fm.ano].filter(Boolean).join(' · ');
   const base = { personagem: n.fm.raca || 'Personagem', lugar: 'Lugar', evento: 'Evento', conceito: 'Conceito', raca: 'Povo', organizacao: 'Organização' }[n.tipo];
   const r = [base, ...n.tags.map(x => TAG[x]).filter(Boolean).slice(0, 2)].join(' · ');
@@ -130,12 +132,21 @@ if (indiceObras) for (const l of indiceObras.corpo.split('\n')) {
   if (t && c[2]) original.set(t[1].trim(), limpar(c[2]));
 }
 
+// Nomes de lugar (notas de lugar e seus apelidos), do mais longo ao mais curto, para achar lugares em textos livres.
+const lugaresPorNome = notas.filter(n => n.tipo === 'lugar' && destino.has(n.nome)).flatMap(n => [n.nome, ...n.aliases].filter(a => a.length > 3).map(a => [a, destino.get(n.nome)])).sort((a, b) => b[0].length - a[0].length);
+const lugarDeEscrito = new Set();
+
 // 2) Converte as notas novas.
 const verbetes = [], gloss = [], semLink = new Set();
 const jaNoGloss = new Set(app.WITCHER_GLOSSARIO.flatMap(g => g.k));
 for (const n of novos) {
   const c = converter(n), id = destino.get(n.nome);
   if (ids.has(id) || verbetes.some(v => v.id === id)) throw new Error('id repetido: ' + id);
+  if (n.tipo === 'escrito') {
+    // Lugares citados em "Onde encontrar" (pelo nome das notas de lugar) viram ligações do escrito.
+    const onde = (c.fatos.find(f => f[0] === 'Onde encontrar') || [])[1] || '';
+    for (const [nome, lid] of lugaresPorNome) if (new RegExp('(^|[^\\p{L}])' + nome.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^\\p{L}]|$)', 'iu').test(onde)) c.links.push(nome), lugarDeEscrito.add(lid);
+  }
   const l = [...new Set(c.links.map(x => { const d = alvo.get(norm(x)); if (!d) semLink.add(x); return d; }).filter(d => d && d !== id))];
   const escrito = n.tipo === 'escrito';
   const v = { id, c: CAT_NOTA[n.nome] || CAT_TIPO[n.tipo], t: escrito ? (tituloH1(n) || n.nome).trim() : n.nome, ep: escrito ? rotulo(n) : (c.ep || rotulo(n)), s: c.resumo, b: c.blocos };

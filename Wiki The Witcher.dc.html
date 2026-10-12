@@ -543,6 +543,15 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
                 </button>
               </sc-for>
             </sc-if>
+            <sc-if value="{{ place.hasEscritos }}" hint-placeholder-val="{{ false }}">
+              <span style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#4F4231;margin-top:10px">Escritos encontrados aqui ({{ place.nEscritos }})</span>
+              <sc-for list="{{ place.escritos }}" as="pw" hint-placeholder-count="0">
+                <button onClick="{{ pw.open }}" style="text-align:left;background:none;border:none;border-top:1px solid #E1D5BB;padding:6px 0;cursor:pointer;font-size:15px;color:#1E1710">{{ pw.t }}</button>
+              </sc-for>
+              <sc-if value="{{ place.maisEscritos }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ place.verEscritos }}" style="align-self:flex-start;margin-top:4px;padding:5px 12px;cursor:pointer;background:none;border:1px solid #CDBE9C;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:12px">{{ place.maisLabel }}</button>
+              </sc-if>
+            </sc-if>
           </sc-if>
           <sc-if value="{{ noPlace }}" hint-placeholder-val="{{ true }}">
             <p style="margin:0;font-size:18px;font-style:italic;color:#4F4231">Escolha um lugar no mapa, uma jornada ou um ano.</p>
@@ -1034,6 +1043,14 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
           <sc-if value="{{ entry.canPerson }}" hint-placeholder-val="{{ false }}">
             <button data-noprint="1" onClick="{{ entry.personGo }}" style="margin-top:10px;padding:7px 14px;cursor:pointer;background:#1E1710;color:#F4EEE1;border:none;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500">Ver só esta história na linha do tempo</button>
           </sc-if>
+        </sc-if>
+        <sc-if value="{{ entry.hasAparece }}" hint-placeholder-val="{{ false }}">
+          <h2 style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#8C2A1B;margin:32px 0 10px">Aparece em</h2>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <sc-for list="{{ entry.aparece }}" as="ap" hint-placeholder-count="0">
+              <button onClick="{{ ap.open }}" title="{{ ap.tipo }}" style="padding:4px 12px;cursor:pointer;background:{{ ap.bg }};color:{{ ap.fg }};border:1px solid #9C8B6A;border-radius:999px;font-size:15px;font-style:italic">{{ ap.label }}</button>
+            </sc-for>
+          </div>
         </sc-if>
         <sc-if value="{{ entry.hasEscritos }}" hint-placeholder-val="{{ false }}">
           <h2 style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;color:#6E4A63;margin:32px 0 6px">Nos escritos do jogo</h2>
