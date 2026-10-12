@@ -47,7 +47,7 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
   <header ref="{{ headerRef }}" style="position:sticky;top:0;z-index:30;background:#F4EEE1;border-bottom:1px solid #D6C8AA">
     <div style="max-width:1180px;margin:0 auto;padding:12px clamp(16px,4vw,40px);display:flex;flex-wrap:wrap;align-items:center;gap:10px 32px">
       <button onClick="{{ goInicio }}" title="Início" style="background:none;border:none;padding:0;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:3px">
-        <span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#8C2A1B">Codex do Continente</span>
+        <span style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#8C2A1B">Wiki do Continente</span>
         <span style="font-family:'IM Fell English',serif;font-size:26px;line-height:1;color:#1E1710">Crônicas de The Witcher</span>
       </button>
       <nav style="display:flex;flex-wrap:wrap;gap:2px 22px;flex:1 1 auto">
@@ -65,7 +65,7 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
       <div style="position:relative;flex:1 1 220px;max-width:320px">
         <input value="{{ q }}" onChange="{{ onQ }}" onFocus="{{ openSearch }}" onBlur="{{ closeSearch }}" placeholder="Buscar personagem, lugar, evento…" style="width:100%;padding:9px 12px;background:#FBF8F1;border:1px solid #D6C8AA;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:#1E1710;outline:none">
         <sc-if value="{{ showResults }}" hint-placeholder-val="{{ false }}">
-          <div style="position:absolute;top:calc(100% + 6px);right:0;width:min(420px,92vw);max-height:70vh;overflow-y:auto;background:#FBF8F1;border:1px solid #D6C8AA;border-radius:8px;box-shadow:0 14px 34px rgba(30,23,16,.16);z-index:50">
+          <div style="position:absolute;top:calc(100% + 6px);left:{{ qLeft }};right:{{ qRight }};width:min(420px,calc(100vw - 32px));max-height:70vh;overflow-y:auto;background:#FBF8F1;border:1px solid #D6C8AA;border-radius:8px;box-shadow:0 14px 34px rgba(30,23,16,.16);z-index:50">
             <div style="display:flex;gap:4px;padding:8px 10px;border-bottom:1px solid #ECE3D0;position:sticky;top:0;background:#FBF8F1">
               <sc-for list="{{ qFilters }}" as="qf" hint-placeholder-count="3">
                 <button onMouseDown="{{ qf.keep }}" onClick="{{ qf.select }}" style="padding:3px 10px;cursor:pointer;border:1px solid #CDBE9C;border-radius:999px;background:{{ qf.bg }};color:{{ qf.fg }};font-family:'IBM Plex Sans',sans-serif;font-size:12px">{{ qf.label }}</button>
@@ -112,12 +112,12 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
   </header>
 
   <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
-    <div style="padding:120px 20px;text-align:center;font-size:22px;color:#4F4231;font-style:italic">Abrindo o codex…</div>
+    <div style="padding:120px 20px;text-align:center;font-size:22px;color:#4F4231;font-style:italic">Abrindo a wiki…</div>
   </sc-if>
 
   <sc-if value="{{ isInicio }}" hint-placeholder-val="{{ false }}">
     <main style="max-width:1080px;width:100%;margin:0 auto;padding:48px clamp(16px,4vw,40px) 140px">
-      <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Bem-vindo ao Codex do Continente</div>
+      <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Bem-vindo à Wiki do Continente</div>
       <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(40px,6.4vw,72px);line-height:1.02;margin:10px 0 18px;color:#1E1710;max-width:860px;text-wrap:balance">O mundo de The Witcher, num só lugar</h1>
       <div style="max-width:720px;display:flex;flex-direction:column;gap:12px;font-size:20px;line-height:1.55;color:#33281C">
         <p style="margin:0">The Witcher nasceu nos livros do polonês Andrzej Sapkowski: dois volumes de contos e uma saga de cinco romances, publicados nos anos 1990. Eles acompanham Geralt de Rívia, um bruxo, caçador de monstros criado por mutações, num continente de reinos em guerra, magia e povos antigos.</p>
@@ -621,6 +621,9 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
           </sc-for>
         </div>
         <span style="font-size:16px;color:#4F4231;font-style:italic">{{ relModeDesc }}</span>
+        <sc-if value="{{ relTemSp }}" hint-placeholder-val="{{ false }}">
+          <span style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:6px 12px;background:#F1E4E6;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#7A2442">{{ relSpTxt }} <button onClick="{{ relSpMostrar }}" style="background:none;border:none;padding:0;cursor:pointer;color:#7A2442;text-decoration:underline;font-family:'IBM Plex Sans',sans-serif;font-size:13px">mostrar</button></span>
+        </sc-if>
       </div>
       <sc-if value="{{ relGraph }}" hint-placeholder-val="{{ true }}">
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 10px">
@@ -828,7 +831,7 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
     <main style="max-width:780px;width:100%;margin:0 auto;padding:44px clamp(16px,4vw,40px) 140px">
       <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8C2A1B">Quiz</div>
       <h1 style="font-family:'IM Fell English',serif;font-weight:400;font-size:clamp(38px,6vw,64px);line-height:1.02;margin:10px 0 12px;color:#1E1710">Teste o que você sabe</h1>
-      <p style="max-width:640px;font-size:19px;line-height:1.55;color:#33281C;margin:0 0 22px">Perguntas geradas a partir do próprio codex: rodadas de dez, o contrato de bruxo (adivinhe a criatura pelas pistas) e uma pergunta do dia.</p>
+      <p style="max-width:640px;font-size:19px;line-height:1.55;color:#33281C;margin:0 0 22px">Perguntas geradas a partir da própria wiki: rodadas de dez, o contrato de bruxo (adivinhe a criatura pelas pistas) e uma pergunta do dia.</p>
       <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-bottom:12px">
         <div style="display:flex;border:1px solid #CDBE9C;border-radius:6px;overflow:hidden">
           <sc-for list="{{ quizModes }}" as="qm" hint-placeholder-count="3">
@@ -872,7 +875,7 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
               <span style="font-size:16px;color:#1E1710">{{ qe.pergunta }}</span>
               <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#2F4A1F">Certa: {{ qe.certa }}</span>
               <span style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:#8C2A1B">Sua resposta: {{ qe.escolhida }}</span>
-              <sc-if value="{{ qe.temLink }}" hint-placeholder-val="{{ false }}"><button onClick="{{ qe.link }}" style="align-self:flex-start;background:none;border:none;padding:0;cursor:pointer;color:#8C2A1B;text-decoration:underline;font-family:'IBM Plex Sans',sans-serif;font-size:13px">rever no codex</button></sc-if>
+              <sc-if value="{{ qe.temLink }}" hint-placeholder-val="{{ false }}"><button onClick="{{ qe.link }}" style="align-self:flex-start;background:none;border:none;padding:0;cursor:pointer;color:#8C2A1B;text-decoration:underline;font-family:'IBM Plex Sans',sans-serif;font-size:13px">rever na wiki</button></sc-if>
             </div>
           </sc-for>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
@@ -955,7 +958,11 @@ html[data-tema="escuro"]{filter:invert(.92) hue-rotate(180deg)}
               <sc-if value="{{ li.temPartes }}" hint-placeholder-val="{{ false }}">
                 <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
                   <sc-for list="{{ li.partes }}" as="pt" hint-placeholder-count="0">
-                    <button onClick="{{ pt.toggle }}" style="display:flex;align-items:center;gap:6px;padding:3px 9px 3px 5px;cursor:pointer;background:#FBF8F1;border:1px solid #DCCFB3;border-radius:999px;font-size:14px;color:#1E1710"><span style="width:16px;height:16px;border-radius:4px;border:1.5px solid {{ pt.bd }};background:{{ pt.bg }};color:#FBF8F1;font-size:11px;line-height:13px;text-align:center">{{ pt.mark }}</span>{{ pt.n }}</button>
+                    <span style="display:flex;align-items:center;background:#FBF8F1;border:1px solid #DCCFB3;border-radius:999px;font-size:14px;color:#1E1710">
+                      <button onClick="{{ pt.toggle }}" title="Marcar como lido" aria-label="Marcar {{ pt.n }} como lido" style="display:flex;align-items:center;padding:3px 4px 3px 5px;cursor:pointer;background:none;border:none"><span style="width:16px;height:16px;border-radius:4px;border:1.5px solid {{ pt.bd }};background:{{ pt.bg }};color:#FBF8F1;font-size:11px;line-height:13px;text-align:center">{{ pt.mark }}</span></button>
+                      <sc-if value="{{ pt.temVerbete }}" hint-placeholder-val="{{ false }}"><button onClick="{{ pt.abrir }}" title="Abrir a nota do conto" style="padding:3px 10px 3px 2px;cursor:pointer;background:none;border:none;font-size:14px;color:#1E1710;text-decoration:underline dotted #9C8B6A">{{ pt.n }}</button></sc-if>
+                      <sc-if value="{{ pt.semVerbete }}" hint-placeholder-val="{{ false }}"><span style="padding:3px 10px 3px 2px">{{ pt.n }}</span></sc-if>
+                    </span>
                   </sc-for>
                 </div>
               </sc-if>

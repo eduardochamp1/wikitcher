@@ -8,7 +8,7 @@ tags: [obra, livro, contos]
 
 > **Segunda coletânea de contos de Geralt.**
 
-Segunda coletânea. Aprofunda a relação entre Geralt e Yennefer e apresenta Ciri.
+Segunda coletânea de contos, que acompanha Geralt em novas andanças de bruxo e aprofunda a relação dele com a feiticeira Yennefer. As histórias ficam mais melancólicas e giram em torno de destino, amor e escolhas sem saída fácil. O livro também apresenta Ciri, uma pequena princesa de Cintra que terá papel central na saga.
 
 | Conto | Resumo próprio | Entra na wiki em |
 |---|---|---|

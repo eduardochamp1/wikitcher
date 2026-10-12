@@ -10,7 +10,7 @@ tags: [obra, jogo]
 
 > **Terceiro jogo da série: Geralt em busca de Ciri.**
 
-[[Emhyr var Emreis]] encarrega Geralt de encontrar [[Ciri]], perseguida pela [[Caçada Selvagem]]. A busca passa por [[Velen]], [[Novigrad]] e [[Skellige]]. O jogo tem finais múltiplos para Ciri, para o Norte e para o romance de Geralt.
+Terceiro jogo da série, um RPG de mundo aberto. [[Emhyr var Emreis]] encarrega Geralt de encontrar [[Ciri]], perseguida pela [[Caçada Selvagem]], numa busca que passa por [[Velen]], [[Novigrad]] e [[Skellige]] em plena guerra entre Nilfgaard e o Norte. O tom alterna tragédia, humor e contratos de monstros cheios de dilemas morais, e o jogo tem finais múltiplos para Ciri, para o Norte e para o romance de Geralt.
 
 **Expansões**: *Hearts of Stone* ([[Gaunter O'Dimm]], [[Olgierd von Everec]]) e *Blood and Wine* ([[Toussaint]], [[Anna Henrietta]]).
 

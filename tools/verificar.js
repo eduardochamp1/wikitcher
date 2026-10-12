@@ -41,6 +41,9 @@ X.relacoes.lacos.forEach(([a, b, t]) => {
 Object.entries(X.relacoes.grupos).forEach(([k, g]) => g.membros.forEach(id => verb(id, 'Grupo ' + k)));
 const paresRel = X.relacoes.lacos.map(([a, b]) => [a, b].sort().join('|'));
 paresRel.forEach((p, i) => { if (paresRel.indexOf(p) !== i) erro('Relação repetida: ' + p); });
+(X.relacoes.spoiler || []).forEach(p => { if (!paresRel.includes(p.split('|').sort().join('|'))) erro('Laço-spoiler sem laço correspondente: ' + p); });
+Object.keys(X.apelidos || {}).forEach(id => verb(id, 'Apelidos'));
+Object.keys(X.fichaSpoiler || {}).forEach(id => verb(id, 'Ficha-spoiler'));
 D.tree.forEach(g => { verb(g.p.id, 'Linhagem'); verb(g.sp && g.sp.id, 'Linhagem'); });
 X.arvores.forEach(a => {
   const pid = new Set(a.pessoas.map(p => p.id));

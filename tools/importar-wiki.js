@@ -21,7 +21,7 @@ const MESMO = {
 // Notas que não viram verbete, mas cujos links devem levar a um verbete parecido.
 const LINK = { 'Linhagem de Ciri': 'sangue-antigo' };
 // Categoria do app por tipo da nota, com exceções por nome.
-const CAT_TIPO = { personagem: 'personagem', lugar: 'politica', evento: 'politica', conceito: 'cosmo', raca: 'raca', organizacao: 'politica', obra: 'obra', escrito: 'escrito', criatura: 'besta', conto: 'obra' };
+const CAT_TIPO = { personagem: 'personagem', lugar: 'lugar', evento: 'politica', conceito: 'cosmo', raca: 'raca', organizacao: 'politica', obra: 'obra', escrito: 'escrito', criatura: 'besta', conto: 'obra' };
 // Escritos de The Witcher 3 (pasta "10 - Escritos do Jogo"): rótulos de subtipo e tema.
 const SUBTIPO = { livro: 'Livro', carta: 'Carta', diario: 'Diário', relatorio: 'Relatório', poema: 'Poema', guia: 'Guia', documento: 'Documento' };
 const TEMA = { historia: 'História', mitologia: 'Mitologia', lendas: 'Lendas', profecias: 'Profecias', bestiario: 'Bestiário', povos: 'Povos', magia: 'Magia', lugares: 'Lugares', personagens: 'Personagens', bruxos: 'Bruxos', cotidiano: 'Cotidiano' };
@@ -158,7 +158,9 @@ for (const n of novos) {
   }
   const l = [...new Set(c.links.map(x => { const d = alvo.get(norm(x)); if (!d) semLink.add(x); return d; }).filter(d => d && d !== id))];
   const escrito = n.tipo === 'escrito';
-  const v = { id, c: CAT_NOTA[n.nome] || CAT_TIPO[n.tipo], t: escrito ? (tituloH1(n) || n.nome).trim() : n.nome, ep: escrito ? rotulo(n) : (c.ep || rotulo(n)), s: c.resumo, b: c.blocos };
+  // Lugar que é reino, império ou bloco político fica em "Reinos e Política"; os demais em "Lugares".
+  const cat = CAT_NOTA[n.nome] || (n.tipo === 'lugar' && n.tags.some(x => /^(reino|imperio|politica|ducado)$/.test(x)) ? 'politica' : CAT_TIPO[n.tipo]);
+  const v = { id, c: cat, t: escrito ? (tituloH1(n) || n.nome).trim() : n.nome, ep: escrito ? rotulo(n) : (c.ep || rotulo(n)), s: c.resumo, b: c.blocos };
   if (escrito) {
     // O resumo é o parágrafo da nota; a frase de identificação (> **...**) só entra se ele faltar.
     if (!v.s && c.ep) v.s = c.ep.replace(/\.?$/, '.');

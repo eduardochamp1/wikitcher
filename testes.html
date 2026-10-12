@@ -182,6 +182,8 @@ const TESTES = [
     await clicar('A Hansa');
     confere(nos() === 6, 'o grupo da Hansa deveria ter 6 pessoas (' + nos() + ')');
     await clicar('Todos'); await clicar('Cahir');
+    confere(!/Começa como/.test(doc.querySelector('main aside').innerText), 'o laço-spoiler Geralt–Cahir aparece com os spoilers recolhidos');
+    await clicar('mostrar'); await clicar('Cahir');
     await esperar(() => /Começa como/.test(doc.querySelector('main aside').innerText), 3000, 'a mudança do laço com Cahir não apareceu');
   }],
   ['Conexões encontra o caminho entre dois verbetes', async () => {

@@ -8,7 +8,7 @@ tags: [obra, livro, contos]
 
 > **Primeira coletânea de contos de Geralt.**
 
-Coletânea de contos que apresenta Geralt. A moldura ("A Voz da Razão") mostra o bruxo se recuperando no templo de Melitele, sob os cuidados de [[Nenneke]]; entre os capítulos, os contos funcionam como lembranças.
+Coletânea de contos que apresenta Geralt, um bruxo: caçador de monstros mutante que vende seus serviços pelo Continente. A moldura ("A Voz da Razão") mostra o bruxo se recuperando no templo de Melitele, sob os cuidados de [[Nenneke]]; entre os capítulos, os contos funcionam como lembranças. Muitas histórias são releituras sombrias e irônicas de contos de fadas, em que o monstro nem sempre é o vilão. É a melhor porta de entrada para a saga.
 
 ## Contos e o que estabelecem
 | Conto | Resumo próprio | Entra na wiki em |
