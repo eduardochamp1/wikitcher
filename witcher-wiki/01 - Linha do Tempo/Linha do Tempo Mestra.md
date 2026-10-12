@@ -62,7 +62,7 @@ Datas no calendário nórdico, que conta os anos a partir da Ressurreição (Ano
 | c. 1259 | Geralt volta a Cintra; Calanthe tenta enganá-lo sobre a criança | ◐ |
 | 1262 | Geralt encontra Ciri na floresta de [[Brokilon]] | ◐ |
 
-## Era VI — As Guerras do Norte (a saga)
+## Era VI — As Guerras Nórdicas (a saga)
 ### Primeira Guerra Nórdica
 | Quando | Evento | Certeza |
 |---|---|---|

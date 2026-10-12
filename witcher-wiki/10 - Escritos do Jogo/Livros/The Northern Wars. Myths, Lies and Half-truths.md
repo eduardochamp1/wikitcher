@@ -10,7 +10,7 @@ referencia: https://witcher.fandom.com/wiki/The_Northern_Wars._Myths,_Lies_and_H
 aliases: ["The Northern Wars. Myths, Lies and Half-truths"]
 tags: [escrito, livro, historia]
 ---
-# As Guerras do Norte: mitos, mentiras e meias-verdades
+# As Guerras Nórdicas: mitos, mentiras e meias-verdades
 
 > **Análise crítica de Restif de Montholon sobre a condenação do duque de Wett.**
 
@@ -28,4 +28,4 @@ Obra de Restif de Montholon, historiador do lado nilfgaardiano, também citada n
 - A violência contra civis fez a revolta crescer de algumas centenas de rebeldes para quase o país inteiro; o rei Ervyll, aliado do Império, foi morto e substituído pelo filho Kistrin, simpático aos nórdicos.
 - Pressionado por saqueadores de [[Skellige]], por uma ofensiva vinda de Cidaris e pela rebelião, de Wett sofreu derrota após derrota.
 - O atraso prendeu as tropas de Menno Coehoorn e permitiu aos nórdicos romper o cerco a Mayena e Maribor.
-- Segundo o autor, o fracasso destruiu o mito da invencibilidade de [[Nilfgaard]] e encheu de voluntários os exércitos do Norte nas [[Guerras do Norte]].
+- Segundo o autor, o fracasso destruiu o mito da invencibilidade de [[Nilfgaard]] e encheu de voluntários os exércitos do Norte nas [[Guerras Nórdicas]].

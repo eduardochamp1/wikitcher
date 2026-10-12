@@ -26,5 +26,5 @@ Texto biográfico sobre [[Jacques de Aldersberg]] e sua escolha como grão-mestr
 ## O que revela
 - A Ordem da Rosa Branca estava quase se desfazendo quando escolheu De Aldersberg, e uma de suas primeiras decisões foi rebatizá-la de [[Ordem da Rosa Flamejante]].
 - Ele teria surgido do nada, como um pregador errante que inflamava multidões com discursos contra não humanos.
-- Dizia-se que fazia milagres e mostrava aos seguidores visões de um mundo destruído pela [[A Geada Branca|Geada Branca]].
+- Dizia-se que fazia milagres e mostrava aos seguidores visões de um mundo destruído pela [[O Frio Branco|Frio Branco]].
 - O autor deixa em aberto se ele era uma [[Fontes|Fonte]], com talento mágico inato.

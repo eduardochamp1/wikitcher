@@ -721,7 +721,7 @@
         { y: '1270 – 1276', t: 'Os jogos', hi: true }
       ].map((r, i, arr) => ({ ...r, dot: r.hi ? '#8C2A1B' : '#1E1710', col: r.hi ? '#8C2A1B' : '#1E1710', line: i === arr.length - 1 ? 'transparent' : '#CDBE9C' }));
       // Linha do tempo em escala real: cada evento na posição do seu ano, com zoom por período.
-      const ESC = { tudo: [-3000, 5100, 'Do início ao fim do mundo'], humana: [-300, 1300, 'Da Conjunção ao fim do séc. XIII'], saga: [1240, 1278, '1240–1278'], guerras: [1262.8, 1268.8, 'As Guerras do Norte'] };
+      const ESC = { tudo: [-3000, 5100, 'Do início ao fim do mundo'], humana: [-300, 1300, 'Da Conjunção ao fim do séc. XIII'], saga: [1240, 1278, '1240–1278'], guerras: [1262.8, 1268.8, 'As Guerras Nórdicas'] };
       const escOpts = [[null, 'Desligada'], ['tudo', 'Tudo'], ['humana', 'Era humana'], ['saga', 'O tempo de Geralt'], ['guerras', '1263–1268']].map(([id, label]) => {
         const on = s.escala === id;
         return { label, bd: on ? '#1E1710' : '#DCCFB3', bg: on ? '#1E1710' : '#FBF8F1', fg: on ? '#F4EEE1' : '#1E1710', select: () => this.setState({ escala: id, escSel: null }) };

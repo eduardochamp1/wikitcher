@@ -23,13 +23,13 @@ tags: [escrito, diario, historia]
 
 Registros curtos de um secretário municipal enquanto sua cidade morre de frio. Rituais, sacrifícios e estudos não detêm a neve; os magos consultados dizem que o frio vem de uma abertura entre os mundos. O prefeito reúne os sobreviventes no farol, mas a lenha e a comida acabam e o autor prevê o fim.
 
-> [!spoiler] O diário mostra o destino que aguarda um mundo atingido pela Geada Branca.
+> [!spoiler] O diário mostra o destino que aguarda um mundo atingido pelo Frio Branco.
 
 ## Na história
 Geralt encontra o diário ao atravessar, com Ciri, um mundo já destruído pelo gelo durante a missão Through Time and Space.
 
 ## O que revela
-- O mundo do diário foi destruído por um frio sem fim, associado à [[A Geada Branca|Geada Branca]].
+- O mundo do diário foi destruído por um frio sem fim, associado à [[O Frio Branco|Frio Branco]].
 - Os magos de Tor Gleavi'ch admitiram não ter como deter a mudança do clima.
 - Os moradores queimavam os próprios móveis para se aquecer.
 - No último registro, as casas estão soterradas e só algumas chaminés aparecem na neve.

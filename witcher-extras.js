@@ -135,13 +135,13 @@ skellige: {
 // Modo sem spoilers: "rOculto" substitui "r" até ler a obra "revela"; "oculta" esconde a pessoa (e suas linhas) até ler a obra;
 // "revela" na árvore inteira a esconde até ler a obra.
 arvores: [
-  {id:"sangue", n:"Sangue Antigo", titulo:"A linhagem do Sangue Antigo", sub:"De Lara Dorren a Ciri: o gene élfico atravessa Redania, Temeria e Cintra até se manifestar por inteiro.",
+  {id:"sangue", n:"Sangue Antigo", titulo:"A linhagem do Sangue Antigo", sub:"De Lara Dorren a Ciri: o gene élfico atravessa Redânia, Temeria e Cintra até se manifestar por inteiro.",
     pessoas:[
       {id:"lara", n:"Lara Dorren", r:"elfa, Aen Saevherne", g:0, x:40, e:"lara-dorren"},
       {id:"cregennan", n:"Cregennan de Lod", r:"mago humano", g:0, x:62},
       {id:"riannon", n:"Riannon", r:"criada pela rainha Cerro", g:1, x:40},
       {id:"goidemar", n:"Goidemar", r:"rei da Temeria", g:1, x:62},
-      {id:"falka", n:"Falka", r:"a rebelde de Redania", g:1, x:86, e:"falka", oculta:"tempo-do-desprezo"},
+      {id:"falka", n:"Falka", r:"a rebelde de Redânia", g:1, x:86, e:"falka", oculta:"tempo-do-desprezo"},
       {id:"coram", n:"Coram II", r:"rei de Cintra", g:2, x:12},
       {id:"fiona", n:"Fiona", r:"morre em Cleves aos 93 anos", g:2, x:33},
       {id:"adela", n:"Adela", r:"morta na peste de Vizima", g:2, x:55},
@@ -276,7 +276,7 @@ relacoes: {
     ["philippa","fringilla-vigo","aliado","A Loja une magas do Norte e do Império"],
     ["fringilla-vigo","assire-var-anahid","aliado","Magas nilfgaardianas e amigas"],
     ["fringilla-vigo","geralt","amor","Romance no inverno em Toussaint"],
-    ["philippa","dijkstra","complexo","Aliados e rivais na corte de Redania","Governam juntos durante a menoridade de Radovid; depois, cada um segue seu jogo."],
+    ["philippa","dijkstra","complexo","Aliados e rivais na corte de Redânia","Governam juntos durante a menoridade de Radovid; depois, cada um segue seu jogo."],
     ["dijkstra","vizimir-ii","aliado","Chefe da espionagem do rei; Vizimir é assassinado em 1267"],
     ["dijkstra","radovid","complexo","Serve ao jovem rei; nos jogos, conspira para matá-lo"],
     ["philippa","radovid","inimigo","Nos jogos, Radovid a cega e a persegue"],

@@ -10,7 +10,7 @@ referencia: https://witcher.fandom.com/wiki/The_Northern_Wars,_Volume_I
 aliases: ["The Northern Wars, Volume I"]
 tags: [escrito, livro, historia]
 ---
-# As Guerras do Norte, Volume I
+# As Guerras Nórdicas, Volume I
 
 > **Versão nilfgaardiana oficial da primeira guerra contra o Norte.**
 

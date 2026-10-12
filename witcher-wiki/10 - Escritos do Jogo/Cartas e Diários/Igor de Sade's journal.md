@@ -21,7 +21,7 @@ tags: [escrito, diario, magia]
 | **Jogo** | The Witcher 3: Hearts of Stone |
 | **Onde encontrar** | No tesouro guardado por um golem na Clareira de Olevald, a sudoeste de Bowdon |
 
-Caderno de pesquisa de Igor de Sade, aluno da academia de [[Aretuza e Ban Ard|Ban Ard]], que preparava uma dissertação sobre golems baseada no trabalho do mestre Alzur. Só parte das anotações sobreviveu. Nelas, Igor conta como seguiu pistas até uma antiga oficina de Alzur e encontrou um golem parado, que pretendia despertar com a energia de um raio.
+Caderno de pesquisa de Igor de Sade, aluno da academia de [[Aretusa e Ban Ard|Ban Ard]], que preparava uma dissertação sobre golems baseada no trabalho do mestre Alzur. Só parte das anotações sobreviveu. Nelas, Igor conta como seguiu pistas até uma antiga oficina de Alzur e encontrou um golem parado, que pretendia despertar com a energia de um raio.
 
 ## O que revela
 - Perto de [[Vizima]], Igor achou um golem destruído e soube que o responsável foi um bruxo de cabelos brancos, o que o deixou furioso com os [[Bruxos]].

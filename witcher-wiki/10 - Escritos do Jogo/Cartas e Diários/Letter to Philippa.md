@@ -19,7 +19,7 @@ tags: [escrito, carta, personagens]
 | **Título original** | Letter to Philippa |
 | **Tipo** | Carta |
 | **Jogo** | The Witcher 3: Wild Hunt |
-| **Onde encontrar** | Num baú no esconderijo de Filippa em Est Tayiar, durante Redania's Most Wanted |
+| **Onde encontrar** | Num baú no esconderijo de Filippa em Est Tayiar, durante Redânia's Most Wanted |
 
 Um antigo amante de [[Filippa Eilhart|Filippa]], escrevendo da propriedade do pai em Metinna, reage com indignação ao fim do relacionamento. O que mais o ofende é ter sido trocado por [[Dijkstra]], a quem cobre de insultos.
 

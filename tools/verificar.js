@@ -74,6 +74,13 @@ X.rotas.forEach(r => r.pontos.forEach((pt, i) => {
 }));
 X.dominios.forEach(d => { if (!plIds.has(d.p)) erro('Domínio para lugar inexistente: ' + d.p); d.faixas.forEach(f => { if (!X.dominioTipos[f.k]) erro('Domínio ' + d.p + ' com tipo desconhecido: ' + f.k); }); });
 
+// Grafias padronizadas pelo Guia de Cânone (Filippa, Redânia, Aretusa, Frio Branco, Guerra Nórdica) nos textos que o leitor vê.
+// Ficam de fora os títulos originais em inglês e a divergência que compara os nomes dos jogos.
+const GRAFIAS = [[/\bPhilippa\b/, 'Filippa'], [/\bRedania\b/, 'Redânia'], [/\bAretuza\b/, 'Aretusa'], [/Geada Branca/, 'Frio Branco'], [/Guerras? do Norte/, 'Guerra Nórdica']];
+const visiveis = E.map(e => [e.id, [e.t, e.ep, e.s, ...(e.b || []).map(b => typeof b === 'string' ? b : (b.t || b.li || b.h || '')), ...(e.f || []).filter(([k]) => !/Título original|Referência/.test(k)).map(f => f[1])].join(' ')])
+  .concat(D.events.map(e => [e.id, e.t + ' ' + e.x]), D.eras.map(e => [e.id, e.name + ' ' + e.summary]));
+visiveis.forEach(([id, t]) => GRAFIAS.forEach(([re, certo]) => { if (re.test(t)) aviso(id + ': grafia fora do padrão (use "' + certo + '"): ' + (re.exec(t) || [])[0]); }));
+
 // 3) A data escrita de cada evento deve conter o ano do campo s (ou um intervalo que o inclua).
 const cabe = (ys, y) => ys.length && (ys.includes(y) || (ys.length >= 2 && y >= Math.min(...ys) && y <= Math.max(...ys)));
 // Datas aproximadas ("c. ...") aceitam s deslocado em até 2 anos, que o app usa só para ordenar.

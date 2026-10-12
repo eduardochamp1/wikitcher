@@ -24,7 +24,7 @@ tags: [escrito, livro, povos]
 Um narrador élfico conta que o povo era um só, os Aen Undod, até que o inverno e a destruição o obrigaram a partir. Numa encruzilhada o grupo se dividiu, e cada parte se tornou um povo diferente. O texto termina em tom de luto e espera pela próxima migração ou pela morte.
 
 ## O que revela
-- Os elfos fugiram de sua terra original por causa da [[A Geada Branca|Geada Branca]].
+- Os elfos fugiram de sua terra original por causa da [[O Frio Branco|Frio Branco]].
 - Um caminho levava a um mundo verde e outro às ilhas montanhosas que os humanos chamariam de [[Skellige]].
 - Os que ficaram entre rochedos são os [[Aen Seidhe]]; os que se instalaram na terra das florestas são os [[Aen Elle]].
 - Os dois povos se comunicam por meio dos [[Aen Saevherne]], os sábios élficos.

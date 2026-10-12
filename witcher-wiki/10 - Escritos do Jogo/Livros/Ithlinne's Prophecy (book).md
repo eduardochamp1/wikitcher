@@ -25,6 +25,6 @@ O livro traz, em duas versões ligeiramente diferentes, o começo da [[Profecia 
 
 ## O que revela
 - O título élfico da profecia é Aen Ithlinnespeath.
-- A era final é chamada de Tedd Deireadh e associada à [[A Geada Branca|Geada Branca]].
+- A era final é chamada de Tedd Deireadh e associada à [[O Frio Branco|Frio Branco]].
 - O renascimento do mundo viria do [[Hen Ichaer]], comparado a uma semente que não brota, mas pega fogo.
 - O primeiro sinal anunciado é o sangue dos [[Aen Seidhe]] correndo pela terra.

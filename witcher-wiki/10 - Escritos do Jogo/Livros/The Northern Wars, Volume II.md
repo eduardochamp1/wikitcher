@@ -10,9 +10,9 @@ referencia: https://witcher.fandom.com/wiki/The_Northern_Wars,_Volume_II
 aliases: ["The Northern Wars, Volume II"]
 tags: [escrito, livro, historia]
 ---
-# As Guerras do Norte, Volume II
+# As Guerras Nórdicas, Volume II
 
-> **Relato da Segunda Guerra do Norte contado do ponto de vista nilfgaardiano.**
+> **Relato da Segunda Guerra Nórdica contado do ponto de vista nilfgaardiano.**
 
 | | |
 |---|---|
