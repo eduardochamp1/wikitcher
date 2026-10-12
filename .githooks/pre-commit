@@ -4,3 +4,5 @@
 #   git config core.hooksPath .githooks
 node tools/importar-wiki.js --conferir || exit 1
 node tools/verificar.js || exit 1
+# Carimba a versao nos scripts e no service worker (evita HTML novo com JS antigo em cache)
+node tools/versionar.js && git add 'Wiki The Witcher.dc.html' sw.js || exit 1
